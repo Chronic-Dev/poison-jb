@@ -188,8 +188,26 @@ struct device_t* check_device() {
 		break;
 
 	case CPID_IPAD1G:
-		device = DEVICE_IPAD1G;
-		break;
+		// iPhone3,1 iPad4,1 and iPad1,1 all share the same ChipID
+                //   so we need to check the BoardID
+                switch (bdid) {
+                case BDID_IPAD1G:
+                        device = DEVICE_IPAD1G;
+                        break;
+
+                case BDID_IPHONE4:
+                        device = DEVICE_IPHONE4;
+                        break;
+
+                case BDID_IPOD4G:
+                        device = DEVICE_IPOD4G;
+                        break;
+                
+		default:
+                        device = DEVICE_UNKNOWN;
+                        break;
+                }
+                break;
 
 	default:
 		device = DEVICE_UNKNOWN;
@@ -199,7 +217,7 @@ struct device_t* check_device() {
 	return &devices[device];
 }
 
-void dfu_notify_upload_finshed(struct libusb_device_handle *handle) {
+void dfu_notify_upload_finished(struct libusb_device_handle *handle) {
 	int ret, i;
 	ret = libusb_control_transfer(handle, 0x21, 1, 0, 0, 0, 0, 100);
 	for (i=0; i<3; i++){
@@ -236,7 +254,7 @@ int main(int argc, char* argv[]) {
 	struct libusb_device_handle *handle = NULL;
 	int mode;
 
-	printf("______________________SHAtter__________s___________\n\n");
+	printf("______________________SHAtter______________________\n\n");
 	printf("vuln. 			posixninja	07/05/2010\n");
 	printf("exploit & payload	pod2g		07/09/2010\n");
 	printf("thanks to all members of chronicdev team and iphonedev team\n");
@@ -328,7 +346,7 @@ int main(int argc, char* argv[]) {
 		libusb_reset_device(handle);
 
 		printf("[.] resetting DFU.\n");
-		dfu_notify_upload_finshed(handle);
+		dfu_notify_upload_finished(handle);
 		handle = usb_wait_device_connection(context, handle);
 		if (!handle) {
 			printf("[X] device stalled.\n");
@@ -389,7 +407,7 @@ int main(int argc, char* argv[]) {
 		libusb_reset_device(handle);
 		
 		printf("[.] resetting DFU.\n");
-		dfu_notify_upload_finshed(handle);
+		dfu_notify_upload_finished(handle);
 		handle = usb_wait_device_connection(context, handle);
 		if (!handle) {
 			printf("[X] device stalled.\n");
@@ -456,7 +474,7 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 
-		dfu_notify_upload_finshed(handle);
+		dfu_notify_upload_finished(handle);
 		libusb_reset_device(handle);
 
 		printf("[.] done. Have fun !\n");
