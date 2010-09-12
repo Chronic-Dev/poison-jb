@@ -20,6 +20,7 @@
 #define CPID_IPOD3G       8922
 #define CPID_IPAD1G       8930
 #define CPID_IPHONE4      8930
+#define CPID_IPOD4G       8930
 
 #define BDID_UNKNOWN        -1
 #define BDID_IPHONE2G        0
@@ -30,6 +31,7 @@
 #define BDID_IPOD3G          2
 #define BDID_IPAD1G          2
 #define BDID_IPHONE4         0
+#define BDID_IPOD4G          8
 
 #define DEVICE_UNKNOWN      -1
 #define DEVICE_IPHONE2G      0
@@ -40,6 +42,8 @@
 #define DEVICE_IPOD3G        5
 #define DEVICE_IPAD1G        6
 #define DEVICE_IPHONE4       7
+#define DEVICE_IPOD4G        8
+
 
 #define MODE_UNKNOWN        -1
 #define MODE_DFU             0
