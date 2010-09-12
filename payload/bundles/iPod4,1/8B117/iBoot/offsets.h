@@ -32,7 +32,7 @@
 #define TARGET_MALLOC                     (0x11070+1) 
 #define TARGET_JUMP_TO                    (0x153EC+1)
 #define TARGET_PRINTF                     (0x2AE4C+1) 
-#define TARGET_VPRINTF                    (0x2A71C+1)
+#define TARGET_VPRINTF                    (0x2ADFC+1)
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x37890)
@@ -41,13 +41,13 @@
 // Task functions
 #define TARGET_TASK_YIELD                 (0x15D10+1)
 #define TARGET_TASK_RUNNING               (0x3B244) 
-#define TARGET_TASK_LIST                  (0x37734) 
+#define TARGET_TASK_LIST                  (0x377CC)
 
 // AES offsets
 #define TARGET_AES_CRYPTO_CMD             (0x17024+1)
 
 // BDev offsets
-#define TARGET_BDEV_LIST                  (0x3B940) 
+#define TARGET_BDEV_LIST                  (0x3B940)
 
 // Image offsets
 #define TARGET_IMAGE_LIST                 (0x37704) 
@@ -57,7 +57,7 @@
 //#define TARGET_FS_UNMOUNT                 (0x0)
 //#define TARGET_FS_LOAD_FILE               (0x0)
 
-// NVRAM offsets
+// NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x37810) 
 
 #endif // OFFSETS_H
