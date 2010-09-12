@@ -381,12 +381,13 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	/* initiate transfer */
-	//if (recovery_mode) {
-	//	error = libusb_control_transfer(client->handle, 0x41, 0, 0, 0, NULL, 0, 1000);
-	//	if (error != IRECV_E_SUCCESS) {
-	//		return error;
-	//	}
-	//}
+	// pod2g: if commented out, irecovery won't upload correctly to 4.1 recovery mode
+	if (recovery_mode) {
+		error = libusb_control_transfer(client->handle, 0x41, 0, 0, 0, NULL, 0, 1000);
+		if (error != IRECV_E_SUCCESS) {
+			return error;
+		}
+	}
 
 	int i = 0;
 	//double progress = 0;
