@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - iPhone3,1/device.h
+  * GreenPois0n Cynanide - iPod4,1/bootrom.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
@@ -17,15 +17,8 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef BOOTROM_H
+#define BOOTROM_H
 
-#define S5L8930X
-#define LOADADDR        0x41000000
-#define IBOOT_BASEADDR  0x5FF00000
-#define IBEC_BASEADDR   0x5FF00000
-#define IBSS_BASEADDR   0x84000000
-#define LLB_BASEADDR    0x84000000
-#define KERNEL_PATH     "/System/Library/Caches/com.apple.kernelcache/kernelcache"
 
-#endif // DEVICE_H
+#endif // BOOTROM_H
