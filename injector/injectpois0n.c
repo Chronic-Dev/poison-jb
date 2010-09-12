@@ -58,9 +58,33 @@ struct greenpois0n_device_t* check_device(irecv_client_t client) {
 		break;
 
 	case CPID_IPAD1G:
-		device = DEVICE_IPAD1G;
-		break;
+		// iPhone3,1 iPad4,1 and iPad1,1 all share the same ChipID
+		//   so we need to check the BoardID
+		if (irecv_get_bdid(client, &bdid) < 0) {
+			error("ERROR: Unable to get device BDID\n");
+			break;
+		}
 
+		
+		switch (bdid) {
+		case BDID_IPAD1G:
+			device = DEVICE_IPAD1G;
+			break;
+
+		case BDID_IPHONE4:
+			device = DEVICE_IPHONE4;
+			break;
+
+		case BDID_IPOD4G:
+			device = DEVICE_IPOD4G;
+			break;
+
+		default:
+			device = DEVICE_UNKNOWN;
+			break;
+		}
+		break;
+	
 	default:
 		device = DEVICE_UNKNOWN;
 		break;
