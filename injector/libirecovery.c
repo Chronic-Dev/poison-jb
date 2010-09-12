@@ -582,7 +582,7 @@ irecv_error_t irecv_execute_script(irecv_client_t client, const char* filename) 
 				return error;
 			}
 
-			error = iirecv_get_bdidrecv_receive(client);
+			error = irecv_receive(client);
 			if(error != IRECV_E_SUCCESS) {
 				return error;
 			}
