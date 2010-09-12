@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - iPad1,1/7B367/iBSS/offsets.h
+  * GreenPois0n Cynanide - iPhone3,1/8B117/iBSS/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
