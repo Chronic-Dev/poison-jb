@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - iPad1,1/7B500/iBSS/offsets.h
+  * GreenPois0n Cynanide - iPad1,1/7B367/iBEC/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
@@ -21,26 +21,26 @@
 #define OFFSETS_H
 
 // Base address
-#define TARGET_BASEADDR                   (0x84000000)
+#define TARGET_BASEADDR                   (0x5FF00000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x9DCC+1)
-#define TARGET_MALLOC                     (0x9DD8+1)
-#define TARGET_JUMP_TO                    (0xDEF4+1)
-#define TARGET_PRINTF                     (0x12E44+1)
-#define TARGET_VPRINTF                    (0x12DF4+1)
+#define TARGET_FREE                       (0x9708+1)
+#define TARGET_MALLOC                     (0x9714+1)
+#define TARGET_JUMP_TO                    (0xD5A0+1)
+#define TARGET_PRINTF                     (0x124F0+1)
+#define TARGET_VPRINTF                    (0x11E3C+1)
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x19000)
 #define TARGET_CMD_LIST_END               (0x1902C)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0xE770+1)
-#define TARGET_TASK_RUNNING               (0x19714)
+#define TARGET_TASK_YIELD                 (0xDE1C+1)
+#define TARGET_TASK_RUNNING               (0x1B164)
 #define TARGET_TASK_LIST                  (0x197AC)
 
 // AES offsets
-#define TARGET_AES_CRYPTO_CMD             (0xF900+1)
+#define TARGET_AES_CRYPTO_CMD             (0xEFAC+1)
 
 // BDev offsets
 #define TARGET_BDEV_LIST                  (0x1B9E0)
