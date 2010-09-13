@@ -177,11 +177,34 @@ int upload_ibss_data() {
 	return 0;
 }
 
-int upload_payload_data() {
+int upload_payload_data(const char* type) {
+	char name[32];
+	irecv_error_t error = 0;
+
+	debug("Resetting device counters\n");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+	
+	memset(name, '\0', 32);	
+        snprintf(name, 31, "%s.%s", type, device->model);
+
+	error = irecv_send_file(client, name, 1);
+	if(error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
 	return 0;
 }
 
-quit() {
+int execute_payload() {
+	return irecv_send_command(client, "bgcolor");
+}
+
+void quit() {
 	irecv_close(client);
 	irecv_exit();
 }
@@ -239,22 +262,29 @@ int main(int argc, char* argv[]) {
 	}
 	
 	debug("Preparing to upload exploit data\n");
-	if(upload_exploit_data()) {
+	if(upload_exploit_data() < 0) {
 		error("Unable to upload exploit data\n");
 		quit();
 		return -1;
 	}
 	
 	debug("Preparing to send iBSS to device\n");
-	if(upload_ibss_data()) {
+	if(upload_ibss_data() < 0) {
 		error("Unable to upload iBSS\n");
 		quit();
 		return -1;
 	}
 
 	debug("Preparing to send payload to device\n");
-	if(upload_payload_data()) {
+	if(upload_payload_data("iBSS") < 0) {
 		error("Unable to upload payload\n");
+		quit();
+		return -1;
+	}
+
+	debug("Executing payload\n");
+	if(execute_payload() < 0) {
+		error("Unable to execute payload\n");
 		quit();
 		return -1;
 	}
