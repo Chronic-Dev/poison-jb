@@ -177,6 +177,9 @@ irecv_error_t irecv_get_cpid(irecv_client_t client, unsigned int* cpid);
 irecv_error_t irecv_get_bdid(irecv_client_t client, unsigned int* bdid);
 irecv_error_t irecv_get_ecid(irecv_client_t client, unsigned long long* ecid);
 
+void irecv_init();
+void irecv_exit();
+irecv_client_t irecv_reconnect(irecv_client_t client);
 irecv_error_t irecv_reset_counters(irecv_client_t client);
 irecv_error_t irecv_finish_transfer(irecv_client_t client);
 irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned long length);

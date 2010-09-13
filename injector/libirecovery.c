@@ -33,6 +33,17 @@ static libusb_context* libirecovery_context = NULL;
 int irecv_write_file(const char* filename, const void* data, size_t size);
 int irecv_read_file(const char* filename, char** data, uint32_t* size);
 
+void irecv_init() {
+	libusb_init(&libirecovery_context);
+}
+
+void irecv_exit() {
+	if (libirecovery_context != NULL) {
+		libusb_exit(libirecovery_context);
+		libirecovery_context = NULL;
+	}
+}
+
 irecv_error_t irecv_open(irecv_client_t* pclient) {
 	int i = 0;
 	struct libusb_device* usb_device = NULL;
@@ -41,7 +52,6 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 	struct libusb_device_descriptor usb_descriptor;
 
 	*pclient = NULL;
-	libusb_init(&libirecovery_context);
 	if(libirecovery_debug) {
 		irecv_set_debug_level(libirecovery_debug);
 	}
@@ -81,7 +91,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				client->interface = 0;
 				client->handle = usb_handle;
 				client->mode = usb_descriptor.idProduct;
-
+/*
 				error = irecv_set_configuration(client, 1);
 				if (error != IRECV_E_SUCCESS) {
 					return error;
@@ -91,7 +101,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				if (error != IRECV_E_SUCCESS) {
 					return error;
 				}
-
+*/
 				/* cache usb serial */
 				libusb_get_string_descriptor_ascii(client->handle, usb_descriptor.iSerialNumber, (unsigned char*) client->serial, 255);
 
@@ -228,14 +238,9 @@ irecv_error_t irecv_close(irecv_client_t client) {
 		}
 
 		if (client->handle != NULL) {
-			libusb_release_interface(client->handle, client->interface);
+			//libusb_release_interface(client->handle, client->interface);
 			libusb_close(client->handle);
 			client->handle = NULL;
-		}
-
-		if (libirecovery_context != NULL) {
-			libusb_exit(libirecovery_context);
-			libirecovery_context = NULL;
 		}
 
 		free(client);
@@ -868,4 +873,20 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 
 	*device = &irecv_devices[device_id];
 	return IRECV_E_SUCCESS;
+}
+
+irecv_client_t irecv_reconnect(irecv_client_t client) {
+	irecv_error_t error = 0;
+	irecv_client_t new_client = NULL;
+
+	if(client->handle) {
+		irecv_close(client);
+	}
+
+	error = irecv_open(&new_client);
+	if(error != IRECV_E_SUCCESS) {
+		return NULL;
+	}
+
+	return new_client;
 }

