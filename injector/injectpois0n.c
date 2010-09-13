@@ -86,6 +86,13 @@ int overwrite_sha1_registers() {
 		error("Unable to overwrite SHA1 registers\n");
 		return -1;
 	}
+	
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
 
 	return 0;
 }
@@ -133,6 +140,13 @@ int upload_exploit_data() {
 	debug("Forcing prefetch abort exception\n");
 	if(receive_data(0x2C000)) {
 		error("Unable to force prefetch abort exception\n");
+		return -1;
+	}
+	
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
 		return -1;
 	}
 
@@ -209,14 +223,14 @@ int main(int argc, char* argv[]) {
 		irecv_close(client);
 		return -1;
 	}
-
+	
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit_data()) {
 		error("Unable to upload exploit data\n");
 		irecv_close(client);
 		return -1;
 	}
-
+	
 	debug("Preparing to send iBSS to device\n");
 	if(upload_ibss_data()) {
 		return -1;

@@ -91,17 +91,18 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				client->interface = 0;
 				client->handle = usb_handle;
 				client->mode = usb_descriptor.idProduct;
-/*
-				error = irecv_set_configuration(client, 1);
-				if (error != IRECV_E_SUCCESS) {
-					return error;
+				if (client->mode != kDfuMode) {
+					error = irecv_set_configuration(client, 1);
+					if (error != IRECV_E_SUCCESS) {
+						return error;
+					}
+
+					error = irecv_set_interface(client, 0, 0);
+					if (error != IRECV_E_SUCCESS) {
+						return error;
+					}
 				}
 
-				error = irecv_set_interface(client, 0, 0);
-				if (error != IRECV_E_SUCCESS) {
-					return error;
-				}
-*/
 				/* cache usb serial */
 				libusb_get_string_descriptor_ascii(client->handle, usb_descriptor.iSerialNumber, (unsigned char*) client->serial, 255);
 
@@ -234,11 +235,13 @@ irecv_error_t irecv_close(irecv_client_t client) {
 			event.data = NULL;
 			event.progress = 0;
 			event.type = IRECV_DISCONNECTED;
-			//client->disconnected_callback(client, &event);
+			client->disconnected_callback(client, &event);
 		}
 
 		if (client->handle != NULL) {
-			//libusb_release_interface(client->handle, client->interface);
+			if (client->mode != kDfuMode) {
+				libusb_release_interface(client->handle, client->interface);
+			}
 			libusb_close(client->handle);
 			client->handle = NULL;
 		}
@@ -383,6 +386,8 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	int packets = length / packet_size;
 	if (last != 0) {
 		packets++;
+	} else {
+		last = packet_size;
 	}
 
 	/* initiate transfer */
@@ -748,6 +753,8 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	int packets = length / packet_size;
 	if (last != 0) {
 		packets++;
+	} else {
+		last = packet_size;
 	}
 
 	int i = 0;
@@ -756,7 +763,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	unsigned long count = 0;
 	unsigned int status = 0;
 	for (i = 0; i < packets; i++) {
-		unsigned short size = (i + 1) < packets ? packet_size : last;
+		unsigned short size = (i+1) < packets ? packet_size : last;
 
 		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, &buffer[i * packet_size], size, 1000);
 
@@ -882,6 +889,8 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 	if(client->handle) {
 		irecv_close(client);
 	}
+
+	sleep(2); // let the time for the device to come up
 
 	error = irecv_open(&new_client);
 	if(error != IRECV_E_SUCCESS) {
