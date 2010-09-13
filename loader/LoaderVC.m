@@ -29,10 +29,6 @@
 	_myHud = [[UIProgressHUD alloc] initWithWindow:[[UIApplication sharedApplication] keyWindow]];
 	[self addHUDWithText:@"Loading Sources"];
 	
-	UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"About" style:UIBarButtonItemStyleBordered target:self action:@selector(showAbout:)];
-	self.navigationItem.leftBarButtonItem = item;
-	[item release];
-	
 	// Loading Sources
 	Callback *c = [[Callback alloc] initWithTarget:self action:@selector(updatedSources:) object:nil];
 	MemLoaderOperation *o = [[MemLoaderOperation alloc] init];
@@ -42,12 +38,6 @@
 	[_queue addOperation:o];
 	[o release];
 	[c release];
-}
-
-- (void)showAbout:(id)a {
-	UIAlertView *_ = [[UIAlertView alloc] initWithTitle:@"About Loader" message:@"Copyright (C) 2010 Nicolas Haunold\nuicache (C) 2008-2010 Jay Freeman (saurik)" delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
-	[_ show];
-	[_ release];
 }
 
 // -------
@@ -88,8 +78,8 @@
 		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
 	}
 	
-
-	cell.imageView.image = [UIImage imageNamed:[[[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:indexPath.row] objectForKey:@"Icon"]];
+	UIImage *img = [[[UIImage alloc] initWithContentsOfFile:[NSString stringWithFormat:@"/Applications/Loader.app/%@", [[[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:indexPath.row] objectForKey:@"Icon"]]] autorelease];
+	cell.imageView.image = img;
 	cell.textLabel.text = [[[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:indexPath.row] objectForKey:@"Name"];
 	cell.detailTextLabel.text = [[[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:indexPath.row] objectForKey:@"Description"];
 	
@@ -108,7 +98,7 @@
 		[form setDateStyle:NSDateFormatterMediumStyle];
 		[form setTimeStyle:NSDateFormatterShortStyle];
 	
-		return [NSString stringWithFormat:@"Last Update: %@\nVersion %@", [form stringFromDate:date], [_sourceDict objectForKey:@"Version"]];
+		return [NSString stringWithFormat:@"%@\nLast Update: %@\nVersion %@", [_sourceDict objectForKey:@"Message"], [form stringFromDate:date], [_sourceDict objectForKey:@"Version"]];
 	}
 	
 	return nil;
