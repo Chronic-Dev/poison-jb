@@ -10,8 +10,8 @@ else
 endif
 
 all:
-	$(CC) -o injectpois0n injectpois0n.c libirecovery.c common.c download.c partial.c SHAtter.c $(CFLAGS) $(LDFLAGS)
-	mv injectpois0n ../staging/injectpois0n
+	$(CC) -o injectpois0n injectpois0n.c libirecovery.c partial.c $(CFLAGS) $(LDFLAGS)
+	cp injectpois0n ../staging/injectpois0n
 		
 clean:
 	rm -rf *.o ../staging/injectpois0n

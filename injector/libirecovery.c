@@ -33,6 +33,17 @@ static libusb_context* libirecovery_context = NULL;
 int irecv_write_file(const char* filename, const void* data, size_t size);
 int irecv_read_file(const char* filename, char** data, uint32_t* size);
 
+void irecv_init() {
+	libusb_init(&libirecovery_context);
+}
+
+void irecv_exit() {
+	if (libirecovery_context != NULL) {
+		libusb_exit(libirecovery_context);
+		libirecovery_context = NULL;
+	}
+}
+
 irecv_error_t irecv_open(irecv_client_t* pclient) {
 	int i = 0;
 	struct libusb_device* usb_device = NULL;
@@ -41,7 +52,6 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 	struct libusb_device_descriptor usb_descriptor;
 
 	*pclient = NULL;
-	libusb_init(&libirecovery_context);
 	if(libirecovery_debug) {
 		irecv_set_debug_level(libirecovery_debug);
 	}
@@ -81,15 +91,16 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				client->interface = 0;
 				client->handle = usb_handle;
 				client->mode = usb_descriptor.idProduct;
+				if (client->mode != kDfuMode) {
+					error = irecv_set_configuration(client, 1);
+					if (error != IRECV_E_SUCCESS) {
+						return error;
+					}
 
-				error = irecv_set_configuration(client, 1);
-				if (error != IRECV_E_SUCCESS) {
-					return error;
-				}
-
-				error = irecv_set_interface(client, 0, 0);
-				if (error != IRECV_E_SUCCESS) {
-					return error;
+					error = irecv_set_interface(client, 0, 0);
+					if (error != IRECV_E_SUCCESS) {
+						return error;
+					}
 				}
 
 				/* cache usb serial */
@@ -228,14 +239,11 @@ irecv_error_t irecv_close(irecv_client_t client) {
 		}
 
 		if (client->handle != NULL) {
-			libusb_release_interface(client->handle, client->interface);
+			if (client->mode != kDfuMode) {
+				libusb_release_interface(client->handle, client->interface);
+			}
 			libusb_close(client->handle);
 			client->handle = NULL;
-		}
-
-		if (libirecovery_context != NULL) {
-			libusb_exit(libirecovery_context);
-			libirecovery_context = NULL;
 		}
 
 		free(client);
@@ -378,6 +386,8 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	int packets = length / packet_size;
 	if (last != 0) {
 		packets++;
+	} else {
+		last = packet_size;
 	}
 
 	/* initiate transfer */
@@ -726,11 +736,11 @@ irecv_error_t irecv_reset_counters(irecv_client_t client) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	libusb_control_transfer(client->handle, 0xA1, 4, 0, 0, 0, 0, 1000) ;
+	libusb_control_transfer(client->handle, 0x21, 4, 0, 0, 0, 0, 1000);
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t irecv_recv_buffer(irecv_client_t client, char** buffer, unsigned long length) {
+irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned long length) {
 	irecv_error_t error = 0;
 	int recovery_mode = (client->mode != kDfuMode);
 
@@ -743,6 +753,8 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char** buffer, unsigned l
 	int packets = length / packet_size;
 	if (last != 0) {
 		packets++;
+	} else {
+		last = packet_size;
 	}
 
 	int i = 0;
@@ -751,32 +763,11 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char** buffer, unsigned l
 	unsigned long count = 0;
 	unsigned int status = 0;
 	for (i = 0; i < packets; i++) {
-		int size = (i + 1) < packets ? packet_size : last;
+		unsigned short size = (i+1) < packets ? packet_size : last;
 
-		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
-//#ifndef __APPLE__
-//		if (recovery_mode) {
-//			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
-//		} else {
-//			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
-//		}
-//#else
-		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, (unsigned char*) buffer[i * packet_size], size, 1000);
-//#endif
+		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, &buffer[i * packet_size], size, 1000);
 
 		if (bytes != size) {
-			return IRECV_E_USB_UPLOAD;
-		}
-
-		if (!recovery_mode) {
-			error = irecv_get_status(client, &status);
-		}
-
-		if (error != IRECV_E_SUCCESS) {
-			return error;
-		}
-
-		if (!recovery_mode && status != 5) {
 			return IRECV_E_USB_UPLOAD;
 		}
 
@@ -805,4 +796,106 @@ irecv_error_t irecv_finish_transfer(irecv_client_t client) {
 	}
 	irecv_reset(client);
 	return IRECV_E_SUCCESS;
+}
+
+irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
+	int device_id = DEVICE_UNKNOWN;
+	uint32_t bdid = 0;
+	uint32_t cpid = 0;
+
+	if (irecv_get_cpid(client, &cpid) < 0) {
+		return IRECV_E_UNKNOWN_ERROR;
+	}
+
+	switch (cpid) {
+	case CPID_IPHONE2G:
+		// iPhone1,1 iPhone1,2 and iPod1,1 all share the same ChipID
+		//   so we need to check the BoardID
+		if (irecv_get_bdid(client, &bdid) < 0) {
+			break;
+		}
+
+		switch (bdid) {
+		case BDID_IPHONE2G:
+			device_id = DEVICE_IPHONE2G;
+			break;
+
+		case BDID_IPHONE3G:
+			device_id = DEVICE_IPHONE3G;
+			break;
+
+		case BDID_IPOD1G:
+			device_id = DEVICE_IPOD1G;
+			break;
+
+		default:
+			device_id = DEVICE_UNKNOWN;
+			break;
+		}
+		break;
+
+	case CPID_IPHONE3GS:
+		device_id = DEVICE_IPHONE3GS;
+		break;
+
+	case CPID_IPOD2G:
+		device_id = DEVICE_IPOD2G;
+		break;
+
+	case CPID_IPOD3G:
+		device_id = DEVICE_IPOD3G;
+		break;
+
+	case CPID_IPAD1G:
+		// iPhone3,1 iPad4,1 and iPad1,1 all share the same ChipID
+		//   so we need to check the BoardID
+		if (irecv_get_bdid(client, &bdid) < 0) {
+			break;
+		}
+
+
+		switch (bdid) {
+		case BDID_IPAD1G:
+			device_id = DEVICE_IPAD1G;
+			break;
+
+		case BDID_IPHONE4:
+			device_id = DEVICE_IPHONE4;
+			break;
+
+		case BDID_IPOD4G:
+			device_id = DEVICE_IPOD4G;
+			break;
+
+		default:
+			device_id = DEVICE_UNKNOWN;
+			break;
+		}
+		break;
+
+	default:
+		device_id = DEVICE_UNKNOWN;
+		break;
+	}
+
+	*device = &irecv_devices[device_id];
+	return IRECV_E_SUCCESS;
+}
+
+irecv_client_t irecv_reconnect(irecv_client_t client) {
+	irecv_error_t error = 0;
+	irecv_client_t new_client = NULL;
+
+	if(client->handle) {
+		irecv_close(client);
+	}
+
+	sleep(2); // let the time for the device to come up
+
+	error = irecv_open(&new_client);
+	if(error != IRECV_E_SUCCESS) {
+		return NULL;
+	}
+
+	return new_client;
 }
