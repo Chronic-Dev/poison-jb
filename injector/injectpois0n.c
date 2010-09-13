@@ -240,9 +240,9 @@ int main(int argc, char* argv[]) {
 	}
 	info("Identified device as %s\n", device->product);
 
-	debug("Checking to make sure this is a compatiable device\n");
+	debug("Checking to make sure this is a compatible device\n");
 	if (device->chip_id != 8930) {
-		error("Sorry this device is not compatiable for this jailbreak");
+		error("Sorry this device is not compatible for this jailbreak");
 		quit();
 		return -1;
 	}

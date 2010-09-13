@@ -44,6 +44,24 @@ void irecv_exit() {
 	}
 }
 
+irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
+	int i;
+
+	for (i = 0; i <= attempts; i++) {
+		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
+			debug("Connection failed. Waiting 1 sec before retry.");
+			sleep(1);
+		} else {
+			break;
+		}
+
+		if (i == attempts) {
+			return IRECV_E_UNABLE_TO_CONNECT;
+		}
+	}
+	return IRECV_E_SUCCESS;
+}
+
 irecv_error_t irecv_open(irecv_client_t* pclient) {
 	int i = 0;
 	struct libusb_device* usb_device = NULL;
@@ -893,7 +911,7 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 
 	sleep(2); // let the time for the device to come up
 
-	error = irecv_open(&new_client);
+	error = irecv_open_attempts(&new_client, 10);
 	if(error != IRECV_E_SUCCESS) {
 		return NULL;
 	}
