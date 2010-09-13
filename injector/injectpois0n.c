@@ -167,7 +167,23 @@ int upload_ibss_data() {
 		return -1;
 	}
 
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+	
 	return 0;
+}
+
+int upload_payload_data() {
+	return 0;
+}
+
+quit() {
+	irecv_close(client);
+	irecv_exit();
 }
 
 int main(int argc, char* argv[]) {
@@ -187,7 +203,7 @@ int main(int argc, char* argv[]) {
 	debug("Checking the device mode\n");
 	if (client->mode != kDfuMode) {
 		error("Device must be in DFU mode to continue\n");
-		irecv_close(client);
+		quit();
 		return -1;
 	}
 
@@ -196,6 +212,7 @@ int main(int argc, char* argv[]) {
 	error = irecv_get_device(client, &device);
 	if (device == NULL || device->index == DEVICE_UNKNOWN) {
 		error("ERROR: Unable to discover device type\n");
+		quit();
 		return -1;
 	}
 	info("Identified device as %s\n", device->product);
@@ -203,38 +220,46 @@ int main(int argc, char* argv[]) {
 	debug("Checking to make sure this is a compatiable device\n");
 	if (device->chip_id != 8930) {
 		error("Sorry this device is not compatiable for this jailbreak");
-		irecv_close(client);
+		quit();
 		return -1;
 	}
 
 	debug("Attempting to fetch iBSS from Apple's servers\n");
 	if(fetch_ibss() < 0) {
 		error("Unable to fetch iBSS from Apple's servers\n");
-		irecv_close(client);
+		quit();
 		return -1;
 	}
 
 	debug("Preparing to overwrite SHA1 registers\n");
 	if(overwrite_sha1_registers() < 0) {
 		error("Unable to overwrite SHA1 registers\n");
-		irecv_close(client);
+		quit();
 		return -1;
 	}
 	
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit_data()) {
 		error("Unable to upload exploit data\n");
-		irecv_close(client);
+		quit();
 		return -1;
 	}
 	
 	debug("Preparing to send iBSS to device\n");
 	if(upload_ibss_data()) {
+		error("Unable to upload iBSS\n");
+		quit();
+		return -1;
+	}
+
+	debug("Preparing to send payload to device\n");
+	if(upload_payload_data()) {
+		error("Unable to upload payload\n");
+		quit();
 		return -1;
 	}
 
 	debug("Disconnecting from device\n");
-	irecv_close(client);
-	irecv_exit();
+	quit();
 	return 0;
 }
