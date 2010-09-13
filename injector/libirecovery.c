@@ -224,7 +224,7 @@ irecv_error_t irecv_close(irecv_client_t client) {
 			event.data = NULL;
 			event.progress = 0;
 			event.type = IRECV_DISCONNECTED;
-			client->disconnected_callback(client, &event);
+			//client->disconnected_callback(client, &event);
 		}
 
 		if (client->handle != NULL) {
@@ -726,7 +726,7 @@ irecv_error_t irecv_reset_counters(irecv_client_t client) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	libusb_control_transfer(client->handle, 0xA1, 4, 0, 0, 0, 0, 1000) ;
+	libusb_control_transfer(client->handle, 0x21, 4, 0, 0, 0, 0, 1000);
 	return IRECV_E_SUCCESS;
 }
 
@@ -753,21 +753,9 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	for (i = 0; i < packets; i++) {
 		unsigned short size = (i + 1) < packets ? packet_size : last;
 
-		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, buffer[i * packet_size], size, 1000);
+		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, &buffer[i * packet_size], size, 1000);
 
 		if (bytes != size) {
-			return IRECV_E_USB_UPLOAD;
-		}
-
-		if (!recovery_mode) {
-			error = irecv_get_status(client, &status);
-		}
-
-		if (error != IRECV_E_SUCCESS) {
-			return error;
-		}
-
-		if (!recovery_mode && status != 5) {
 			return IRECV_E_USB_UPLOAD;
 		}
 
