@@ -2,12 +2,12 @@ CROSS ?= arm-elf-
 CC = $(CROSS)gcc
 LD = $(CROSS)ld
 SRC = ../../../..
-LOADADDR = 0x41000000
+LOADADDR = 0x40000000
 OUTPUT = iBSS.n81ap
 OBJCOPY = $(CROSS)objcopy
 OBJECTS = entry.o main.o common.o commands.o task.o lock.o aes.o bdev.o image.o nvram.o filesystem.o kernel.o lzss.o
-CFLAGS = -I. -I./.. -I./../.. -I./$(SRC)/include -nostdlib -mlittle-endian -mthumb-interwork
-LDFLAGS = -Ttext=$(LOADADDR) -mthumb-interwork -nostdlib -lc -lm -lgcc
+CFLAGS = -I. -I./.. -I./../.. -I./$(SRC)/include -nostdlib -mlittle-endian -mthumb-interwork -fPIC
+LDFLAGS = -Ttext=$(LOADADDR) -fPIC -mthumb-interwork -nostdlib -lc -lm -lgcc
 
 %.o: $(SRC)/%.S
 	$(CC) -c $(<) -o $(@) $(INCLUDES) $(CFLAGS) 

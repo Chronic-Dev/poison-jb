@@ -20,8 +20,8 @@
 .arm
 .ltorg
 .code 32
-_start:
 .global _start
+_start:
 	b		reset
 	ldr		pc, undefined_vector
 	ldr		pc, syscall_vector
@@ -43,8 +43,32 @@ fiq_vector:  .word halt
 .code 32
 reset:
 	stmfd  sp!, {r0-r12,lr}
-	bl main
+	mov    r0, pc
+	lsr    r0, #24
+	cmp    r0, #0x41
+	bne    go
+
+relocate:
+	ldr    r0, =0x84020864
+	mov    r1, #0x40000000
+	str    r1, [r0]
+	mov    r0, #0x41000000
+	mov    r1, #0x40000000
+	mov    r2, #0x0
+
+loop:
+	cmp    r2, #0x100000
+	beq    go
+	ldr    r3, [r0,r2]
+	str    r3, [r1,r2]
+	add    r2, #4
+	b      loop
+
+go:
+	bl     main
 	ldmfd  sp!, {r0-r12,pc}
 
 halt:
-	b  halt
+	b      halt
+
+message; .asciz "relocating payload\n"
