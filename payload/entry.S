@@ -70,5 +70,3 @@ go:
 
 halt:
 	b      halt
-
-message; .asciz "relocating payload\n"
