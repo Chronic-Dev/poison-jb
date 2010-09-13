@@ -323,7 +323,7 @@ irecv_error_t irecv_send_command(irecv_client_t client, char* command) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t irecv_send_file(irecv_client_t client, const char* filename) {
+irecv_error_t irecv_send_file(irecv_client_t client, const char* filename, int dfuNotifyFinished) {
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
@@ -351,7 +351,7 @@ irecv_error_t irecv_send_file(irecv_client_t client, const char* filename) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 
-	irecv_error_t error = irecv_send_buffer(client, buffer, length);
+	irecv_error_t error = irecv_send_buffer(client, buffer, length, dfuNotifyFinished);
 	free(buffer);
 	return error;
 }
@@ -373,7 +373,7 @@ irecv_error_t irecv_get_status(irecv_client_t client, unsigned int* status) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length) {
+irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length, int dfuNotifyFinished) {
 	irecv_error_t error = 0;
 	int recovery_mode = (client->mode != kDfuMode);
 
@@ -447,7 +447,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		}
 	}
 
-	if (!recovery_mode) {
+	if (dfuNotifyFinished && !recovery_mode) {
 		libusb_control_transfer(client->handle, 0x21, 1, 0, 0, (unsigned char*) buffer, 0, 1000);
 		for (i = 0; i < 3; i++) {
 			error = irecv_get_status(client, &status);
@@ -455,6 +455,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 				return error;
 			}
 		}
+		irecv_reset(client);
 	}
 
 	return IRECV_E_SUCCESS;

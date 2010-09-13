@@ -131,7 +131,7 @@ int upload_exploit_data() {
 	}
 
 	debug("Sending exploit data\n");
-	error = irecv_send_file(client, "exploit.dfu");
+	error = irecv_send_file(client, "exploit.dfu", 0);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to send exploit data\n");
 		return -1;
@@ -162,9 +162,10 @@ int upload_ibss_data() {
 		error("%s\n", irecv_strerror(error));
 		return -1;
 	}
+
 	return 0;
 
-	error = irecv_send_file(client, "image.bin");
+	error = irecv_send_file(client, "image.bin", 1);
 	if(error != IRECV_E_SUCCESS) {
 		error("%s\n", irecv_strerror(error));
 		return -1;
