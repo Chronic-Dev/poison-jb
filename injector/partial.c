@@ -44,9 +44,11 @@ int download_file_from_zip(const char* url, const char* path, const char* output
 
 	if(fwrite(data, 1, size, fd) != size) {
 		printf("Unable to write entire file to output\n");
+		fclose(fd);
 		return -1;
 	}
 
+	fclose(fd);
 	PartialZipRelease(info);
 	free(data);
 	return 0;

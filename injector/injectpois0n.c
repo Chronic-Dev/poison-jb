@@ -79,8 +79,6 @@ int overwrite_sha1_registers() {
 		return -1;
 	}
 
-	// send 0x800 bytes of data?
-
 	debug("Overwriting SHA1 registers\n");
 	if(receive_data(0x2C000)) {
 		error("Unable to overwrite SHA1 registers\n");
@@ -162,8 +160,6 @@ int upload_ibss_data() {
 		error("%s\n", irecv_strerror(error));
 		return -1;
 	}
-
-	return 0;
 
 	error = irecv_send_file(client, "image.bin", 1);
 	if(error != IRECV_E_SUCCESS) {
