@@ -1,4 +1,5 @@
 all:
+	mkdir -p staging
 	make -C exploit
 	make -C payload
 	make -C ramdisk
@@ -12,4 +13,4 @@ clean:
 	make clean -C ramdisk
 	make clean -C injector
 	make clean -C interface
-	rm -rf staging/*
+	rm -rf staging
