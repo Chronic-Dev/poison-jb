@@ -734,9 +734,6 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	irecv_error_t error = 0;
 	int recovery_mode = (client->mode != kDfuMode);
 
-	unsigned char data[0x800];
-	memset(data, '\0', 0x800);
-
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
@@ -756,17 +753,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	for (i = 0; i < packets; i++) {
 		unsigned short size = (i + 1) < packets ? packet_size : last;
 
-		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
-//#ifndef __APPLE__
-//		if (recovery_mode) {
-//			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
-//		} else {
-//			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
-//		}
-//#else
-		//bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, data, shift, 100);
-		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, data, size, 100);
-//#endif
+		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, buffer[i * packet_size], size, 1000);
 
 		if (bytes != size) {
 			return IRECV_E_USB_UPLOAD;
