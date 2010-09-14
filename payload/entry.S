@@ -19,86 +19,94 @@
 
 #include "offsets.h"
 
-.set FP_BGCOLOR_1,			0xaf00b580	@ search: PUSH {R7,LR} @ ADD R7, SP, #0
-.set FP_BGCOLOR_2,			0x460b2804	@ search: CMP R0, #4 @ MOV R3, R1
-.set PATCH_BGCOLOR_1,		0x47184b00	@ _patch: LDR R3, =0x41000000 @ BX R3
-.set PATCH_BGCOLOR_2,		0x40000000	@ _patch: 0x40000000
-
 .arm
 .ltorg
 .code 32
 .global _start
 _start:
 	b		reset
-	ldr		pc, undefined_vector
-	ldr		pc, syscall_vector
-	ldr		pc, prefetch_abort_vector
-	ldr		pc, data_abort_vector
-	ldr		pc, reserved_vector
-	ldr		pc, irq_vector
-	ldr		pc, fiq_vector
+	ldr	pc,	undefined_vector
+	ldr	pc,	syscall_vector
+	ldr	pc,	prefetch_abort_vector
+	ldr	pc,	data_abort_vector
+	ldr	pc,	reserved_vector
+	ldr	pc,	irq_vector
+	ldr	pc,	fiq_vector
 
-reset_vector:.word reset
-undefined_vector:.word halt
-syscall_vector:  .word halt
-prefetch_abort_vector:   .word halt
-data_abort_vector:   .word halt
-reserved_vector: .word halt
-irq_vector:  .word halt
-fiq_vector:  .word halt
+reset_vector:		.word reset
+undefined_vector:	.word halt
+syscall_vector:		.word halt
+prefetch_abort_vector:	.word halt
+data_abort_vector:	.word halt
+reserved_vector:	.word halt
+irq_vector:		.word halt
+fiq_vector:		.word halt
+
+.pool
+@ iPhone3,1, iPod4,1 - 4.0.x & 4.1
+.set	FP_BGCOLOR_1,		0xaf00b580	@ search: PUSH {R7,LR} @ ADD R7, SP, #0
+.set	FP_BGCOLOR_2,		0x460b2804	@ search: CMP R0, #4 @ MOV R3, R1
+@ iPad1,1 3.2.x:
+.set    FP_BGCOLOR2_1,		0xaf01b590      @ search: PUSH {R4,R7,LR} @ ADD R7, SP, #4
+.set    FP_BGCOLOR2_2,		0x460c2804      @ search: CMP R0, #4 @ MOV R4, R1
+.set	PATCH_BGCOLOR_1,	0x47184b00	@ _patch: LDR R3, =0x40000000 @ BX R3
+.set	PATCH_BGCOLOR_2,	0x40000000	@ _patch: 0x40000000
 
 .code 32
+@---------------------------------------------
 reset:
-	stmfd  sp!, {r0-r12,lr}
-	;mov    r4, pc
-	;lsr    r4, #24
-	;cmp    r4, #0x40
-	;beq    go
-	b       go
+	stmfd	sp!, {r0-r12,lr}
+	mov	r0, pc
+	lsr	r0, #24
+	cmp	r0, #0x40
+	beq	relocated
 
-relocate:
-	;bl     patch_bgcolor
-	;ldr    r4, =0x84020864
-	;ldr    r5, =0x40000000
-	str    r5, [r4]
-	mov    r4, #0x41000000
-	mov    r5, #0x40000000
-	mov    r6, #0x0
+	bl	patch_bgcolor
+	bl	relocate
+	bl	clear_icache
+	bl	flush_dcache
+	mov	r0, #0x40000000	@ recursive call the relocated reset()
+	blx	r0
+	b	done
 
-relocate_loop:
-	cmp    r6, #0x100000
-	beq    done
-	ldr    r7, [r4,r6]
-	str    r7, [r5,r6]
-	add    r6, #4
-	b      relocate_loop
-
-go:
+relocated:
 	bl     main
-
 done:
 	ldmfd  sp!, {r0-r12,pc}
 
 halt:
 	b      halt
 
-patch_bgcolor:
-	stmfd  sp!, {r0-r12,lr}
-	ldr    r0, =FP_BGCOLOR_1
-	ldr    r1, =TARGET_BASEADDR
-	mov    r2, r5
-	ldr    r3, =FP_BGCOLOR_2
-	bl     find
-	cmp    r0, #0
-	bne    halt
-	ldr    r1, =PATCH_BGCOLOR_1
-	str    r1, [r0]
-	ldr    r1, =PATCH_BGCOLOR_2
-	str    r1, [r0, #4]
-	ldmfd  sp!, {r0-r12,pc}
+@---------------------------------------------
+relocate:
+	mov	r0, #0x41000000
+	mov	r1, #0x40000000
+	mov	r2, #0x100000
+relocate_loop:
+	ldr	r3, [r0], #4
+	subs	r2, r2, #4
+	str	r3, [r1], #4
+	bne	relocate_loop
+	bx	lr
 
+@---------------------------------------------
+patch_bgcolor:
+	ldr	r0, =FP_BGCOLOR_1
+	ldr	r1, =TARGET_BASEADDR
+	mov	r2, #0x100000		@ search area
+	ldr	r3, =FP_BGCOLOR_2
+	bl	find
+	cmp	r0, #0
+	bne	halt
+	ldr	r1, =PATCH_BGCOLOR_1
+	str	r1, [r0]
+	ldr	r1, =PATCH_BGCOLOR_2
+	str	r1, [r0, #4]
+	bx	lr
+
+@---------------------------------------------
 find:
-	stmfd  sp!, {r1-r12,lr}
+	stmfd  sp!, {r4,lr}
 
 find_loop:
 	ldr    r4, [r1]
@@ -118,23 +126,22 @@ find_loop_continue:
 	mov    r1, #0
 
 find_return:
-	mov	   r0, r1
-	ldmfd  sp!, {r1-r12,pc}
+	mov	r0, r1
+	ldmfd 	sp!, {r4,pc}
 
-clear_dcache:
-    mov r2, #0x2000
+@---------------------------------------------
+clear_icache:
+	mov	r0, #0
+	mcr	p15, 0, r0, c7, c5
+	nop
+	nop
+	nop
+	nop
+	bx	lr
 
-outside:
-    sub r2, r2, #0x40
-    mov r1, #0
+@---------------------------------------------
+flush_dcache:
+	mrc	p15, 0, r0, c1, c0, 1
+	bx	lr
+@---------------------------------------------
 
-inside:
-    subs r1, r1, #0x40000000
-    orr r0, r1, r2
-    mcr p15, 0, r0, c7, c10, 2
-    bne inside
-    cmp r2, #0
-    bne outside
-    mov r0, #0
-    mcr p15, 0, r0, c7, c10, 4
-    bx lr
