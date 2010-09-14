@@ -92,8 +92,8 @@ relocate_loop:
 @---------------------------------------------
 patch_bgcolor:
 	ldr	r0, =FP_BGCOLOR_1
-	ldr	r1, =TARGET_BASEADDR
-	mov	r2, #0x100000		@ search area
+	mov	r1, #0x41000000
+	mov	r2, #0x00100000		@ search area
 	ldr	r3, =FP_BGCOLOR_2
 	bl	find
 	cmp	r0, #0
