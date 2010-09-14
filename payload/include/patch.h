@@ -29,6 +29,6 @@ int patch_init();
 int patch_cmd(int argc, CmdArg* argv);
 int patch_kernel(void* address, int size);
 int patch_firmware(unsigned char* address, int size);
-void* patch_find(unsigned char* start, int length, const unsigned char find[], int size);
+unsigned char* patch_find(unsigned char* start, int length, const unsigned char find[], int size);
 
 #endif /* TASK_H */
