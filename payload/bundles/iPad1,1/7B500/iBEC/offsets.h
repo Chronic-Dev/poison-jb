@@ -36,7 +36,7 @@
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0xDE1C+1)
-#define TARGET_TASK_RUNNING               (0x1B164)
+#define TARGET_TASK_RUNNING               (0x19714)
 #define TARGET_TASK_LIST                  (0x197AC)
 
 // AES offsets
