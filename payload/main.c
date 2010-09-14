@@ -25,6 +25,7 @@
 #include "bdev.h"
 #include "nvram.h"
 #include "image.h"
+#include "patch.h"
 #include "common.h"
 #include "commands.h"
 #include "filesystem.h"
@@ -32,8 +33,8 @@
 Bool gGpHasInit = FALSE;
 
 int gp_init() {
-	printf("gp_init entered\n");
 	if(cmd_init()) return -1;
+	if(patch_init()) return -1;
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
 #endif
@@ -55,13 +56,12 @@ int gp_init() {
 }
 
 int main(int argc, CmdArg* argv) {
-	/*
-	printf("main entered\n");
 	if(!gGpHasInit) {
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;
 		}
+		printf("Greenpois0n initialized\n");
 	}
 
 	if(argc > 1) {
@@ -76,7 +76,6 @@ int main(int argc, CmdArg* argv) {
 		printf("Command Not Found\n\n");
 		return -1;
 	}
-	*/
 
 	return 0;
 }

@@ -5,7 +5,7 @@ SRC = ../../../..
 LOADADDR = 0x41000000 
 OUTPUT = iBoot.n81ap
 OBJCOPY = $(CROSS)objcopy
-OBJECTS = entry.o main.o common.o commands.o task.o lock.o aes.o bdev.o image.o nvram.o filesystem.o kernel.o lzss.o
+OBJECTS = entry.o main.o common.o commands.o task.o lock.o aes.o bdev.o image.o nvram.o filesystem.o kernel.o lzss.o patch.o
 CFLAGS = -I. -I./.. -I./../.. -I./$(SRC)/include -nostdlib -mlittle-endian -mthumb-interwork
 LDFLAGS = -Ttext=$(LOADADDR) -mthumb-interwork -nostdlib -lc -lm -lgcc
 

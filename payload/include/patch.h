@@ -21,19 +21,14 @@
 #define PATCH_H
 
 #include "common.h"
+#include "commands.h"
 #include "device.h"
 #include "offsets.h"
 
-const unsigned char patch_cert_seq[] = "\x1a\x78\xff\x2a\x4f\xf0\xff\x30";
-const unsigned char patch_cert[] = "\x00\x20\x00\x20";
-
-const unsigned char patch_perm_seq[] = "\xf3\xdf\x90\xb5\x07\x4b\x1b\x68";
-const unsigned char patch_perm[] = "\x4f\xf0\xff\x33";
-
-const unsigned char patch_tags_seq[] = "\x11\x9a\xd3\xf1\x18\xbf\x01\x20";
-const unsigned char patch_tags[] = "\x00\x20\x00\x20";
-
-const unsigned char patch_cmd_seq[] = "\x80\xb5\x00\xaf\x04\x28\x0b\x46";
-const unsigned char patch_cmd[] = "\x00\x4b\x18\x47\x00\x00\x00\x41";
+int patch_init();
+int patch_cmd(int argc, CmdArg* argv);
+int patch_kernel(void* address, int size);
+int patch_firmware(unsigned char* address, int size);
+void* patch_find(unsigned char* start, int length, const unsigned char find[], int size);
 
 #endif /* TASK_H */
