@@ -51,29 +51,35 @@ fiq_vector:		.word halt
 .code 32
 @---------------------------------------------
 reset:
-	stmfd	sp!, {r0-r12,lr}
+	push	{r0-r12, lr}
 	mov	r0, pc
 	lsr	r0, #24
 	cmp	r0, #0x40
 	beq	relocated
-
+	
 	bl	patch_bgcolor
 	bl	relocate
 	bl	clear_icache
 	bl	flush_dcache
-	mov	r0, #0x40000000	@ recursive call the relocated reset()
+
+	mov	r0, #0x40000000
 	blx	r0
 	b	done
 
 relocated:
-	bl     main
+	ldr	r0, [sp, #0x0]
+	ldr	r1, [sp, #0x4]
+	ldr	r2, [sp, #0x8]
+	ldr	r3, [sp, #0xc]
+	bl	main
 done:
-	ldmfd  sp!, {r0-r12,pc}
+	pop	{r0-r12, pc}
 
 halt:
 	b      halt
 
 @---------------------------------------------
+.code 32
 relocate:
 	mov	r0, #0x41000000
 	mov	r1, #0x40000000
@@ -86,30 +92,35 @@ relocate_loop:
 	bx	lr
 
 @---------------------------------------------
+.code 32
 patch_bgcolor:
+	push	{lr}
 	ldr	r0, =FP_BGCOLOR_1
 	ldr     r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_BGCOLOR_2
-	bl	find
+	blx	find_64
 	cmp	r0, #0
-	bne	halt
+	beq	patch_bgcolor_end
 	ldr	r1, =PATCH_BGCOLOR_1
 	str	r1, [r0]
 	ldr	r1, =PATCH_BGCOLOR_2
 	str	r1, [r0, #4]
+	pop	{pc}
+
+patch_bgcolor_end:
 	bx	lr
 
 @---------------------------------------------
-find:
-	stmfd  sp!, {r4,lr}
+.code 16
+.thumb_func
+find_64:
+	push	{r4, lr}
 
 find_loop:
 	ldr    r4, [r1]
 	cmp    r4, r0
 	bne    find_loop_continue
-	cmp    r3, #0
-	beq    find_return
 	ldr    r4, [r1,#4]
 	cmp    r4, r3
 	beq    find_return
@@ -123,9 +134,10 @@ find_loop_continue:
 
 find_return:
 	mov	r0, r1
-	ldmfd 	sp!, {r4,pc}
+	pop 	{r4, pc}
 
 @---------------------------------------------
+.code 32
 clear_icache:
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5
@@ -136,6 +148,7 @@ clear_icache:
 	bx	lr
 
 @---------------------------------------------
+.code 32
 flush_dcache:
 	mrc	p15, 0, r0, c1, c0, 1
 	bx	lr
