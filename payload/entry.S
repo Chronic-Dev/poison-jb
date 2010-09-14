@@ -81,11 +81,11 @@ halt:
 relocate:
 	mov	r0, #0x41000000
 	mov	r1, #0x40000000
-	mov	r2, #0x100000
+	mov	r2, #0x00100000
 relocate_loop:
 	ldr	r3, [r0], #4
-	subs	r2, r2, #4
 	str	r3, [r1], #4
+	subs	r2, r2, #4
 	bne	relocate_loop
 	bx	lr
 
