@@ -32,6 +32,7 @@ CmdInfo** gCmdCommands = NULL;
 
 void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
+int(*jump_to)(int flags, void* addr, int unk) = SELF_JUMP_TO;
 
 /*
  * Private Functions
@@ -53,6 +54,8 @@ int cmd_init() {
 	// add our essential commands
 	cmd_add("help", &cmd_help, "display all available commands");
 	cmd_add("echo", &cmd_echo, "write characters back to screen");
+	cmd_add("hexdump", &cmd_hexdump, "dump section of memory to screen");
+	cmd_add("jump", &cmd_jump, "shutdown current image and jump into another");
 
 	return 0;
 }
@@ -127,3 +130,32 @@ int cmd_echo(int argc, CmdArg* argv) {
 	return 0;
 }
 
+int cmd_hexdump(int argc, CmdArg* argv) {
+	int i = 0;
+	unsigned int len = 0;
+	unsigned char* buf = NULL;
+	if(argc != 3) {
+		puts("usage: hexdump <address> <length>\n");
+		return 0;
+	}
+
+	len = argv[2].uinteger;
+	buf = (unsigned char*) argv[1].uinteger;
+	hexdump(buf, len);
+
+	return 0;
+}
+
+int cmd_jump(int argc, CmdArg* argv) {
+	int i = 0;
+	void* address = NULL;
+	if(argc != 2) {
+		puts("usage: jump <address>\n");
+		return 0;
+	}
+
+	address = (void*) argv[1].uinteger;
+	jump_to(0, address, 0);
+
+	return 0;
+}

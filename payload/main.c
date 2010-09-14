@@ -32,6 +32,7 @@
 Bool gGpHasInit = FALSE;
 
 int gp_init() {
+	printf("gp_init entered\n");
 	if(cmd_init()) return -1;
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
@@ -48,10 +49,13 @@ int gp_init() {
 #if TARGET_FS_MOUNT && TARGET_FS_UNMOUNT && TARGET_FS_LOAD_FILE
 	if(fs_init()) return -1;
 #endif
+
+	gGpHasInit = TRUE;
 	return 0;
 }
 
 int main(int argc, CmdArg* argv) {
+	printf("main entered\n");
 	if(!gGpHasInit) {
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");

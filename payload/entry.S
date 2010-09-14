@@ -49,21 +49,25 @@ fiq_vector:  .word halt
 
 .code 32
 reset:
-	stmfd  sp!, {r1-r12,lr}
-	mov    r4, pc
-	lsr    r4, #24
-	cmp    r4, #0x41
-	beq    go
+	stmfd  sp!, {r0-r12,lr}
+	;mov    r4, pc
+	;lsr    r4, #24
+	;cmp    r4, #0x40
+	;beq    go
+	b       go
 
 relocate:
-	bl     patch_bgcolor
+	;bl     patch_bgcolor
+	;ldr    r4, =0x84020864
+	;ldr    r5, =0x40000000
+	str    r5, [r4]
 	mov    r4, #0x41000000
 	mov    r5, #0x40000000
 	mov    r6, #0x0
 
 relocate_loop:
 	cmp    r6, #0x100000
-	beq    go
+	beq    done
 	ldr    r7, [r4,r6]
 	str    r7, [r5,r6]
 	add    r6, #4
@@ -71,7 +75,9 @@ relocate_loop:
 
 go:
 	bl     main
-	ldmfd  sp!, {r1-r12,pc}
+
+done:
+	ldmfd  sp!, {r0-r12,pc}
 
 halt:
 	b      halt
@@ -92,7 +98,7 @@ patch_bgcolor:
 	ldmfd  sp!, {r0-r12,pc}
 
 find:
-	stmfd  sp!, {r0-r12,lr}
+	stmfd  sp!, {r1-r12,lr}
 
 find_loop:
 	ldr    r4, [r1]
@@ -113,4 +119,22 @@ find_loop_continue:
 
 find_return:
 	mov	   r0, r1
-	ldmfd  sp!, {r0-r12,pc}
+	ldmfd  sp!, {r1-r12,pc}
+
+clear_dcache:
+    mov r2, #0x2000
+
+outside:
+    sub r2, r2, #0x40
+    mov r1, #0
+
+inside:
+    subs r1, r1, #0x40000000
+    orr r0, r1, r2
+    mcr p15, 0, r0, c7, c10, 2
+    bne inside
+    cmp r2, #0
+    bne outside
+    mov r0, #0
+    mcr p15, 0, r0, c7, c10, 4
+    bx lr

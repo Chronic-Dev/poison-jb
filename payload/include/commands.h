@@ -29,6 +29,9 @@
 #ifdef TARGET_CMD_LIST_END
 #	define SELF_CMD_LIST_END ((void*)(TARGET_BASEADDR + TARGET_CMD_LIST_END))
 #endif
+#ifdef TARGET_JUMP_TO
+#	define SELF_JUMP_TO ((void*)(TARGET_BASEADDR + TARGET_JUMP_TO))
+#endif
 
 #ifndef SELF_CMD_LIST_BEGIN
 #	define SELF_CMD_LIST_BEGIN 0
@@ -38,6 +41,11 @@
 #ifndef SELF_CMD_LIST_END
 #	define SELF_CMD_LIST_END 0
 #	error "SELF_CMD_LIST_END not defined"
+#endif
+
+#ifndef SELF_JUMP_TO
+#	define SELF_JUMP_TO 0
+#	error "SELF_JUMP_TO not defined"
 #endif
 
 #define MAX_COMMANDS 30
@@ -68,10 +76,14 @@ extern int gCmdCount;
 extern Bool gCmdHasInit;
 extern CmdInfo** gCmdCommands;
 
+extern int(*jump_to)(int flags, void* addr, int unk);
+
 int cmd_init();
 void cmd_add(char* name, CmdFunction handler, char* description);
 
 int cmd_help(int argc, CmdArg* argv);
 int cmd_echo(int argc, CmdArg* argv);
+int cmd_hexdump(int argc, CmdArg* argv);
+int cmd_jump(int argc, CmdArg* argv);
 
 #endif

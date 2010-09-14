@@ -1,6 +1,6 @@
 /*
  *
- *  greenpois0n - payload/src/kernel.c
+ *  greenpois0n - payload/nvram.c
  *  (c) 2010 Chronic-Dev Team
  *
  */
