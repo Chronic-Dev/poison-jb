@@ -43,12 +43,8 @@ irq_vector:		.word halt
 fiq_vector:		.word halt
 
 .pool
-@ iPhone3,1, iPod4,1 - 4.0.x & 4.1
-.set	FP_BGCOLOR_1,		0xaf00b580	@ search: PUSH {R7,LR} @ ADD R7, SP, #0
-.set	FP_BGCOLOR_2,		0x460b2804	@ search: CMP R0, #4 @ MOV R3, R1
-@ iPad1,1 3.2.x:
-.set    FP_BGCOLOR2_1,		0xaf01b590      @ search: PUSH {R4,R7,LR} @ ADD R7, SP, #4
-.set    FP_BGCOLOR2_2,		0x460c2804      @ search: CMP R0, #4 @ MOV R4, R1
+.set	FP_BGCOLOR_1,		0x47184b00	@ search: LDR R3, =0x41000000 @ BR R3
+.set	FP_BGCOLOR_2,		0x41000000	@ search: 0x41000000
 .set	PATCH_BGCOLOR_1,	0x47184b00	@ _patch: LDR R3, =0x40000000 @ BX R3
 .set	PATCH_BGCOLOR_2,	0x40000000	@ _patch: 0x40000000
 

@@ -55,6 +55,7 @@ int gp_init() {
 }
 
 int main(int argc, CmdArg* argv) {
+	/*
 	printf("main entered\n");
 	if(!gGpHasInit) {
 		if(gp_init()) {
@@ -75,6 +76,7 @@ int main(int argc, CmdArg* argv) {
 		printf("Command Not Found\n\n");
 		return -1;
 	}
+	*/
 
 	return 0;
 }
