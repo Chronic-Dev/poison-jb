@@ -8,6 +8,7 @@
 #include "lzss.h"
 #include "lock.h"
 #include "image.h"
+#include "patch.h"
 #include "kernel.h"
 #include "common.h"
 #include "commands.h"
@@ -22,10 +23,10 @@ int kernel_init() {
 int kernel_cmd(int argc, CmdArg* argv) {
 	char* action = NULL;
 	unsigned char* address = NULL;
-	if(argc != 3) {
+	if(argc < 3) {
 		puts("usage: kernel <load/patch> [options]\n");
 		puts("  load <address>         \t\tload filesystem kernel to address\n");
-		puts("  patch <address>        \t\tpatches kernel at address in memory\n");
+		puts("  patch <address> <size>        \t\tpatches kernel at address in memory\n");
 		return 0;
 	}
 
@@ -35,7 +36,8 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		kernel_load(0x42000000, 0x43000000);
 	}
 	else if(!strcmp(action, "patch")) {
-		kernel_patch(0x43000000);
+		unsigned int size = argv[3].uinteger;
+		patch_kernel(address, size);
 	}
 	return 0;
 }

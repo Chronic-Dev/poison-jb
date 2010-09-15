@@ -201,15 +201,16 @@ int upload_payload_data(const char* type) {
 }
 
 int execute_payload() {
+
 	debug("Setting auto-boot to false\n");
 	irecv_send_command(client, "setenv auto-boot false");
 	irecv_send_command(client, "saveenv");
 
 	debug("Loading and patching iBoot\n");
-	irecv_send_command(client, "bgcolor");
-	irecv_send_command(client, "bgcolor image load 0x69626F74 0x42000000");
-	irecv_send_command(client, "bgcolor patch 0x42000000 0x38000");
-	irecv_send_command(client, "bgcolor jump 0x42000040");
+	irecv_send_command(client, "go");
+	irecv_send_command(client, "go image load 0x69626F74 0x42000000");
+	irecv_send_command(client, "go patch 0x42000000 0x38000");
+	irecv_send_command(client, "go jump 0x42000040");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
@@ -221,12 +222,11 @@ int execute_payload() {
 	debug("Sending iBoot payload\n");
 	upload_payload_data("iBoot");
 
-	debug("Loading and patching kernel\n");
-	sleep(2);
-	irecv_send_command(client, "getenv kernel load blah");
-	irecv_send_command(client, "getenv kernel patch 0x42000000");
-	irecv_send_command(client, "getenv kernel load blah");
-	irecv_send_command(client, "getenv kernel patch 0x42000000");
+	// it dunt werk!!! =(
+	//irecv_send_command(client, "go");
+	//irecv_send_command(client, "go kernel load 0x43000000");
+	//irecv_send_command(client, "go patch 0x42000000 0x38000");
+	//irecv_send_command(client, "go kernel patch 0x43000000 10186752");
 
 	return 0;
 }
