@@ -29,15 +29,15 @@
 #define TARGET_MALLOC                     (0x123F0+1)
 #define TARGET_JUMP_TO                    (0x1684C+1)
 #define TARGET_PRINTF                     (0x2C3D4+1)
-#define TARGET_VPRINTF                    (0x2C384+1)
+#define TARGET_VPRINTF                    (0x2BCA4+1)
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x399D8)
-#define TARGET_CMD_LIST_END               (0x399EC)
+#define TARGET_CMD_LIST_END               (0x399F0)
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0x17170+1)
-#define TARGET_TASK_RUNNING               (0x3D404)
+#define TARGET_TASK_RUNNING               (0x3987C)
 #define TARGET_TASK_LIST                  (0x39914)
 
 // AES offsets
