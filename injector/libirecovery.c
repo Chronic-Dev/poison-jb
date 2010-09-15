@@ -47,17 +47,16 @@ void irecv_exit() {
 irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
 	int i;
 
-	for (i = 1; i <= attempts; i++) {
+	for (i = 0; i < attempts; i++) {
 		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
 			debug("Connection failed. Waiting 1 sec before retry.");
 			sleep(1);
 		} else {
-			break;
+			return IRECV_E_SUCCESS;
 		}		
 	}
 
-	if (i >= attempts) return IRECV_E_UNABLE_TO_CONNECT;
-	else               return IRECV_E_SUCCESS;
+	return IRECV_E_UNABLE_TO_CONNECT;       
 }
 
 irecv_error_t irecv_open(irecv_client_t* pclient) {
