@@ -53,9 +53,9 @@
 #define TARGET_IMAGE_LIST                 (0x37704) 
 
 // Filesystem offsets
-//#define TARGET_FS_MOUNT                   (0x0)
-//#define TARGET_FS_UNMOUNT                 (0x0)
-//#define TARGET_FS_LOAD_FILE               (0x0)
+#define TARGET_FS_MOUNT                   (0x19838+1)
+#define TARGET_FS_UNMOUNT                 (0x19A50+1)
+#define TARGET_FS_LOAD_FILE               (0x199E8+1)
 
 // NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x37810) 

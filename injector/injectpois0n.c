@@ -201,7 +201,34 @@ int upload_payload_data(const char* type) {
 }
 
 int execute_payload() {
-	return irecv_send_command(client, "bgcolor");
+	debug("Setting auto-boot to false\n");
+	irecv_send_command(client, "setenv auto-boot false");
+	irecv_send_command(client, "saveenv");
+
+	debug("Loading and patching iBoot\n");
+	irecv_send_command(client, "bgcolor");
+	irecv_send_command(client, "bgcolor image load 0x69626F74 0x42000000");
+	irecv_send_command(client, "bgcolor patch 0x42000000 0x38000");
+	irecv_send_command(client, "bgcolor jump 0x42000040");
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Sending iBoot payload\n");
+	upload_payload_data("iBoot");
+
+	debug("Loading and patching kernel\n");
+	sleep(2);
+	irecv_send_command(client, "getenv kernel load blah");
+	irecv_send_command(client, "getenv kernel patch 0x42000000");
+	irecv_send_command(client, "getenv kernel load blah");
+	irecv_send_command(client, "getenv kernel patch 0x42000000");
+
+	return 0;
 }
 
 void quit() {
