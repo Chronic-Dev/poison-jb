@@ -33,7 +33,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	action = argv[1].string;
 	address = argv[2].uinteger;
 	if(!strcmp(action, "load")) {
-		kernel_load(0x42000000, 0x43000000);
+		kernel_load(0x41000000, 0x42000000);
 	}
 	else if(!strcmp(action, "patch")) {
 		unsigned int size = argv[3].uinteger;

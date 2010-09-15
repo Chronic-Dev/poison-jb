@@ -57,7 +57,7 @@ reset:
 	cmp	r0, #0x40
 	beq	relocated
 	
-	bl	patch_cmd
+	bl	patch_go
 	bl	relocate
 	bl	clear_icache
 	bl	flush_dcache
@@ -93,7 +93,7 @@ relocate_loop:
 
 @---------------------------------------------
 .code 32
-patch_cmd:
+patch_go:
 	push	{lr}
 	ldr	r0, =FP_CMD_1
 	ldr     r1, =TARGET_BASEADDR
@@ -101,15 +101,13 @@ patch_cmd:
 	ldr	r3, =FP_CMD_2
 	blx	find_64
 	cmp	r0, #0
-	beq	patch_cmd_end
+	beq	patch_go_end
 	ldr	r1, =PATCH_CMD_1
 	str	r1, [r0]
 	ldr	r1, =PATCH_CMD_2
 	str	r1, [r0, #4]
+patch_go_end:
 	pop	{pc}
-
-patch_cmd_end:
-	bx	lr
 
 @---------------------------------------------
 .code 16
