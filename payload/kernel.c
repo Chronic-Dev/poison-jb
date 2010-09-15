@@ -1,6 +1,6 @@
 /*
  *
- *  greenpois0n - kernel.c
+ *  greenpois0n - payload/kernel.c
  *  (c) 2009 Chronic-Dev Team
  *
  */
@@ -8,11 +8,41 @@
 #include "lzss.h"
 #include "lock.h"
 #include "image.h"
+#include "patch.h"
 #include "kernel.h"
 #include "common.h"
+#include "commands.h"
 #include "filesystem.h"
 
-void kernel_load(void* image, void* dest) {
+int kernel_init() {
+	//cmd_add("kernel", &kernel_cmd, "operations for filesystem kernel");
+	cmd_add("kernel", &kernel_cmd, "Nothing");
+	return 0;
+}
+
+int kernel_cmd(int argc, CmdArg* argv) {
+	char* action = NULL;
+	unsigned char* address = NULL;
+	if(argc < 3) {
+		puts("usage: kernel <load/patch> [options]\n");
+		puts("  load <address>         \t\tload filesystem kernel to address\n");
+		puts("  patch <address> <size>        \t\tpatches kernel at address in memory\n");
+		return 0;
+	}
+
+	action = argv[1].string;
+	address = argv[2].uinteger;
+	if(!strcmp(action, "load")) {
+		kernel_load(0x42000000, 0x43000000);
+	}
+	else if(!strcmp(action, "patch")) {
+		unsigned int size = argv[3].uinteger;
+		patch_kernel(address, size);
+	}
+	return 0;
+}
+
+int kernel_load(void* image, void* dest) {
 	unsigned int* size = 0;
     ImageHeader* header = (ImageHeader*) image;
 
@@ -56,4 +86,9 @@ void kernel_load(void* image, void* dest) {
 	fs_unmount("/boot");
 
 	puts("Finished loading kernelcache\n");
+}
+
+int kernel_patch(void* address) {
+	printf("Not implemented yet\n");
+	return 0;
 }
