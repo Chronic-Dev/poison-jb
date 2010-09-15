@@ -50,11 +50,11 @@
 #define TARGET_IMAGE_LIST                 (0x3984C) 
 
 // Filesystem offsets
-//#define TARGET_FS_MOUNT                   (0x0)
-//#define TARGET_FS_UNMOUNT                 (0x0)
-//#define TARGET_FS_LOAD_FILE               (0x0)
+#define TARGET_FS_MOUNT                   (0x1ADC0+1)
+#define TARGET_FS_UNMOUNT                 (0x1AFD8+1)
+#define TARGET_FS_LOAD_FILE               (0x1AF70+1)
 
-// NVRAM offsets
+// NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x39958)
 
 #endif // OFFSETS_H
