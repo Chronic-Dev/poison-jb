@@ -43,10 +43,10 @@ irq_vector:		.word halt
 fiq_vector:		.word halt
 
 .pool
-.set	FP_BGCOLOR_1,		0x47184b00	@ search: LDR R3, =0x41000000 @ BR R3
-.set	FP_BGCOLOR_2,		0x41000000	@ search: 0x41000000
-.set	PATCH_BGCOLOR_1,	0x47184b00	@ _patch: LDR R3, =0x40000000 @ BX R3
-.set	PATCH_BGCOLOR_2,	0x40000000	@ _patch: 0x40000000
+.set	FP_CMD_1,	0x47184b00	@ search: LDR R3, =0x41000000 @ BR R3
+.set	FP_CMD_2,	0x41000000	@ search: 0x41000000
+.set	PATCH_CMD_1,	0x47184b00	@ _patch: LDR R3, =0x40000000 @ BX R3
+.set	PATCH_CMD_2,	0x40000000	@ _patch: 0x40000000
 
 .code 32
 @---------------------------------------------
@@ -57,7 +57,7 @@ reset:
 	@cmp	r0, #0x40
 	@beq	relocated
 	
-	@bl	patch_bgcolor
+	@bl	patch_go
 	@bl	relocate
 	@bl	clear_icache
 	@bl	flush_dcache
@@ -93,23 +93,21 @@ relocate_loop:
 
 @---------------------------------------------
 .code 32
-patch_bgcolor:
+patch_go:
 	push	{lr}
-	ldr	r0, =FP_BGCOLOR_1
+	ldr	r0, =FP_CMD_1
 	ldr     r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
-	ldr	r3, =FP_BGCOLOR_2
+	ldr	r3, =FP_CMD_2
 	blx	find_64
 	cmp	r0, #0
-	beq	patch_bgcolor_end
-	ldr	r1, =PATCH_BGCOLOR_1
+	beq	patch_go_end
+	ldr	r1, =PATCH_CMD_1
 	str	r1, [r0]
-	ldr	r1, =PATCH_BGCOLOR_2
+	ldr	r1, =PATCH_CMD_2
 	str	r1, [r0, #4]
+patch_go_end:
 	pop	{pc}
-
-patch_bgcolor_end:
-	bx	lr
 
 @---------------------------------------------
 .code 16
