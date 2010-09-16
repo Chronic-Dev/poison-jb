@@ -94,7 +94,7 @@ first: all
 
 ####### Build rules
 
-all: Makefile $(TARGET)
+all: qmake Makefile $(TARGET)
 
 $(TARGET): ui_poisonmain.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
