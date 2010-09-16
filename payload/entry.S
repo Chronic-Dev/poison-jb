@@ -52,25 +52,25 @@ fiq_vector:		.word halt
 @---------------------------------------------
 reset:
 	push	{r0-r12, lr}
-	@mov	r0, pc
-	@lsr	r0, #24
-	@cmp	r0, #0x40
-	@beq	relocated
+	mov	r0, pc
+	lsr	r0, #24
+	cmp	r0, #0x40
+	beq	relocated
 	
-	@bl	patch_go
-	@bl	relocate
-	@bl	clear_icache
-	@bl	flush_dcache
+	bl	patch_go
+	bl	relocate
+	bl	clear_icache
+	bl	flush_dcache
 
-	@mov	r0, #0x40000000
-	@blx	r0
-	@b	done
+	mov	r0, #0x40000000
+	blx	r0
+	b	done
 
 relocated:
-	@ldr	r0, [sp, #0x0]
-	@ldr	r1, [sp, #0x4]
-	@ldr	r2, [sp, #0x8]
-	@ldr	r3, [sp, #0xc]
+	ldr	r0, [sp, #0x0]
+	ldr	r1, [sp, #0x4]
+	ldr	r2, [sp, #0x8]
+	ldr	r3, [sp, #0xc]
 	bl	main
 done:
 	pop	{r0-r12, pc}
