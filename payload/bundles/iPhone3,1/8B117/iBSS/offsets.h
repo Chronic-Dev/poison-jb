@@ -24,8 +24,8 @@
 #define TARGET_BASEADDR                   (0x84000000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x117D4+1)
-#define TARGET_MALLOC                     (0x11A58+1)
+#define TARGET_FREE                       (0x12220+1)
+#define TARGET_MALLOC                     (0x1222C+1)
 #define TARGET_JUMP_TO                    (0x15E18+1)
 #define TARGET_PRINTF                     (0x1B684+1)
 #define TARGET_VPRINTF                    (0x1AF54+1)
