@@ -4,7 +4,7 @@ all:
 	make -C payload
 	#make -C ramdisk
 	make -C injector
-	make -C interface
+	#make -C interface
 
 	
 clean:	
@@ -12,5 +12,5 @@ clean:
 	make clean -C payload
 	#make clean -C ramdisk
 	make clean -C injector
-	make clean -C interface
+	#make clean -C interface
 	rm -rf staging
