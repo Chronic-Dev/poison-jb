@@ -1,14 +1,7 @@
-UNAME := $(shell uname -s)
-
-ifeq ($(UNAME),Darwin)
-	OS := macosx
-else
-	OS := linux
-endif
-
 all:
-	echo "Building Linux Interface"
+	@echo "Building Linux Interface"
+	make -C PoisonJB/
 
 	
 clean:
-	echo "Cleaning Linux Interface"
+	@echo "Cleaning Linux Interface"
