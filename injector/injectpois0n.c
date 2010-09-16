@@ -201,7 +201,34 @@ int upload_payload_data(const char* type) {
 }
 
 int execute_payload() {
-	return irecv_send_command(client, "bgcolor");
+
+	debug("Setting auto-boot to false\n");
+	irecv_send_command(client, "setenv auto-boot false");
+	irecv_send_command(client, "saveenv");
+
+	debug("Loading and patching iBoot\n");
+	irecv_send_command(client, "go");
+	irecv_send_command(client, "go image load 0x69626F74 0x42000000");
+	irecv_send_command(client, "go patch 0x42000000 0x38000");
+	irecv_send_command(client, "go jump 0x42000040");
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Sending iBoot payload\n");
+	upload_payload_data("iBoot");
+
+	// it dunt werk!!! =(
+	//irecv_send_command(client, "go");
+	//irecv_send_command(client, "go kernel load 0x43000000");
+	//irecv_send_command(client, "go patch 0x42000000 0x38000");
+	//irecv_send_command(client, "go kernel patch 0x43000000 10186752");
+
+	return 0;
 }
 
 void quit() {

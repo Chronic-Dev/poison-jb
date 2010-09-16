@@ -32,6 +32,9 @@
 #ifdef TARGET_JUMP_TO
 #	define SELF_JUMP_TO ((void*)(TARGET_BASEADDR + TARGET_JUMP_TO))
 #endif
+#ifdef TARGET_CMD_RAMDISK
+#	define SELF_CMD_RAMDISK ((void*)(TARGET_BASEADDR + TARGET_CMD_RAMDISK))
+#endif
 
 #ifndef SELF_CMD_LIST_BEGIN
 #	define SELF_CMD_LIST_BEGIN 0
@@ -46,6 +49,11 @@
 #ifndef SELF_JUMP_TO
 #	define SELF_JUMP_TO 0
 #	error "SELF_JUMP_TO not defined"
+#endif
+
+#ifndef SELF_CMD_RAMDISK
+#	define SELF_CMD_RAMDISK 0
+#	warning "SELF_CMD_RAMDISK not defined"
 #endif
 
 #define MAX_COMMANDS 30
@@ -77,6 +85,7 @@ extern Bool gCmdHasInit;
 extern CmdInfo** gCmdCommands;
 
 extern int(*jump_to)(int flags, void* addr, int unk);
+extern int(*cmd_ramdisk)(int argc, CmdArg* argv);
 
 int cmd_init();
 void cmd_add(char* name, CmdFunction handler, char* description);
@@ -85,5 +94,8 @@ int cmd_help(int argc, CmdArg* argv);
 int cmd_echo(int argc, CmdArg* argv);
 int cmd_hexdump(int argc, CmdArg* argv);
 int cmd_jump(int argc, CmdArg* argv);
+int cmd_mw(int argc, CmdArg* argv);
+int cmd_md(int argc, CmdArg* argv);
+int cmd_call(int argc, CmdArg* argv);
 
 #endif

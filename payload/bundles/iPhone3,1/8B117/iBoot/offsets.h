@@ -25,19 +25,20 @@
 #define TARGET_BASEADDR                   (0x5FF00000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x1216C+1)
-#define TARGET_MALLOC                     (0x123F0+1)
+#define TARGET_FREE                       (0x12BB8+1)
+#define TARGET_MALLOC                     (0x12BC4+1)
 #define TARGET_JUMP_TO                    (0x1684C+1)
 #define TARGET_PRINTF                     (0x2C3D4+1)
-#define TARGET_VPRINTF                    (0x2C384+1)
+#define TARGET_VPRINTF                    (0x2BCA4+1)
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x399D8)
-#define TARGET_CMD_LIST_END               (0x399EC)
+#define TARGET_CMD_LIST_END               (0x399F0)
+#define TARGET_CMD_RAMDISK                (0x1058+1)
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0x17170+1)
-#define TARGET_TASK_RUNNING               (0x3D404)
+#define TARGET_TASK_RUNNING               (0x3987C)
 #define TARGET_TASK_LIST                  (0x39914)
 
 // AES offsets
@@ -50,11 +51,15 @@
 #define TARGET_IMAGE_LIST                 (0x3984C) 
 
 // Filesystem offsets
-//#define TARGET_FS_MOUNT                   (0x0)
-//#define TARGET_FS_UNMOUNT                 (0x0)
-//#define TARGET_FS_LOAD_FILE               (0x0)
+#define TARGET_FS_MOUNT                   (0x1ADC0+1)
+#define TARGET_FS_UNMOUNT                 (0x1AFD8+1)
+#define TARGET_FS_LOAD_FILE               (0x1AF70+1)
 
-// NVRAM offsets
+// Kernel offsets
+#define TARGET_KERNEL_LOAD                (0x13708+1)
+#define TARGET_KERNEL_PHYMEM              (0x3EC40)
+
+// NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x39958)
 
 #endif // OFFSETS_H

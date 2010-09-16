@@ -112,7 +112,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 						return error;
 					}
 
-					error = irecv_set_interface(client, 0, 0);
+					error = irecv_set_interface(client, 1, 1);
 					if (error != IRECV_E_SUCCESS) {
 						return error;
 					}
