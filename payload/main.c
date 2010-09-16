@@ -50,9 +50,10 @@ int gp_init() {
 #endif
 #if TARGET_FS_MOUNT && TARGET_FS_UNMOUNT && TARGET_FS_LOAD_FILE
 	if(fs_init()) return -1;
+#endif
+#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
 	if(kernel_init()) return -1;
 #endif
-
 	gGpHasInit = TRUE;
 	return 0;
 }

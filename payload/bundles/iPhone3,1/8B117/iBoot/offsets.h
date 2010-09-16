@@ -34,6 +34,7 @@
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x399D8)
 #define TARGET_CMD_LIST_END               (0x399F0)
+#define TARGET_CMD_RAMDISK                (0x1058+1)
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0x17170+1)
@@ -53,6 +54,10 @@
 #define TARGET_FS_MOUNT                   (0x1ADC0+1)
 #define TARGET_FS_UNMOUNT                 (0x1AFD8+1)
 #define TARGET_FS_LOAD_FILE               (0x1AF70+1)
+
+// Kernel offsets
+#define TARGET_KERNEL_LOAD                (0x13708+1)
+#define TARGET_KERNEL_PHYMEM              (0x3EC40)
 
 // NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x39958)
