@@ -17,16 +17,6 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-/*
- * when going thru ibss I recognized some other hw stuff that I knew the function of so I added their addresses
- * just remove if not wanted
- * ~chronic (9/11/10)
- */
-//#define TARGET_TASK_CREATE                (0x16638+1)
-//#define TARGET_TASK_WAIT                  (0x16574+1)
-//#define TARGET_TASK_EXIT                  (0x16A7C+1)
-//#define TARGET_DEVICE_POWERCTRL           (0x15968+1) // arg1=dev_num, arg2=1 for on, 0 for off. like call this(0x14, 1); to turn aes on for i4. ~chronic (9/11/10)
-
 #ifndef OFFSETS_H
 #define OFFSETS_H
 

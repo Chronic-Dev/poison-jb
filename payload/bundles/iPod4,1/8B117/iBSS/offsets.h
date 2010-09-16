@@ -18,8 +18,6 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-//#define TARGET_DEVICE_POWERCTRL           (0x15968+1) // arg1=dev_num, arg2=1 for on, 0 for off. like call this(0x14, 1); to turn aes on for i4. ~chronic (9/11/10)
-
 #ifndef OFFSETS_H
 #define OFFSETS_H
 

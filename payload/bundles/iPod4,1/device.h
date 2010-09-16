@@ -26,6 +26,6 @@
 #define IBEC_BASEADDR   0x5FF00000
 #define IBSS_BASEADDR   0x84000000
 #define LLB_BASEADDR    0x84000000
-#define KERNEL_PATH     "/System/Library/Caches/com.apple.kernelcache/kernelcache"
+#define KERNEL_PATH     "/boot/System/Library/Caches/com.apple.kernelcaches/kernelcache"
 
 #endif // DEVICE_H

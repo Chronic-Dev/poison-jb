@@ -18,9 +18,6 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-
-//#define TARGET_DEVICE_POWERCTRL           (0x15968+1) // arg1=dev_num, arg2=1 for on, 0 for off. like call this(0x14, 1); to turn aes on for i4. ~chronic (9/11/10)
-
 #ifndef OFFSETS_H
 #define OFFSETS_H
 
@@ -36,7 +33,8 @@
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x37890)
-#define TARGET_CMD_LIST_END               (0x378A8) 
+#define TARGET_CMD_LIST_END               (0x378A8)
+#define TARGET_CMD_RAMDISK                (0x1058+1)
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0x15D10+1)
@@ -53,9 +51,13 @@
 #define TARGET_IMAGE_LIST                 (0x37704) 
 
 // Filesystem offsets
-//#define TARGET_FS_MOUNT                   (0x0)
-//#define TARGET_FS_UNMOUNT                 (0x0)
-//#define TARGET_FS_LOAD_FILE               (0x0)
+#define TARGET_FS_MOUNT                   (0x19838+1)
+#define TARGET_FS_UNMOUNT                 (0x19A50+1)
+#define TARGET_FS_LOAD_FILE               (0x199E8+1)
+
+// Kernel offsets
+#define TARGET_KERNEL_LOAD                (0x12388+1)
+#define TARGET_KERNEL_PHYMEM              (0x3CA80)
 
 // NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x37810) 

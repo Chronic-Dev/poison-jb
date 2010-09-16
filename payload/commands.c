@@ -33,6 +33,7 @@ CmdInfo** gCmdCommands = NULL;
 void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
 int(*jump_to)(int flags, void* addr, int unk) = SELF_JUMP_TO;
+int(*cmd_ramdisk)(int argc, CmdArg* argv) = SELF_CMD_RAMDISK;
 
 /*
  * Private Functions
@@ -56,6 +57,13 @@ int cmd_init() {
 	cmd_add("echo", &cmd_echo, "write characters back to screen");
 	cmd_add("hexdump", &cmd_hexdump, "dump section of memory to screen");
 	cmd_add("jump", &cmd_jump, "shutdown current image and jump into another");
+	cmd_add("mw", &cmd_mw, "write value to specified address");
+	cmd_add("md", &cmd_md, "display value at specified address");
+	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
+
+#ifdef TARGET_CMD_RAMDISK
+	cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+#endif
 
 	return 0;
 }
@@ -146,16 +154,85 @@ int cmd_hexdump(int argc, CmdArg* argv) {
 	return 0;
 }
 
-int cmd_jump(int argc, CmdArg* argv) {
-	int i = 0;
-	void* address = NULL;
-	if(argc != 2) {
-		puts("usage: jump <address>\n");
+int cmd_mw(int argc, CmdArg* argv) {
+	cmd_start();
+
+	if(argc != 3) {
+		puts("usage: mw <address> <value>\n");
 		return 0;
 	}
 
-	address = (void*) argv[1].uinteger;
-	jump_to(0, address, 0);
+	unsigned int address = argv[1].uinteger;
+	unsigned int value = argv[2].uinteger;
+	SETREG32(address, value);
+	//clear_cpu_caches();
+	return 0;
+}
+
+int cmd_md(int argc, CmdArg* argv) {
+	cmd_start();
+
+	if(argc != 2) {
+		puts("usage: md <address>\n");
+		return 0;
+	}
+
+	unsigned int value = GETREG32(argv[1].uinteger);
+	enter_critical_section();
+	printf("%p\n", value);
+	exit_critical_section();
+
+	return 0;
+}
+
+int cmd_jump(int argc, CmdArg* argv) {
+	int i = 0;
+	void* address = NULL;
+	if(argc < 2) {
+		puts("usage: jump <address>\n");
+		return 0;
+	}
+	if(argc == 2) {
+		address = (void*) argv[1].uinteger;
+		jump_to(0, address, 0);
+	}
+	if(argc == 4) {
+		address = (void*) argv[1].uinteger;
+		jump_to(argv[2].uinteger, argv[2].uinteger, argv[2].uinteger);
+	}
+
+	return 0;
+}
+
+int cmd_call(int argc, CmdArg* argv) {
+	cmd_start();
+
+	if (argc < 2) {
+		puts("usage: call <address> <args>\n");
+		puts("  <address> is subroutine address (pair=ARM, odd=THUMB)\n");
+		puts("  <args> are subroutine arguments (integers), if any.\n");
+		puts("  [!] limited to 4 args max subroutines at the moment.\n");
+		return 0;
+	} else if (argc > 6) {
+		puts("[!] Sorry, call is limited to 4 args max subroutines ATM.\n");
+		return -1;
+	} else if (argv[1].type!=CMDARG_TYPE_INTEGER) {
+		puts("[!] <address> needs to be an integer !\n");
+		return -1;
+	}
+
+	int addr = argv[1].uinteger;
+	int r0, r1, r2, r3;
+
+	if (argc >= 3) r0 = cmd_get_arg(argv[2]);
+	if (argc >= 4) r1 = cmd_get_arg(argv[3]);
+	if (argc >= 5) r2 = cmd_get_arg(argv[4]);
+	if (argc >= 6) r3 = cmd_get_arg(argv[5]);
+
+	int (*pSub)(int, int, int, int) = (int (*)(int, int, int, int)) addr;
+	int ret = pSub(r0, r1, r2, r3);
+
+	printf("returned: %08x\n", ret);
 
 	return 0;
 }

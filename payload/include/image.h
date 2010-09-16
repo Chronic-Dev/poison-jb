@@ -75,8 +75,8 @@ typedef struct ImageComp {
     unsigned int signature;
     unsigned int compressionType;
     unsigned int checksum;
-    unsigned int compressedSize;
     unsigned int uncompressedSize;
+    unsigned int compressedSize;
     unsigned char padding[0x16C];
 } ImageComp;
 
