@@ -201,7 +201,7 @@ int upload_payload_data(const char* type) {
 }
 
 int execute_payload() {
-
+	/*
 	debug("Setting auto-boot to false\n");
 	irecv_send_command(client, "setenv auto-boot false");
 	irecv_send_command(client, "saveenv");
@@ -221,7 +221,7 @@ int execute_payload() {
 
 	debug("Sending iBoot payload\n");
 	upload_payload_data("iBoot");
-
+*/
 	irecv_send_command(client, "go");
 	//irecv_send_command(client, "go kernel load 0x43000000");
 	//irecv_send_command(client, "go patch 0x42000000 0x38000");
