@@ -50,8 +50,12 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	address = (unsigned char*) argv[2].uinteger;
 	if(!strcmp(action, "load")) {
 		void* image = 0;
+
+#if TARGET_FS_MOUNT && TARGET_FS_LOAD_FILE
 		fs_mount("nand0a", "hfs", "/boot");
 		fs_load_file(KERNEL_PATH, (void*) address, compressed);
+#endif
+
 		printf("Load kernelcache image at %p with %u bytes\n", address, *compressed);
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
