@@ -289,20 +289,21 @@ int execute_ibss_payload() {
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
 
-	debug("Preparing to upload iBEC\n");
-	if(upload_ibec() < 0) {
-		error("Unable to upload iBEC\n");
+	debug("Loading and patching iBoot\n");
+	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	irecv_send_command(client, "go patch 0x41000000 0x38000");
+	irecv_send_command(client, "go jump 0x41000040");
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
 		return -1;
 	}
 
-	return 0;
-}
-
-int execute_ibec_payload() {
-	debug("Initializing greenpois0n in iBEC\n");
+	upload_dfu_payload("iBoot");
+	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
-	// Load kernel and ramdisk
 
 	return 0;
 }

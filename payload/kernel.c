@@ -53,15 +53,9 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		fs_mount("nand0a", "hfs", "/boot");
 		fs_load_file(KERNEL_PATH, (void*) address, compressed);
 		printf("Load kernelcache image at %p with %u bytes\n", address, *compressed);
-		NvramVar* bootargs = nvram_find_var("boot-args");
-		strcpy(gBootArgs, bootargs->string);
-		//strcpy(gBootArgs, "-s -v debug=12 serial=1 serialbaud=115200 ");
-		//-v serial=1 serialbaud=115200 debug=12
 		kernel_load((void*) address, size, &gKernelAddr);
-		//strcat(gBootArgs, "-v ");
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
 		//jump_to(3, decompressed, *kernel_phymem);
-		//fs_unmount("/boot");
 	}
 	else if(!strcmp(action, "patch")) {
 		patch_kernel(address, size);
