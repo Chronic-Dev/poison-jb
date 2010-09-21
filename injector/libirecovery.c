@@ -424,11 +424,11 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 
 		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
 #ifndef __APPLE__
-		if (recovery_mode) {
-			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
-		} else {
+		//if (recovery_mode) {
+			//error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
+		//} else {
 			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
-		}
+		//}
 #else
 		bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, (unsigned char*) &buffer[i * packet_size], size, 1000);
 #endif

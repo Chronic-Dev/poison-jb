@@ -30,6 +30,15 @@ int receive_data(int bytes) {
 	return 0;
 }
 
+int fetch_image(char* path, char* output) {
+	if(download_file_from_zip(device->url, path, output) != 0) {
+		return -1;
+	}
+	return 0;
+
+}
+
+
 int fetch_dfu_image(char* type) {
 	char name[32];
 	char path[256];
@@ -39,12 +48,29 @@ int fetch_dfu_image(char* type) {
 	snprintf(name, 31, "%s.%s.RELEASE.dfu", type, device->model);
 	snprintf(path, 255, "Firmware/dfu/%s", name);
 
-	if(download_file_from_zip(device->url, path, type) != 0) {
+	if(fetch_image(path, type)  < 0) {
 		return -1;
 	}
 
 	return 0;
 }
+
+int fetch_firmware_image(char* type) {
+	char name[32];
+	char path[256];
+
+	memset(name, '\0', 32);
+	memset(path, '\0', 256);
+	snprintf(name, 31, "%s.%s.RELEASE.dfu", type, device->model);
+	snprintf(path, 255, "Firmware/all_flash.%s.production/%s", device->model, name);
+
+	if(fetch_image(path, type)  < 0) {
+		return -1;
+	}
+
+	return 0;
+}
+
 
 int upload_dfu_image(char* type) {
 	irecv_error_t error = 0;
@@ -286,9 +312,66 @@ int upload_ibec_payload() {
 }
 
 int execute_ibss_payload() {
+	irecv_error_t error = 0;
+
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
 
+	debug("Preparing to fetch DeviceTree from Apple's servers\n");
+	if(fetch_firmware_image("DeviceTree") < 0) {
+		error("Unable to execut iBSS payload\n");
+		return -1;
+	}
+
+	debug("Sending DeviceTree to device\n");
+	error = irecv_send_file(client, "DeviceTree", 0);
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Executing DevicTree\n");
+	error = irecv_send_command(client, "devicetree");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Sending ramdisk to device\n");
+	error = irecv_send_file(client, "ramdisk.dmg", 0);
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Executing ramdisk\n");
+	error = irecv_send_command(client, "ramdisk");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Preparing to fetch kernelcache from Apple's servers\n");
+	if(fetch_image("kernelcache.n81", "kernelcache") < 0) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Sending kernelcache\n");
+	error = irecv_send_file(client, "kernelcache", 0);
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Booting ramdisk\n");
+	error = irecv_send_command(client, "bootx");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	/*
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	irecv_send_command(client, "go patch 0x41000000 0x38000");
@@ -304,7 +387,7 @@ int execute_ibss_payload() {
 	upload_dfu_payload("iBoot");
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
+	 */
 	return 0;
 }
 

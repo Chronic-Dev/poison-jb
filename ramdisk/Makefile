@@ -11,7 +11,8 @@ CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation 
 
-all: launchd
+all: launchd ramdisk
+	cp ramdisk-img.dmg ../staging/ramdisk.dmg
 
 launchd:
 	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
@@ -21,13 +22,14 @@ launchd:
 	mv launchd rdfs/sbin/launchd
 
 ramdisk: launchd
-	hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
-	hdiutil attach ramdisk-img.dmg
+	sudo hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
+	sudo hdiutil attach ramdisk-img.dmg
 	sudo chown 0:0 /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
-	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+	sudo chown 501:20 ramdisk-img.dmg
+	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
 
 encrypt:
 	xpwntool ramdisk-img.dmg ramdisk.dmg -t template-ipt2g4.0.dmg -iv b2b8949bd33b65f22bd0c7e55ccc836b -k 1e3e144a55fa8d1782db5153796238f0
 
 clean:
-	rm -f ramdisk-img.dmg
+	rm -f ramdisk-img.dmg launchd
