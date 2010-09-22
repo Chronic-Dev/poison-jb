@@ -9,57 +9,37 @@ RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
 RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
 RAMDISK_TEMPLATE=018-7074-092.dmg
 
-LAUNCHD_SOURCES=launchd/launchd.c launchd/syscall.S
-RDKIT_SOURCES=rdkit/framebuffer.c
+LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c
 
-RAMDISK_VOLUME=anthrax
+RAMDISK_VOLUME=GREEND1SK
 
-CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
+CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include -I./include/hfs
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
-	-framework CoreFoundation 
+	-framework CoreFoundation \
 
 UNAME := $(shell uname -s)
+PWD = $(shell pwd)
 
 ifeq ($(UNAME),Darwin)
-<<<<<<< HEAD
-all: clean ramdisk/sbin/launchd ramdisk.dmg encrypt
-=======
-all: launchd ramdisk encrypt
->>>>>>> jaywalker
+all: ramdisk/sbin/launchd ramdisk.dmg encrypt
 else
 all: encrypt
 endif
 
-<<<<<<< HEAD
 ramdisk/sbin/launchd:
 	$(CC) $(CFLAGS) -static -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES) -nostdlib
 	strip ramdisk/sbin/launchd
 	ldid -S ramdisk/sbin/launchd
 
-ramdisk.dmg:
-	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW rd-dec.dmg 
-	sudo hdiutil attach rd-dec.dmg
-	sudo chown root:wheel /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
-	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
-	
-=======
-launchd:
-	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
-	$(STRIP) launchd
-	/opt/local/bin/ldid -S launchd
-	chmod 755 launchd
-	mv launchd rdfs/sbin/launchd
+ramdisk.dmg: launchd
+	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
+	sudo hdiutil attach ramdisk.dmg
+	sudo chown root:wheel $(PWD)/ramdisk/sbin/launchd
+	sudo hdiutil detach $(PWD)/ramdisk/sbin/launchd
+	sudo mv ramdisk.dmg ramdisk.hfs
 
-ramdisk: launchd
-	hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
-	hdiutil attach ramdisk-img.dmg
-	sudo chown 0:0 /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
-	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
-
->>>>>>> jaywalker
 encrypt:
-	xpwntool rd-dec.dmg ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	rm rd-dec.dmg
+	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 
 clean:
 	rm -rf ramdisk.dmg
