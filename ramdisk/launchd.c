@@ -2,8 +2,23 @@
 
 int copyFiles() {
 	//Here's where we copy the files we want and mkdir's we need... Lets do it!
-	mkdir("/mnt/Loader.app/", 755);
-	int ret = copy("/files/test", "/mnt/private/etc/test");
+	mkdir("/mnt/Applications/Loader.app/", 755);
+	int ret = copy("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/");
+	if (ret == 0)
+		return 1;
+	ret = copy("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/");
+	if (ret == 0)
+		return 1;
+	ret = copy("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/");
+	if (ret == 0)
+		return 1;
+	ret = copy("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/");
+	if (ret == 0)
+		return 1;
+	ret = copy("/files/Loader.app/Loader_", "/mnt/Applications/Loader.app/");
+	if (ret == 0)
+		return 1;
+	ret = copy("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/");
 	if (ret == 0)
 		return 1;
 	return 0;
@@ -26,7 +41,7 @@ int main(int argc, char **args, char **env) {
 	}
 
 	_puts("Disk Found! Mounting...\n");
-	ret = mountHFS("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_RDONLY);
+	ret = mountHFS("/dev/disk0s1", "/mnt", MNT_ROOTFS);
 	if (ret == 0) {
 		_puts("Mounted Disk...\n");
 		_puts("Mounting Dev...\n");
