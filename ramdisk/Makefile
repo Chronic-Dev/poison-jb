@@ -32,8 +32,8 @@ ramdisk/sbin/launchd:
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg:
-	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
-	sudo hdiutil attach ramdisk.dmg
+	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW rd-dec.dmg 
+	sudo hdiutil attach rd-dec.dmg
 	sudo chown root:wheel /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
 	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
 	
