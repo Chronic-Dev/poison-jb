@@ -23,7 +23,17 @@
 extern "C" {
 #endif
 
-#include <libusb-1.0/libusb.h>
+#ifdef __APPLE__
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <IOKit/IOKitLib.h>
+	#include <IOKit/IOMessage.h>
+	#include <IOKit/IOCFPlugIn.h>
+	#include <IOKit/usb/IOUSBLib.h>
+	#define USE_IOKIT
+#else
+	#include <libusb-1.0/libusb.h>
+	#define USE_LIBUSB
+#endif
 
 #define APPLE_VENDOR_ID 0x05AC
 
