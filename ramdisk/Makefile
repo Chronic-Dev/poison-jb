@@ -11,7 +11,13 @@ CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation 
 
-all: launchd
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME),Darwin)
+all: launchd ramdisk encrypt
+else
+all: encrypt
+endif
 
 launchd:
 	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
