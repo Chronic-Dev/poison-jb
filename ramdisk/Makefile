@@ -1,43 +1,37 @@
 PLATFORM=/Developer/Platforms/iPhoneOS.platform
-SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS4.0.sdk
+SDKVER=4.0
+SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
-RAMDISK_VOLUME=POISONJB
+RAMDISK_IV=2e7aa9f6dc823657f1c930a00db8efe1
+RAMDISK_KEY=9781d55350f58c3ff72c7a3e50b70288
+RAMDISK_TEMPLATE=/Users/John/Desktop/3.1.3/018-6508-014.dmg
 
-SOURCES=launchd.c utils.c syscalls.S
+LAUNCHD_SOURCES=launchd/launchd.c launchd/syscall.S
+RDKIT_SOURCES=rdkit/framebuffer.c
+
+RAMDISK_VOLUME=anthrax
 
 CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation 
 
-UNAME := $(shell uname -s)
+all: clean ramdisk/sbin/launchd ramdisk.dmg
 
-ifeq ($(UNAME),Darwin)
-all: launchd ramdisk encrypt
-	cp ramdisk.img3 ../staging/ramdisk.dmg
-else
-	
-all: encrypt
-	cp ramdisk.img3 ../staging/ramdisk.dmg
-endif
+ramdisk/sbin/launchd:
+	$(CC) $(CFLAGS) -static -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES) -nostdlib
+	strip ramdisk/sbin/launchd
+	ldid -S ramdisk/sbin/launchd
 
-launchd:
-	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
-	$(STRIP) launchd
-	/opt/local/bin/ldid -S launchd
-	chmod 755 launchd
-	mv launchd rdfs/sbin/launchd
-
-ramdisk: launchd
-	sudo hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
-	sudo hdiutil attach ramdisk-img.dmg
-	sudo chown 0:0 /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
-	sudo chown 501:20 ramdisk-img.dmg
-	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
-
-encrypt:
-	xpwntool ramdisk-img.dmg ramdisk.img3 -t 018-7074-092.dmg -iv c58929f652c1c086f70f941f3bb31058 -k 358e67475d675410517ccbfcbbc38fa4c56d0e892b627460851a1fa5e9b430ab
+ramdisk.dmg:
+	hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW rd-dec.dmg 
+	hdiutil attach ramdisk.dmg
+	sudo chown root:wheel /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
+	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+	xpwntool rd-dec.dmg ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
+	rm rd-dec.dmg
 
 clean:
-	#rm -f ramdisk-img.dmg launchd
+	rm -rf ramdisk.dmg
+	rm -rf ramdisk/sbin/launchd
