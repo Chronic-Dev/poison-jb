@@ -10,14 +10,16 @@ int copyFiles() {
 }
 
 int main(int argc, char **args, char **env) {
-        struct stat status;
-        int console;
+    struct stat status;
+    int console;
 	int ret;
-        mlock(0x1000,0x2000);
 
-        console = open("/dev/console", O_WRONLY);
-        dup2(console, 1);
-        dup2(console, 2);
+	reboot(0);
+    mlock(0x1000,0x2000);
+
+    console = open("/dev/console", O_WRONLY);
+    dup2(console, 1);
+    dup2(console, 2);
 
 	_puts("jDisk Loaded - Chronic-Dev 2010 bitches!\n\n");
 	_puts("Waiting for disk...\n");
