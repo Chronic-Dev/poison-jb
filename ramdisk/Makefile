@@ -4,9 +4,9 @@ SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
-RAMDISK_IV=2e7aa9f6dc823657f1c930a00db8efe1
-RAMDISK_KEY=9781d55350f58c3ff72c7a3e50b70288
-RAMDISK_TEMPLATE=/Users/John/Desktop/3.1.3/018-6508-014.dmg
+RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
+RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+RAMDISK_TEMPLATE=018-7074-092.dmg
 
 LAUNCHD_SOURCES=launchd/launchd.c launchd/syscall.S
 RDKIT_SOURCES=rdkit/framebuffer.c
@@ -25,7 +25,7 @@ ramdisk/sbin/launchd:
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg:
-	hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW rd-dec.dmg 
+	hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
 	hdiutil attach ramdisk.dmg
 	sudo chown root:wheel /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
 	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
