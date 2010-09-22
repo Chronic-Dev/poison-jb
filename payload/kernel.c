@@ -57,7 +57,9 @@ int kernel_cmd(int argc, CmdArg* argv) {
 #endif
 
 		printf("Load kernelcache image at %p with %u bytes\n", address, *compressed);
-		strcpy(gBootArgs, "rd=md0 serial=1 debug=10 -v");
+		NvramVar* bootargs = nvram_find_var("boot-args");
+		printf("boot-args set to %s\n", bootargs->string);
+		strcpy(gBootArgs, bootargs->string);
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
 		patch_kernel(0x43000000, 0xF00000);
@@ -65,10 +67,12 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		//jump_to(3, decompressed, *gKernelPhyMem);
 	}
 	else if(!strcmp(action, "patch")) {
+		printf("patching kernel..\n");
 		patch_kernel(address, size);
 	}
 	else if(!strcmp(action, "boot")) {
 		if(gKernelAddr) {
+			printf("booting kernel...\n");
 			jump_to(3, gKernelAddr, *gKernelPhyMem);
 		}
 	}

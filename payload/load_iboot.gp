@@ -9,6 +9,8 @@ go kernel load 0x42000000 0xF00000
 go kernel boot
 
 -v serial=1 serialbaud=115200 debug=12
+rd=md0 nand-enable-reformat=1 -progress
+rd=md0 -v
 
 go mw 0x5FF3B500 0xFFFFFFFF
 go mw 0x5FF37014 0x44000000

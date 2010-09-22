@@ -61,8 +61,8 @@ int fetch_firmware_image(char* type) {
 
 	memset(name, '\0', 32);
 	memset(path, '\0', 256);
-	snprintf(name, 31, "%s.%s.RELEASE.dfu", type, device->model);
-	snprintf(path, 255, "Firmware/all_flash.%s.production/%s", device->model, name);
+	snprintf(name, 31, "%s.%s.img3", type, device->model);
+	snprintf(path, 255, "Firmware/all_flash/all_flash.%s.production/%s", device->model, name);
 
 	if(fetch_image(path, type)  < 0) {
 		return -1;
@@ -317,7 +317,7 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-
+/*
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
@@ -337,7 +337,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-
+*/
 	debug("Sending ramdisk to device\n");
 	error = irecv_send_file(client, "ramdisk.dmg", 0);
 	if(error != IRECV_E_SUCCESS) {
@@ -351,10 +351,22 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
+/*
+	//debug("Preparing to fetch kernelcache from Apple's servers\n");
+	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
+	//	error("Unable to execute iBSS payload\n");
+	//	return -1;
+	//}
 
-	debug("Preparing to fetch kernelcache from Apple's servers\n");
-	if(fetch_image("kernelcache.n81", "kernelcache") < 0) {
-		error("Unable to execute iBSS payload\n");
+	info("Please unplug your device, and plug it back in\n");
+	info("Press enter key to continue");
+	getchar();
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client);
+	if (client == NULL) {
+		debug("%s\n", irecv_strerror(error));
+		error("Unable to reconnect\n");
 		return -1;
 	}
 
@@ -365,6 +377,26 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
+	debug("Preping and patching kernelcache\n");
+	error = irecv_send_command(client, "go kernel load 0x41000000 0xF00000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+
+	info("Waiting for kernel to patch\n");
+	sleep(5);
+
+	debug("Preping and patching kernelcache\n");
+	error = irecv_send_command(client, "go kernel boot");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+//////////////////////////////////////////////////////////////////
+ * old stuff
 	debug("Booting ramdisk\n");
 	error = irecv_send_command(client, "bootx");
 	if(error != IRECV_E_SUCCESS) {
@@ -372,7 +404,6 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	/*
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	irecv_send_command(client, "go patch 0x41000000 0x38000");
@@ -388,8 +419,7 @@ int execute_ibss_payload() {
 	upload_dfu_payload("iBoot");
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-	 */
-
+*/
 	return 0;
 }
 
