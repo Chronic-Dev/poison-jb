@@ -2,8 +2,8 @@ CC = gcc
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME),Darwin)
-	CFLAGS = -g -I./include -I/usr/local/include -I/opt/local/include
-	LDFLAGS = -L/opt/local/lib -L/usr/local/lib -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit
+	CFLAGS = -g -I./include -I/usr/local/include 
+	LDFLAGS = -L/usr/local/lib -lcurl -lz -framework CoreFoundation -framework IOKit
 else
 	CFLAGS = -g -I./include
 	LDFLAGS = -lusb-1.0 -lcurl -lz
