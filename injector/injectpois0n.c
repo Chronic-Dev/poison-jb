@@ -88,7 +88,8 @@ int upload_dfu_image(char* type) {
 		return -1;
 	}
 
-	error = irecv_send_file(client, "iBSS", 1);
+	error = irecv_send_file(client, "iBSS", 0
+			);
 	if(error != IRECV_E_SUCCESS) {
 		debug("%s\n", irecv_strerror(error));\
 		return -1;

@@ -20,7 +20,7 @@
 #include "filesystem.h"
 
 static char* gKernelAddr = NULL;
-char* gBootArgs = (char*) 0x5FF2FC28;//0x5FF3AAC4;
+char* gBootArgs = (char*) 0x8401F2F0;//0x5FF3AAC4;
 char** gKernelPhyMem = SELF_KERNEL_PHYMEM;
 
 int(*kernel_load)(void* input, int max_size, char** output) = SELF_KERNEL_LOAD;
@@ -57,9 +57,12 @@ int kernel_cmd(int argc, CmdArg* argv) {
 #endif
 
 		printf("Load kernelcache image at %p with %u bytes\n", address, *compressed);
+		strcpy(gBootArgs, "rd=md0 serial=1 debug=10 -v");
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
-		//jump_to(3, decompressed, *kernel_phymem);
+		patch_kernel(0x43000000, 0xF00000);
+		patch_kernel(0x40000000, 0xF00000);
+		//jump_to(3, decompressed, *gKernelPhyMem);
 	}
 	else if(!strcmp(action, "patch")) {
 		patch_kernel(address, size);

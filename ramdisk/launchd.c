@@ -26,7 +26,7 @@ int main(int argc, char **args, char **env) {
 	}
 
 	_puts("Disk Found! Mounting...\n");
-	ret = mountHFS("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_RDONLY);
+	ret = mountHFS("/dev/disk0s1", "/mnt", MNT_ROOTFS);
 	if (ret == 0) {
 		_puts("Mounted Disk...\n");
 		_puts("Mounting Dev...\n");

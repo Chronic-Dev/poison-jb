@@ -45,8 +45,8 @@ fiq_vector:		.word halt
 .pool
 .set	FP_CMD_1,	0x47184b00	@ search: LDR R3, =0x41000000 @ BR R3
 .set	FP_CMD_2,	0x41000000	@ search: 0x41000000
-.set	PATCH_CMD_1,	0x47184b00	@ _patch: LDR R3, =0x40000000 @ BX R3
-.set	PATCH_CMD_2,	0x40000000	@ _patch: 0x40000000
+.set	PATCH_CMD_1,	0x47184b00	@ _patch: LDR R3, =0x42000000 @ BX R3
+.set	PATCH_CMD_2,	0x42000000	@ _patch: 0x42000000
 
 .code 32
 @---------------------------------------------
@@ -54,7 +54,7 @@ reset:
 	push	{r0-r12, lr}
 	mov	r0, pc
 	lsr	r0, #24
-	cmp	r0, #0x40
+	cmp	r0, #0x42
 	beq	relocated
 	
 	bl	patch_go
@@ -62,7 +62,7 @@ reset:
 	bl	clear_icache
 	bl	flush_dcache
 
-	mov	r0, #0x40000000
+	mov	r0, #0x42000000
 	blx	r0
 	b	done
 
@@ -82,7 +82,7 @@ halt:
 .code 32
 relocate:
 	mov	r0, #0x41000000
-	mov	r1, #0x40000000
+	mov	r1, #0x42000000
 	mov	r2, #0x00100000
 relocate_loop:
 	ldr	r3, [r0], #4

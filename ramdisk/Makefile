@@ -11,8 +11,16 @@ CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation 
 
-all: launchd ramdisk
-	cp ramdisk-img.dmg ../staging/ramdisk.dmg
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME),Darwin)
+all: launchd ramdisk encrypt
+	cp ramdisk.img3 ../staging/ramdisk.dmg
+else
+	
+all: encrypt
+	cp ramdisk.img3 ../staging/ramdisk.dmg
+endif
 
 launchd:
 	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
@@ -29,7 +37,7 @@ ramdisk: launchd
 	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
 
 encrypt:
-	xpwntool ramdisk-img.dmg ramdisk.dmg -t template-ipt2g4.0.dmg -iv b2b8949bd33b65f22bd0c7e55ccc836b -k 1e3e144a55fa8d1782db5153796238f0
+	xpwntool ramdisk-img.dmg ramdisk.img3 -t 018-7074-092.dmg -iv c58929f652c1c086f70f941f3bb31058 -k 358e67475d675410517ccbfcbbc38fa4c56d0e892b627460851a1fa5e9b430ab
 
 clean:
-	rm -f ramdisk-img.dmg launchd
+	#rm -f ramdisk-img.dmg launchd
