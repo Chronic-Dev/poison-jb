@@ -21,11 +21,16 @@ LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME),Darwin)
+<<<<<<< HEAD
 all: clean ramdisk/sbin/launchd ramdisk.dmg encrypt
+=======
+all: launchd ramdisk encrypt
+>>>>>>> jaywalker
 else
 all: encrypt
 endif
 
+<<<<<<< HEAD
 ramdisk/sbin/launchd:
 	$(CC) $(CFLAGS) -static -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES) -nostdlib
 	strip ramdisk/sbin/launchd
@@ -37,6 +42,21 @@ ramdisk.dmg:
 	sudo chown root:wheel /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
 	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
 	
+=======
+launchd:
+	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
+	$(STRIP) launchd
+	/opt/local/bin/ldid -S launchd
+	chmod 755 launchd
+	mv launchd rdfs/sbin/launchd
+
+ramdisk: launchd
+	hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
+	hdiutil attach ramdisk-img.dmg
+	sudo chown 0:0 /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
+	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+
+>>>>>>> jaywalker
 encrypt:
 	xpwntool rd-dec.dmg ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 	rm rd-dec.dmg
