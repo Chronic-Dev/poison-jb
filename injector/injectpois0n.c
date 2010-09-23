@@ -351,17 +351,17 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-/*
-	//debug("Preparing to fetch kernelcache from Apple's servers\n");
-	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
-	//	error("Unable to execute iBSS payload\n");
-	//	return -1;
-	//}
 
-	info("Please unplug your device, and plug it back in\n");
-	info("Press enter key to continue");
-	getchar();
-*/
+	debug("Preparing to fetch kernelcache from Apple's servers\n");
+	if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	//info("Please unplug your device, and plug it back in\n");
+	//info("Press enter key to continue");
+	//getchar();
+
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
