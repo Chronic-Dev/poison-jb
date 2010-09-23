@@ -1,29 +1,21 @@
 #include "utils.h"
 
 void _puts(char *msg) {
-        while((*msg) != '\0') {
-                write(1, msg, 1);
-                msg++;
-        }
-}
-
-
-int mountHFS(char *device, char *mountdir, int options) {
-	int i;
-        struct hfs_mount_args args;
-/*
-	struct hfs_mount_args *p = &args;
-        for (i = 0; i < sizeof(args); i++) {
-		p[i] = 0;
+	while((*msg) != '\0') {
+		write(1, msg, 1);
+		msg++;
 	}
-*/
-        args.fspec = device;
-
-	//Call mount
-        return mount("hfs", mountdir, options, &args);
 }
 
-int copy(char *src, char *dest) {
+
+int _mountHFS(char *device, char *mountdir, int options) {
+	int i;
+	struct hfs_mount_args args;
+	args.fspec = device;
+	return mount("hfs", mountdir, options, &args);
+}
+
+int _cp(char *src, char *dest) {
 	char buf[0x800];
 	int count = 0;
 	int in = open(src, O_RDONLY);

@@ -3,11 +3,15 @@
 #include <sys/types.h>
 #include <sys/syslog.h>
 #include <sys/stat.h>
-#include "hfs_mount.h"
-#include "reboot.h"
 #include <sys/resource.h>
 
-void _puts(char *msg);
-int mountHFS(char *device, char *mountdir, int options);
+#include "reboot.h"
+#include "hfs_mount.h"
 
-int copy(char *src, char *dest);
+#define cp _cp
+#define puts _puts
+#define mountHFS _mountHFS
+
+void _puts(char *msg);
+int _cp(char *src, char *dest);
+int _mountHFS(char *device, char *mountdir, int options);
