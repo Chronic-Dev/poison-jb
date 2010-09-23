@@ -313,6 +313,7 @@ int upload_ibec_payload() {
 }
 
 int execute_ibss_payload() {
+	int i = 0;
 	irecv_error_t error = 0;
 
 	debug("Initializing greenpois0n in iBSS\n");
@@ -352,23 +353,15 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	debug("Preparing to fetch kernelcache from Apple's servers\n");
-	if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
+	//debug("Preparing to fetch kernelcache from Apple's servers\n");
+	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
+		//error("Unable to execute iBSS payload\n");
+		//return -1;
+	//}
 
 	//info("Please unplug your device, and plug it back in\n");
 	//info("Press enter key to continue");
 	//getchar();
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
-	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable to reconnect\n");
-		return -1;
-	}
 
 	debug("Sending kernelcache\n");
 	error = irecv_send_file(client, "kernelcache", 0);
@@ -386,7 +379,9 @@ int execute_ibss_payload() {
 
 
 	info("Waiting for kernel to patch\n");
-	sleep(5);
+	for(i = 0; i < 10; i++) {
+		sleep(1);
+	}
 
 	debug("Preping and patching kernelcache\n");
 	error = irecv_send_command(client, "go kernel boot");

@@ -32,11 +32,11 @@ ramdisk/sbin/launchd:
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg: launchd
-	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
+	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
 	sudo hdiutil attach ramdisk.dmg
-	sudo chown root:wheel $(PWD)/ramdisk/sbin/launchd
-	sudo hdiutil detach $(PWD)/ramdisk/sbin/launchd
-	sudo mv ramdisk.dmg ramdisk.hfs
+	sudo chown 0:0 $(PWD)/ramdisk/sbin/launchd
+	sudo hdiutil detach ramdisk
+	sudo cp ramdisk.dmg ramdisk.hfs
 
 encrypt:
 	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
