@@ -406,7 +406,6 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	/* initiate transfer */
-	// pod2g: if commented out, irecovery won't upload correctly to 4.1 recovery mode
 	if (recovery_mode) {
 		error = libusb_control_transfer(client->handle, 0x41, 0, 0, 0, NULL, 0, 1000);
 		if (error != IRECV_E_SUCCESS) {
@@ -415,7 +414,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	int i = 0;
-	//double progress = 0;
+	double progress = 0;
 	unsigned long count = 0;
 	unsigned int status = 0;
 	int bytes = 0;
@@ -423,15 +422,11 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		int size = (i + 1) < packets ? packet_size : last;
 
 		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
-#ifndef __APPLE__
 		if (recovery_mode) {
 			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
 		} else {
 			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
 		}
-#else
-		bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, (unsigned char*) &buffer[i * packet_size], size, 1000);
-#endif
 
 		if (bytes != size) {
 			return IRECV_E_USB_UPLOAD;
