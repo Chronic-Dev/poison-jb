@@ -9,12 +9,12 @@ RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
 RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
 RAMDISK_TEMPLATE=018-7074-092.dmg
 
-LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c
+LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c  
 
 RAMDISK_VOLUME=GREEND1SK
 
-CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include -I./include/hfs -I/usr/include -I/usr/local/include -I/opt/local/include
-LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
+CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
+LDFLAGS=-c -F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation \
 
 UNAME := $(shell uname -s)

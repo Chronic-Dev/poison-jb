@@ -1,33 +1,31 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "utils.h"
+#include "syscalls.h"
 
-void _puts(char *msg) {
-	while((*msg) != '\0') {
-		write(1, msg, 1);
-		msg++;
-	}
+void _puts(const char* text) {
+	write(STDOUT, text, strlen(text));
 }
 
-
-int _mountHFS(char *device, char *mountdir, int options) {
-	int i;
-	struct hfs_mount_args args;
-	args.fspec = device;
-	return mount("hfs", mountdir, options, &args);
-}
-
-int _cp(char *src, char *dest) {
+int cp(char *src, char *dest) {
 	char buf[0x800];
 	int count = 0;
-	int in = open(src, O_RDONLY);
-	int out = open(dest, O_WRONLY | O_CREAT);
+	int in = open(src, O_RDONLY, 0);
+	int out = open(dest, O_WRONLY | O_CREAT, 0);
 	if (in == 0 || out == 0) {
 		return 1; //Unable to open one or the other
 	}
 
 	do {
 		count = read(in, buf, 0x800);
-		if (count != -1)
+		if (count != -1) {
 			count = write(out, buf, count);
+		}
 	} while (count == 0x800);
 	close(in);
 	close(out);
@@ -37,3 +35,13 @@ int _cp(char *src, char *dest) {
 	return 0;
 }
 
+int _strlen(const char *s) {
+	int i = 0;
+	while(i > 0) {
+		if(s[i] == '\0') {
+			return i;
+		}
+		i++;
+	}
+	return -1;
+}
