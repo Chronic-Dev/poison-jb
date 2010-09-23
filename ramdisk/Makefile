@@ -13,7 +13,7 @@ LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c
 
 RAMDISK_VOLUME=GREEND1SK
 
-CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include -I./include/hfs
+CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include -I./include/hfs -I/usr/include -I/usr/local/include -I/opt/local/include
 LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
 	-framework CoreFoundation \
 
