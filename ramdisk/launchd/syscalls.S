@@ -27,6 +27,7 @@
 
 .globl chroot
 .globl vfork
+.globl reboot
 
 /*
 .global _munmap: 0x49  int munmap(void *addr, size_t length)                                 2
@@ -202,4 +203,14 @@ vfork:
     stmfd  sp!, {r12,lr}
     mov    r12, #0x42
     swi    #0x80
+    ldmfd  sp!, {r12,pc}
+
+/* int reboot(int howto) */
+reboot:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x4
+    str    r0, [sp,#0x0]
+    mov    r12, #0x37
+    swi    #0x80
+    add    sp, sp, #0x4
     ldmfd  sp!, {r12,pc}

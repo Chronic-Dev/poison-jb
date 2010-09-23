@@ -22,6 +22,7 @@ int open(const char *pathname, int flags, ...);
 int close(int fd);
 int unlink(const char *pathname);
 int stat(const char *path, struct stat *buf);
+int reboot(int howto);
 
 int mount(const char *filesystemtype, const char *target, int mountflags, void *source);
 int unmount(const char *dir, int flags);

@@ -1,6 +1,9 @@
 #include "utils.h"
 
+const char* greeting = "GreenPois0n Ramdisk - by Chronic-Dev\n";
+
 int main(int argc, char* argv[], char* env[]) {
-	puts("GreenPois0n Ramdisk - by Chronic-Dev\n");
+	write(0, greeting, strlen(greeting));
+	//reboot(0);
 	return 0;
 }
