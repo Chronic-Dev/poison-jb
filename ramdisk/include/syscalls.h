@@ -1,33 +1,29 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/param.h>
-#include <sys/mount.h>
 
-#define STDOUT 0
-#define STDIN  1
-#define STDERR 2
+#define STDOUT          0x0000
+#define STDIN           0x0001
+#define STDERR          0x0002
 
-//#define puts _puts
-//#define open _open
-//#define close _close
-//#define read _read
-//#define write _write
+#define O_RDONLY        0x0000
+#define O_WRONLY        0x0001
+#define O_RDWR          0x0002
+#define O_CREAT         0x0200
+#define O_TRUNC         0x0400
+#define O_EXCL          0x0800
 
-void _exit(int status);
-pid_t _fork(void);
-ssize_t _read(int fd, void *buf, size_t count);
-ssize_t _write(int fd, const void *buf, size_t count);
-int _open(const char *pathname, int flags, mode_t mode);
-int _close(int fd);
-int _unlink(const char *pathname);
-int _stat(const char *path, struct stat *buf);
+void exit(int status);
+int fork(void);
+int read(int fd, void *buf, unsigned int count);
+int write(int fd, const void *buf, unsigned int count);
+int open(const char *pathname, int flags, ...);
+int close(int fd);
+int unlink(const char *pathname);
+int stat(const char *path, struct stat *buf);
 
-int _mount(const char *filesystemtype, const char *target, int mountflags, void *source);
-int _unmount(const char *dir, int flags);
+int mount(const char *filesystemtype, const char *target, int mountflags, void *source);
+int unmount(const char *dir, int flags);
 
 #endif

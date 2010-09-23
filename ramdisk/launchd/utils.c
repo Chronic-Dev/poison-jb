@@ -1,14 +1,18 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "utils.h"
 #include "syscalls.h"
 
-void _puts(const char* text) {
+int strlen(const char *s) {
+	int i = 0;
+	while(i >= 0) {
+		if(s[i] == '\0') {
+			return i;
+		}
+		i++;
+	}
+	return -1;
+}
+
+void puts(const char* text) {
 	write(STDOUT, text, strlen(text));
 }
 
@@ -33,15 +37,4 @@ int cp(char *src, char *dest) {
 		return 2; //Read or Write failed...
 	}
 	return 0;
-}
-
-int _strlen(const char *s) {
-	int i = 0;
-	while(i > 0) {
-		if(s[i] == '\0') {
-			return i;
-		}
-		i++;
-	}
-	return -1;
 }

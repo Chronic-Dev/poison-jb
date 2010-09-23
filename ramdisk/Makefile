@@ -9,9 +9,9 @@ RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
 RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
 RAMDISK_TEMPLATE=018-7074-092.dmg
 
-LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c  
+LAUNCHD_SOURCES=launchd/launchd.c launchd/utils.c launchd/syscalls.S
 
-RAMDISK_VOLUME=GREEND1SK
+RAMDISK_VOLUME=POIS0N
 
 CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
 LDFLAGS=-c -F$(SDK)/System/Library/PrivateFrameworks \
@@ -27,16 +27,18 @@ all: encrypt
 endif
 
 ramdisk/sbin/launchd:
-	$(CC) $(CFLAGS) -static -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES) -nostdlib
+	$(CC) $(CFLAGS) -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES)
 	strip ramdisk/sbin/launchd
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg: launchd
-	sudo chown -R 0:0 ramdisk
-	sudo hdiutil create -srcfolder ./ramdisk -align 512 -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
+	sudo chown -R 0:0 ramdisk/
+	sudo hdiutil create -srcfolder ./ramdisk -megabytes 1 -uid 0 -gid 0 -mode 755 -copyuid 0 -align 8 -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
 	sudo hdiutil attach ramdisk.dmg
-	sudo hdiutil detach ramdisk.dmg
-	sudo cp ramdisk.dmg ramdisk.hfs
+	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+	sudo chown -R 501:20 ramdisk/
+	sudo chown 501:20 ramdisk.dmg
+	cp ramdisk.dmg ramdisk.hfs
 
 encrypt:
 	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
