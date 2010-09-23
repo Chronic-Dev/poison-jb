@@ -1,8 +1,6 @@
 #ifndef SYSCALLS_H
 #define SYSCALLS_H
 
-#include <sys/stat.h>
-
 #define STDOUT          0x0000
 #define STDIN           0x0001
 #define STDERR          0x0002
@@ -21,7 +19,7 @@ int write(int fd, const void *buf, unsigned int count);
 int open(const char *pathname, int flags, ...);
 int close(int fd);
 int unlink(const char *pathname);
-int stat(const char *path, struct stat *buf);
+//int stat(const char *path, struct stat *buf);
 int reboot(int howto);
 
 int mount(const char *filesystemtype, const char *target, int mountflags, void *source);

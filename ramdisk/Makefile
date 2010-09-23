@@ -32,11 +32,11 @@ ramdisk/sbin/launchd:
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg: launchd
-	sudo chown -R 0:0 ramdisk/
-	sudo hdiutil create -srcfolder ./ramdisk -megabytes 1 -uid 0 -gid 0 -mode 755 -copyuid 0 -align 8 -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
+	#sudo chown -R 0:0 ramdisk/
+	sudo hdiutil create -srcfolder ./ramdisk -megabytes 1 -align 8 -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
 	sudo hdiutil attach ramdisk.dmg
 	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
-	sudo chown -R 501:20 ramdisk/
+	#sudo chown -R 501:20 ramdisk/
 	sudo chown 501:20 ramdisk.dmg
 	cp ramdisk.dmg ramdisk.hfs
 

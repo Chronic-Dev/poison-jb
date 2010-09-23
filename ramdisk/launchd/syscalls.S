@@ -1,4 +1,3 @@
-.arm
 .text
 
 .globl exit
