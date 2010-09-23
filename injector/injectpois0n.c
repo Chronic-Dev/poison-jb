@@ -318,7 +318,7 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-/*
+
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
@@ -338,7 +338,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-*/
+
 	debug("Sending ramdisk to device\n");
 	error = irecv_send_file(client, "ramdisk.dmg", 0);
 	if(error != IRECV_E_SUCCESS) {
@@ -355,8 +355,8 @@ int execute_ibss_payload() {
 
 	//debug("Preparing to fetch kernelcache from Apple's servers\n");
 	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
-		//error("Unable to execute iBSS payload\n");
-		//return -1;
+	//	error("Unable to execute iBSS payload\n");
+	//	return -1;
 	//}
 
 	//info("Please unplug your device, and plug it back in\n");
@@ -377,7 +377,7 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-
+/*
 	info("Waiting for kernel to patch\n");
 	for(i = 0; i < 10; i++) {
 		sleep(1);
@@ -389,6 +389,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
+*/
 
 //////////////////////////////////////////////////////////////////
 /* old stuff
