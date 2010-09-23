@@ -62,7 +62,6 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		strcpy(gBootArgs, bootargs->string);
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
-		patch_kernel(0x43000000, 0xF00000);
 		patch_kernel(0x40000000, 0xF00000);
 		//jump_to(3, decompressed, *gKernelPhyMem);
 	}
