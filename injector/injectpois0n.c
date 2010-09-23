@@ -361,7 +361,7 @@ int execute_ibss_payload() {
 	info("Please unplug your device, and plug it back in\n");
 	info("Press enter key to continue");
 	getchar();
-
+*/
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
@@ -396,7 +396,7 @@ int execute_ibss_payload() {
 	}
 
 //////////////////////////////////////////////////////////////////
- * old stuff
+/* old stuff
 	debug("Booting ramdisk\n");
 	error = irecv_send_command(client, "bootx");
 	if(error != IRECV_E_SUCCESS) {
