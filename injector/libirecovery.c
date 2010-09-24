@@ -20,33 +20,33 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <libusb-1.0/libusb.h>
 
 #include "libirecovery.h"
 
-#define BUFFER_SIZE 0x1000
-#define debug(...) if(libirecovery_debug) fprintf(stderr, __VA_ARGS__)
+#ifdef __APPLE__
+#	include "iokit.h"
+#else
+#	include "libusb1.h"
+#endif
 
-static int libirecovery_debug = 0;
-static libusb_context* libirecovery_context = NULL;
+#define BUFFER_SIZE 0x1000
+#define debug(...) if(debug) fprintf(stderr, __VA_ARGS__)
+
+static int debug = 0;
 
 int irecv_write_file(const char* filename, const void* data, size_t size);
 int irecv_read_file(const char* filename, char** data, uint32_t* size);
 
 void irecv_init() {
-	libusb_init(&libirecovery_context);
+	usb_init();
 }
 
 void irecv_exit() {
-	if (libirecovery_context != NULL) {
-		libusb_exit(libirecovery_context);
-		libirecovery_context = NULL;
-	}
+	usb_exit();
 }
 
 irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
-	int i;
-
+	int i = 0;
 	for (i = 0; i < attempts; i++) {
 		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
 			debug("Connection failed. Waiting 1 sec before retry.");
@@ -61,51 +61,49 @@ irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
 
 irecv_error_t irecv_open(irecv_client_t* pclient) {
 	int i = 0;
-	struct libusb_device* usb_device = NULL;
-	struct libusb_device** usb_device_list = NULL;
-	struct libusb_device_handle* usb_handle = NULL;
-	struct libusb_device_descriptor usb_descriptor;
+	int count = 0;
+	irecv_device_t device = NULL;
+	irecv_device_t* devices = NULL;
+	irecv_error_t error = IRECV_E_SUCCESS;
 
 	*pclient = NULL;
-	if(libirecovery_debug) {
-		irecv_set_debug_level(libirecovery_debug);
+	if(debug) {
+		irecv_set_debug_level(debug);
 	}
-
-	irecv_error_t error = IRECV_E_SUCCESS;
-	int usb_device_count = libusb_get_device_list(libirecovery_context, &usb_device_list);
-	for (i = 0; i < usb_device_count; i++) {
-		usb_device = usb_device_list[i];
-		libusb_get_device_descriptor(usb_device, &usb_descriptor);
-		if (usb_descriptor.idVendor == APPLE_VENDOR_ID) {
+	count = usb_get_device_list(*pclient, &devices);
+	for (i = 0; i < count; i++) {
+		device = devices[i];
+		//usb_get_device_descriptor(device, &descriptor);
+		if (device->descriptor->vendor == APPLE_VENDOR_ID) {
 			/* verify this device is in a mode we understand */
-			if (usb_descriptor.idProduct == kRecoveryMode1 ||
-				usb_descriptor.idProduct == kRecoveryMode2 ||
-				usb_descriptor.idProduct == kRecoveryMode3 ||
-				usb_descriptor.idProduct == kRecoveryMode4 ||
-				usb_descriptor.idProduct == kDfuMode) {
+			if (device->descriptor->product == kRecoveryMode1 ||
+					device->descriptor->product == kRecoveryMode2 ||
+					device->descriptor->product == kRecoveryMode3 ||
+					device->descriptor->product == kRecoveryMode4 ||
+					device->descriptor->product == kDfuMode) {
 
-				debug("opening device %04x:%04x...\n", usb_descriptor.idVendor, usb_descriptor.idProduct);
-
-				libusb_open(usb_device, &usb_handle);
-				if (usb_handle == NULL) {
-					libusb_free_device_list(usb_device_list, 1);
-					libusb_close(usb_handle);
-					libusb_exit(libirecovery_context);
-					return IRECV_E_UNABLE_TO_CONNECT;
-				}
-				libusb_free_device_list(usb_device_list, 1);
+				debug("opening device %04x:%04x...\n", device->descriptor->vendor, device->descriptor->product);
 
 				irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 				if (client == NULL) {
-					libusb_close(usb_handle);
-					libusb_exit(libirecovery_context);
+					usb_close(client);
+					usb_exit(client);
 					return IRECV_E_OUT_OF_MEMORY;
 				}
 
+				usb_open(client, device);
+				if (client->handle == NULL) {
+					usb_free_device_list(devices, 1);
+					usb_close(client);
+					usb_exit();
+					return IRECV_E_UNABLE_TO_CONNECT;
+				}
+				usb_free_device_list(devices, 1);
+
+
 				memset(client, '\0', sizeof(struct irecv_client));
 				client->interface = 0;
-				client->handle = usb_handle;
-				client->mode = usb_descriptor.idProduct;
+				client->mode = device->descriptor->product;
 				if (client->mode != kDfuMode) {
 					error = irecv_set_configuration(client, 1);
 					if (error != IRECV_E_SUCCESS) {
@@ -119,7 +117,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				}
 
 				/* cache usb serial */
-				libusb_get_string_descriptor_ascii(client->handle, usb_descriptor.iSerialNumber, (unsigned char*) client->serial, 255);
+				usb_get_string_descriptor_ascii(client, device->descriptor->serial, client->serial, 255);
 
 				*pclient = client;
 				return IRECV_E_SUCCESS;
@@ -131,16 +129,16 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 }
 
 irecv_error_t irecv_set_configuration(irecv_client_t client, int configuration) {
+	int current = 0;
+	debug("Setting to configuration %d\n", configuration);
+
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	debug("Setting to configuration %d\n", configuration);
-
-	int current = 0;
-	libusb_get_configuration(client->handle, &current);
+	usb_get_configuration(client, &current);
 	if (current != configuration) {
-		if (libusb_set_configuration(client->handle, configuration) < 0) {
+		if (usb_set_configuration(client, configuration) < 0) {
 			return IRECV_E_USB_CONFIGURATION;
 		}
 	}
@@ -150,6 +148,8 @@ irecv_error_t irecv_set_configuration(irecv_client_t client, int configuration) 
 }
 
 irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_interface) {
+	debug("Setting to interface %d:%d\n", interface, alt_interface);
+
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
@@ -158,12 +158,11 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 		return IRECV_E_SUCCESS;
 	}
 
-	debug("Setting to interface %d:%d\n", interface, alt_interface);
-	if (libusb_claim_interface(client->handle, interface) < 0) {
+	if (usb_claim_interface(client, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
 	}
 
-	if (libusb_set_interface_alt_setting(client->handle, interface, alt_interface) < 0) {
+	if (usb_set_interface_alt_setting(client, interface, alt_interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
 	}
 
@@ -177,7 +176,7 @@ irecv_error_t irecv_reset(irecv_client_t client) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	libusb_reset_device(client->handle);
+	usb_reset_device(client);
 
 	return IRECV_E_SUCCESS;
 }
@@ -255,9 +254,9 @@ irecv_error_t irecv_close(irecv_client_t client) {
 
 		if (client->handle != NULL) {
 			if (client->mode != kDfuMode) {
-				libusb_release_interface(client->handle, client->interface);
+				usb_release_interface(client, client->interface);
 			}
-			libusb_close(client->handle);
+			usb_close(client);
 			client->handle = NULL;
 		}
 
@@ -269,10 +268,10 @@ irecv_error_t irecv_close(irecv_client_t client) {
 }
 
 void irecv_set_debug_level(int level) {
-	libirecovery_debug = level;
-	if(libirecovery_context) {
-		libusb_set_debug(libirecovery_context, libirecovery_debug);
-	}
+	//debug = level;
+	//if(context) {
+		///usb_set_debug(client->context, debug);
+	//}
 }
 
 static irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command) {
@@ -282,7 +281,7 @@ static irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command
 	}
 
 	if (length > 0) {
-		int ret = libusb_control_transfer(client->handle, 0x40, 0, 0, 0, (unsigned char*) command, length + 1, 1000);
+		int ret = usb_control_transfer(client, 0x40, 0, 0, 0, (unsigned char*) command, length + 1, 1000);
 		/*
 		if ((ret < 0) || (ret != (length + 1))) {
 			if (ret == LIBUSB_ERROR_PIPE)
@@ -379,7 +378,7 @@ irecv_error_t irecv_get_status(irecv_client_t client, unsigned int* status) {
 
 	unsigned char buffer[6];
 	memset(buffer, '\0', 6);
-	if (libusb_control_transfer(client->handle, 0xA1, 3, 0, 0, buffer, 6, 1000) != 6) {
+	if (usb_control_transfer(client, 0xA1, 3, 0, 0, buffer, 6, 1000) != 6) {
 		*status = 0;
 		return IRECV_E_USB_STATUS;
 	}
@@ -407,7 +406,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 
 	/* initiate transfer */
 	if (recovery_mode) {
-		error = libusb_control_transfer(client->handle, 0x41, 0, 0, 0, NULL, 0, 1000);
+		error = usb_control_transfer(client, 0x41, 0, 0, 0, NULL, 0, 1000);
 		if (error != IRECV_E_SUCCESS) {
 			return error;
 		}
@@ -423,9 +422,9 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 
 		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
 		if (recovery_mode) {
-			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
+			error = usb_bulk_transfer(client, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
 		} else {
-			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
+			bytes = usb_control_transfer(client, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
 		}
 
 		if (bytes != size) {
@@ -458,7 +457,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	if (dfuNotifyFinished && !recovery_mode) {
-		libusb_control_transfer(client->handle, 0x21, 1, 0, 0, (unsigned char*) buffer, 0, 1000);
+		usb_control_transfer(client, 0x21, 1, 0, 0, (unsigned char*) buffer, 0, 1000);
 		for (i = 0; i < 3; i++) {
 			error = irecv_get_status(client, &status);
 			if (error != IRECV_E_SUCCESS) {
@@ -479,7 +478,7 @@ irecv_error_t irecv_receive(irecv_client_t client) {
 	}
 
 	int bytes = 0;
-	while (libusb_bulk_transfer(client->handle, 0x81, (unsigned char*) buffer, BUFFER_SIZE, &bytes, 1000) == 0) {
+	while (usb_bulk_transfer(client, 0x81, (unsigned char*) buffer, BUFFER_SIZE, &bytes, 1000) == 0) {
 		if (bytes > 0) {
 			if (client->received_callback != NULL) {
 				irecv_event_t event;
@@ -522,7 +521,7 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	}
 
 	memset(response, '\0', 256);
-	int ret = libusb_control_transfer(client->handle, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 500);
+	int ret = usb_control_transfer(client, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 500);
 	if (ret < 0)
 		return IRECV_E_UNKNOWN_ERROR;
 
@@ -580,7 +579,7 @@ irecv_error_t irecv_send_exploit(irecv_client_t client) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	libusb_control_transfer(client->handle, 0x21, 2, 0, 0, NULL, 0, 1000);
+	usb_control_transfer(client, 0x21, 2, 0, 0, NULL, 0, 1000);
 	return IRECV_E_SUCCESS;
 }
 
@@ -687,7 +686,6 @@ int irecv_write_file(const char* filename, const void* data, size_t size) {
 	debug("Writing data to %s\n", filename);
 	file = fopen(filename, "wb");
 	if (file == NULL) {
-		//error("read_file: Unable to open file %s\n", filename);
 		return -1;
 	}
 
@@ -714,7 +712,6 @@ int irecv_read_file(const char* filename, char** data, uint32_t* size) {
 
 	file = fopen(filename, "rb");
 	if (file == NULL) {
-		//error("read_file: File %s not found\n", filename);
 		return -1;
 	}
 
@@ -724,7 +721,6 @@ int irecv_read_file(const char* filename, char** data, uint32_t* size) {
 
 	buffer = (char*) malloc(length);
 	if(buffer == NULL) {
-		//error("ERROR: Out of memory\n");
 		fclose(file);
 		return -1;
 	}
@@ -732,7 +728,6 @@ int irecv_read_file(const char* filename, char** data, uint32_t* size) {
 	fclose(file);
 
 	if(bytes != length) {
-		//error("ERROR: Unable to read entire file\n");
 		free(buffer);
 		return -1;
 	}
@@ -747,7 +742,7 @@ irecv_error_t irecv_reset_counters(irecv_client_t client) {
 		return IRECV_E_NO_DEVICE;
 	}
 
-	libusb_control_transfer(client->handle, 0x21, 4, 0, 0, 0, 0, 1000);
+	usb_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
 	return IRECV_E_SUCCESS;
 }
 
@@ -776,7 +771,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 	for (i = 0; i < packets; i++) {
 		unsigned short size = (i+1) < packets ? packet_size : last;
 
-		bytes = libusb_control_transfer(client->handle, 0xA1, 2, 0, 0, &buffer[i * packet_size], size, 1000);
+		bytes = usb_control_transfer(client, 0xA1, 2, 0, 0, &buffer[i * packet_size], size, 1000);
 
 		if (bytes != size) {
 			return IRECV_E_USB_UPLOAD;
@@ -801,7 +796,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 irecv_error_t irecv_finish_transfer(irecv_client_t client) {
 	int i = 0;
 	unsigned int status = 0;
-	libusb_control_transfer(client->handle, 0x21, 1, 0, 0, 0, 0, 1000);
+	usb_control_transfer(client, 0x21, 1, 0, 0, 0, 0, 1000);
 	for(i = 0; i < 3; i++){
 		irecv_get_status(client, &status);
 	}

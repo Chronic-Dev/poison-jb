@@ -10,7 +10,7 @@ else
 endif
 
 all:
-	$(CC) -o injectpois0n injectpois0n.c libirecovery.c partial.c $(CFLAGS) $(LDFLAGS)
+	$(CC) -o injectpois0n injectpois0n.c libirecovery.c libusb1.c partial.c $(CFLAGS) $(LDFLAGS)
 	cp injectpois0n ../staging/injectpois0n
 		
 clean:

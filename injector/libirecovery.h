@@ -100,10 +100,28 @@ typedef struct {
 	irecv_event_type type;
 } irecv_event_t;
 
+typedef int irecv_context_t;
+
 struct irecv_client;
 typedef struct irecv_client* irecv_client_t;
 typedef struct irecv_device* irecv_device_t;
 typedef int(*irecv_event_cb_t)(irecv_client_t client, const irecv_event_t* event);
+
+typedef struct irecv_descriptor {
+	int product;
+	int vendor;
+	char* serial;
+} irecv_descriptor_t;
+
+struct irecv_device {
+	int index;
+	const char* product;
+	const char* model;
+	unsigned int board_id;
+	unsigned int chip_id;
+	irecv_descriptor_t* descriptor;
+	const char* url;
+};
 
 struct irecv_client {
 	int debug;
@@ -112,7 +130,9 @@ struct irecv_client {
 	int alt_interface;
 	unsigned short mode;
 	char serial[256];
-	libusb_device_handle* handle;
+	struct irecv_device_t* device;
+	struct libusb_context* context;
+	struct libusb_device_handle* handle;
 	irecv_event_cb_t progress_callback;
 	irecv_event_cb_t received_callback;
 	irecv_event_cb_t connected_callback;
@@ -121,35 +141,26 @@ struct irecv_client {
 	irecv_event_cb_t disconnected_callback;
 };
 
-struct irecv_device {
-	int index;
-	const char* product;
-	const char* model;
-	unsigned int board_id;
-	unsigned int chip_id;
-	const char* url;
-};
-
 static struct irecv_device irecv_devices[] = {
-	{  0, "iPhone1,1", "m68ap",  0,  8900,
+	{  0, "iPhone1,1", "m68ap",  0,  8900, NULL,
 	NULL },
-	{  1, "iPod1,1",   "n45ap",  2,  8900,
+	{  1, "iPod1,1",   "n45ap",  2,  8900, NULL,
 	NULL },
-	{  2, "iPhone1,2", "n82ap",  4,  8900,
+	{  2, "iPhone1,2", "n82ap",  4,  8900, NULL,
 	NULL },
-	{  3, "iPod2,1",   "n72ap",  0,  8720,
+	{  3, "iPod2,1",   "n72ap",  0,  8720, NULL,
 	NULL },
-	{  4, "iPhone2,1", "n88ap",  0,  8920,
+	{  4, "iPhone2,1", "n88ap",  0,  8920, NULL,
 	NULL },
-	{  5, "iPod3,1",   "n18ap",  2,  8922,
+	{  5, "iPod3,1",   "n18ap",  2,  8922, NULL,
 	NULL },
-	{  6, "iPad1,1",   "k48ap",  2,  8930,
+	{  6, "iPad1,1",   "k48ap",  2,  8930, NULL,
 	"http://appldnld.apple.com/iPad/061-8801.20100811.CvfR5/iPad1,1_3.2.2_7B500_Restore.ipsw" },
-	{  7, "iPhone3,1", "n90ap",  0,  8930,
+	{  7, "iPhone3,1", "n90ap",  0,  8930, NULL,
 	"http://appldnld.apple.com/iPhone4/061-7939.20100908.Lcyg3/iPhone3,1_4.1_8B117_Restore.ipsw" },
-	{  8, "iPod4,1",   "n81ap",  8,  8930,
+	{  8, "iPod4,1",   "n81ap",  8,  8930, NULL,
 	"http://appldnld.apple.com/iPhone4/061-8490.20100901.hyjtR/iPod4,1_4.1_8B117_Restore.ipsw" },
-	{ -1,  NULL,        NULL,   -1,    -1,
+	{ -1,  NULL,        NULL,   -1,    -1, NULL,
 	NULL }
 };
 
