@@ -106,12 +106,13 @@ typedef int irecv_context_t;
 
 struct irecv_client;
 typedef struct irecv_client* irecv_client_t;
+typedef struct irecv_info* irecv_info_t;
 typedef struct irecv_device* irecv_device_t;
-typedef struct irecv_descriptor* irecv_descriptor_t;
 typedef struct irecv_firmware* irecv_firmware_t;
+
 typedef int(*irecv_event_cb_t)(irecv_client_t client, const irecv_event_t* event);
 
-struct irecv_descriptor {
+struct irecv_device {
 	unsigned char length;
 	unsigned char type;
 	unsigned char class;
@@ -129,10 +130,10 @@ struct irecv_client {
 	int interface;
 	int alt_interface;
 	unsigned short mode;
-	char serial[256];
+	unsigned char* serial;
+	struct irecv_info_t* info;
 	struct irecv_device_t* device;
 	struct irecv_context_t* context;
-	struct irecv_device_t* descriptor;
 
 #ifndef __APPLE__
 	struct libusb_device_handle* handle;
@@ -161,43 +162,36 @@ struct irecv_device {
 };
 
 static struct irecv_firmware irecv_iphone31_firmware[] = {
-	{ "4.0",   NULL },
-	{ "4.0.1", NULL },
-	{ "4.0.2", NULL },
-	{ "4.1",   NULL }
+	{ "4.0",   "http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone4/061-7380.20100621,Vfgb5/iPhone3,1_4.0_8A293_Restore.ipsw" },
+	{ "4.0.1", "http://appldnld.apple.com/iPhone4/061-8619.20100715.4Pnsx/iPhone3,1_4.0.1_8A306_Restore.ipsw" },
+	{ "4.0.2", "http://appldnld.apple.com/iPhone4/061-8807.20100811.3Edre/iPhone3,1_4.0.2_8A400_Restore.ipsw" },
+	{ "4.1",   "http://appldnld.apple.com/iPhone4/061-7939.20100908.Lcyg3/iPhone3,1_4.1_8B117_Restore.ipsw" },
+	{ NULL, NULL }
 };
 
 static struct irecv_firmware irecv_ipod41_firmware[] = {
-	{ "4.1",   NULL }
+	{ "4.1",   "http://appldnld.apple.com/iPhone4/061-8490.20100901.hyjtR/iPod4,1_4.1_8B117_Restore.ipsw" },
+	{ NULL, NULL }
 };
 
 static struct irecv_firmware irecv_ipad11_firmware[] = {
-	{ "3.2",   NULL },
-	{ "3.2.1", NULL },
-	{ "3.2.2", NULL },
+	{ "3.2",   "http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPad/061-7987.20100403.mjiTr/iPad1,1_3.2_7B367_Restore.ipsw" },
+	{ "3.2.1", "http://appldnld.apple.com/iPad/061-8282.20100713.vgtgh/iPad1,1_3.2.1_7B405_Restore.ipsw" },
+	{ "3.2.2", "http://appldnld.apple.com/iPad/061-8801.20100811.CvfR5/iPad1,1_3.2.2_7B500_Restore.ipsw" },
+	{ NULL, NULL }
 };
 
 static struct irecv_device irecv_devices[] = {
-	{  0, "iPhone1,1", "m68ap",  0,  8900,
-	NULL },
-	{  1, "iPod1,1",   "n45ap",  2,  8900,
-	NULL },
-	{  2, "iPhone1,2", "n82ap",  4,  8900,
-	NULL },
-	{  3, "iPod2,1",   "n72ap",  0,  8720,
-	NULL },
-	{  4, "iPhone2,1", "n88ap",  0,  8920,
-	NULL },
-	{  5, "iPod3,1",   "n18ap",  2,  8922,
-	NULL },
-	{  6, "iPad1,1",   "k48ap",  2,  8930,
-	irecv_ipad11_firmware },
-	{  7, "iPhone3,1", "n90ap",  0,  8930,
-	irecv_iphone31_firmware },
-	{  8, "iPod4,1",   "n81ap",  8,  8930,
-	irecv_ipod41_firmware },
-	{ -1,  NULL,        NULL,   -1,    -1,
-	NULL }
+	{  0, "iPhone1,1", "m68ap",  0,  8900, NULL },
+	{  1, "iPod1,1",   "n45ap",  2,  8900, NULL },
+	{  2, "iPhone1,2", "n82ap",  4,  8900, NULL },
+	{  3, "iPod2,1",   "n72ap",  0,  8720, NULL },
+	{  4, "iPhone2,1", "n88ap",  0,  8920, NULL },
+	{  5, "iPod3,1",   "n18ap",  2,  8922, NULL },
+	{  6, "iPad1,1",   "k48ap",  2,  8930, irecv_ipad11_firmware },
+	{  7, "iPhone3,1", "n90ap",  0,  8930, irecv_iphone31_firmware },
+	{  8, "iPod4,1",   "n81ap",  8,  8930, irecv_ipod41_firmware },
+	{ -1,  NULL,        NULL,   -1,    -1, NULL }
 };
 
 static int debug;
@@ -233,7 +227,7 @@ irecv_client_t irecv_reconnect(irecv_client_t client);
 irecv_error_t irecv_reset_counters(irecv_client_t client);
 irecv_error_t irecv_finish_transfer(irecv_client_t client);
 irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned long length);
-irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device);
+irecv_error_t irecv_get_info(irecv_client_t client, irecv_info_t* info);
 
 #ifdef __cplusplus
 }

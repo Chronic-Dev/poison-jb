@@ -35,11 +35,20 @@ irecv_error_t usb_set_debug_level(irecv_client_t client, int debug) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t usb_get_device_list(irecv_client_t client, irecv_device_t** devices) {
-	// returns device count
-	struct libusb_device** devicesx;
-	libusb_get_device_list(NULL, &devicesx);
-	return IRECV_E_SUCCESS;
+int usb_get_device_list(irecv_client_t client, irecv_device_t** devices) {
+	int i = 0;
+	irecv_device_t device = NULL;
+	struct libusb_device** libusb_devices = NULL;
+	int count = libusb_get_device_list(NULL, &libusb_devices);
+	if(count <= 0) {
+		return -1;
+	}
+
+	for(i = 0; i < count; i++) {
+
+	}
+
+	return count;
 }
 
 irecv_error_t usb_get_device_descriptor(irecv_device_t device) {
