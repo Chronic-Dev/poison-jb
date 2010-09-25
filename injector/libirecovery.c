@@ -153,11 +153,11 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
-
+/*
 	if (client->interface == interface) {
 		return IRECV_E_SUCCESS;
 	}
-
+*/
 	debug("Setting to interface %d:%d\n", interface, alt_interface);
 	if (libusb_claim_interface(client->handle, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
@@ -396,7 +396,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		return IRECV_E_NO_DEVICE;
 	}
 
-	int packet_size = recovery_mode ? 0x2000: 0x800;
+	int packet_size = 0x800;
 	int last = length % packet_size;
 	int packets = length / packet_size;
 	if (last != 0) {
