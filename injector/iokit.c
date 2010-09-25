@@ -36,7 +36,10 @@ irecv_error_t usb_open(irecv_client_t client, irecv_device_t device) {
 irecv_error_t usb_close(irecv_client_t client) {
 	if (opened) {
 		opened = FALSE;
-		return ((*dev)->USBDeviceClose(dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+		(*interface)->USBInterfaceClose(interface);
+		irecv_error_t err = ((*dev)->USBDeviceClose(dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+		(*dev)->Release(dev);
+		return err;
 	}
 
 	return IRECV_E_SUCCESS;
@@ -121,19 +124,59 @@ irecv_error_t usb_set_configuration(irecv_client_t client, int configuration) {
 }
 
 irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
+	irecv_error_t ret = IRECV_E_UNKNOWN_ERROR;
+	
+	IOUSBFindInterfaceRequest interfaceRequest;
+	io_iterator_t iterator;
+	io_service_t iface;
+	IOCFPlugInInterface **iodev;
 
+	interfaceRequest.bInterfaceClass = 255;
+	interfaceRequest.bInterfaceSubClass = 255;
+	interfaceRequest.bInterfaceProtocol = interface;
+	interfaceRequest.bAlternateSetting = kIOUSBFindInterfaceDontCare;
+
+	ret = (*dev)->CreateInterfaceIterator(dev, &interfaceRequest, &iterator);
+	if(ret)
+		return 0;
+
+	while(iface = IOIteratorNext(iterator)) {
+		SInt32 score;
+		IOCFPlugInInterface **plugInInterface = NULL;
+
+		ret = IOCreatePlugInInterfaceForService(iface,
+			kIOUSBInterfaceUserClientTypeID,
+			kIOCFPlugInInterfaceID,
+			&plugInInterface,
+			&score);
+
+		if ((kIOReturnSuccess == ret) && (plugInInterface != NULL) ) {
+			HRESULT res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID*)&interface);
+			(*plugInInterface)->Release(plugInInterface);
+			if(!res && interface) {
+				uint8_t num;
+				if((*interface)->USBInterfaceOpen(interface) == kIOReturnSuccess) {
+					ret = IRECV_E_SUCCESS;
+				}
+			}
+		}
+
+		IOObjectRelease(iface);
+	}
+
+	IOObjectRelease(iterator);
 
 	return IRECV_E_SUCCESS;
 }
 
 irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int interface, int alt_interface) {
-
-
+	(*interface)->SetAlternateInterface(interface, iface);
+		
 	return IRECV_E_SUCCESS;
 }
 
 irecv_error_t usb_release_interface(irecv_client_t client, int interface) {
-
+	if (interface) (*interface)->Release(interface);
 
 	return IRECV_E_SUCCESS;
 }
