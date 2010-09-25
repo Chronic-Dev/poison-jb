@@ -10,14 +10,10 @@ IOUSBDeviceInterface182** dev;
 IOUSBInterfaceInterface182** interface;
 
 irecv_error_t usb_init() {
-	// initiate dev
-
 	return IRECV_E_SUCCESS;
 }
 
 irecv_error_t usb_exit() {
-	
-	
 	return IRECV_E_SUCCESS;
 }
 
@@ -54,8 +50,6 @@ irecv_error_t usb_reset_device(irecv_client_t client) {
 }
 
 irecv_error_t usb_set_debug_level(irecv_client_t client, int debug) {
-
-
 	return IRECV_E_SUCCESS;
 }
 
@@ -170,7 +164,7 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 }
 
 irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int interface, int alt_interface) {
-	(*interface)->SetAlternateInterface(interface, iface);
+	if (interface) (*interface)->SetAlternateInterface(interface, iface);
 		
 	return IRECV_E_SUCCESS;
 }
@@ -195,11 +189,10 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
     req.completionTimeout = timeout; 
 		
 	if((err = ((*dev)->DeviceRequestTO(dev, &req))) != kIOReturnSuccess) {
-		fprintf(stderr, "AppleMobileDevice: usb_control_msg error %d\n", err);
-		return req.wLenDone;
+		return IRECV_E_UNKNOWN_ERROR;
 	}
 		
-	return IRECV_E_SUCCESS;
+	return req.wLenDone;
 }
 
 irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned char* buffer, int maxsize, unsigned int* size, int timeout) {
