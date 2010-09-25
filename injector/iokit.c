@@ -6,8 +6,8 @@
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
-IOUSBDeviceInterface** dev;
-IOUSBInterfaceInterface190** interface;
+IOUSBDeviceInterface182** dev;
+IOUSBInterfaceInterface182** interface;
 
 irecv_error_t usb_init() {
 	// initiate dev
@@ -184,15 +184,17 @@ irecv_error_t usb_release_interface(irecv_client_t client, int interface) {
 irecv_error_t usb_control_transfer(irecv_client_t client, char request, char subrequest, int something, int index, unsigned char* buffer, unsigned int size, int timeout) {
 	IOReturn err;
 	
-	IOUSBDevRequest req;
+	IOUSBDevRequestTO req;
 	req.bmRequestType = request;
 	req.bRequest = subrequest;
 	req.wValue = something;
 	req.wIndex = index;
 	req.wLength = length;
 	req.pData = buffer;
+	req.noDataTimeout = timeout; 
+    req.completionTimeout = timeout; 
 		
-	if((err = ((*dev)->DeviceRequest(dev, &req))) != kIOReturnSuccess) {
+	if((err = ((*dev)->DeviceRequestTO(dev, &req))) != kIOReturnSuccess) {
 		fprintf(stderr, "AppleMobileDevice: usb_control_msg error %d\n", err);
 		return req.wLenDone;
 	}
