@@ -7,7 +7,7 @@
 #include <IOKit/usb/IOUSBLib.h>
 
 IOUSBDeviceInterface** dev;
-IOUSBInterfaceInterface** interface;
+IOUSBInterfaceInterface190** interface;
 
 irecv_error_t usb_init() {
 	// initiate dev
@@ -166,7 +166,7 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 
 	IOObjectRelease(iterator);
 
-	return IRECV_E_SUCCESS;
+	return ret;
 }
 
 irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int interface, int alt_interface) {
@@ -201,7 +201,17 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
 }
 
 irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned char* buffer, int maxsize, unsigned int* size, int timeout) {
-	(*interface)->WritePipe(interface, pipeRef, buffer, maxsize);
-
-	return IRECV_E_SUCCESS;
+	IOReturn err;
+	
+	if (request & 0x80 != 0) {
+		// reading
+		err = (*interface)->ReadPipeTO (interface, request, buffer, size, timeout, timeout);
+	} else {
+		// writing
+		err = (*interface)->WritePipeTO (interface, request, buffer, *size, timeout, timeout);
+		if (err!=kIOReturnSuccess) {
+			*size = 0;
+		}
+	}
+	return (err==kIOReturnSuccess)?IRECV_E_SUCCESS:IRECV_E_UNKNOWN_ERROR;
 }
