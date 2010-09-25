@@ -6,8 +6,6 @@
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
-IOUSBDeviceInterface182** dev;
-IOUSBInterfaceInterface182** interface;
 mach_port_t master_port;
 
 irecv_error_t usb_init() {
@@ -29,7 +27,11 @@ irecv_error_t usb_exit() {
 
 irecv_error_t usb_open(irecv_client_t client, irecv_device_t device) {
 	IOReturn res;
-	res = (*dev)->USBDeviceOpen(dev);
+	if (!client->dev) {
+		res = (*client->dev)->USBDeviceOpen(client->dev);
+	} else {
+		return IRECV_E_SUCCESS;
+	}
 	
 	if (res == kIOReturnSuccess) {
 		return IRECV_E_SUCCESS;
@@ -39,11 +41,12 @@ irecv_error_t usb_open(irecv_client_t client, irecv_device_t device) {
 }
 
 irecv_error_t usb_close(irecv_client_t client) {
-	if (opened) {
-		opened = FALSE;
-		(*interface)->USBInterfaceClose(interface);
-		irecv_error_t err = ((*dev)->USBDeviceClose(dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
-		(*dev)->Release(dev);
+	if (client->dev) {
+		(*client->interface)->USBInterfaceClose(client->interface);
+		client->interface = NULL;
+		irecv_error_t err = ((*client->dev)->USBDeviceClose(client->dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+		(*client->dev)->Release(client->dev);
+		client->dev = NULL;
 		return err;
 	}
 
@@ -51,8 +54,8 @@ irecv_error_t usb_close(irecv_client_t client) {
 }
 
 irecv_error_t usb_reset_device(irecv_client_t client) {
-	if (opened) {
-		return ((*dev)->ResetDevice(dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+	if (client->dev) {
+		return ((*client->dev)->ResetDevice(client->dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
 	}
 	
 	return IRECV_E_SUCCESS; // fix the return code
@@ -118,7 +121,7 @@ irecv_error_t usb_get_string_descriptor_ascii(irecv_client_t client, unsigned ch
 	memset(data, 0, sizeof(data));
 	memset(buffer, 0, size);
 	
-	ret = usb_control_transfer(dev, 0x80, 0x06, (0x03 << 8) | desc_index, langid, data, sizeof(data), 1000);
+	ret = usb_control_transfer(client, 0x80, 0x06, (0x03 << 8) | desc_index, langid, data, sizeof(data), 1000);
 	
 	if (ret < 0) return ret;
 	if (data[1] != 0x03) return IRECV_E_UNKNOWN_ERROR;
@@ -138,14 +141,14 @@ irecv_error_t usb_get_string_descriptor_ascii(irecv_client_t client, unsigned ch
 }
 
 irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration) {
-	if((err = ((*dev)->GetConfiguration(dev, configuration))) != kIOReturnSuccess) {
+	if((err = ((*client->dev)->GetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 	return IRECV_E_SUCCESS;	
 }
 
 irecv_error_t usb_set_configuration(irecv_client_t client, int configuration) {
-	if((err = ((*dev)->SetConfiguration(dev, configuration))) != kIOReturnSuccess) {
+	if((err = ((*client->dev)->SetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 	return IRECV_E_SUCCESS;
@@ -153,38 +156,38 @@ irecv_error_t usb_set_configuration(irecv_client_t client, int configuration) {
 
 irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 	irecv_error_t ret = IRECV_E_UNKNOWN_ERROR;
-	
+	IOReturn err;	
 	IOUSBFindInterfaceRequest interfaceRequest;
 	io_iterator_t iterator;
 	io_service_t iface;
-	IOCFPlugInInterface **iodev;
-
+	
 	interfaceRequest.bInterfaceClass = 255;
 	interfaceRequest.bInterfaceSubClass = 255;
 	interfaceRequest.bInterfaceProtocol = interface;
 	interfaceRequest.bAlternateSetting = kIOUSBFindInterfaceDontCare;
 
-	ret = (*dev)->CreateInterfaceIterator(dev, &interfaceRequest, &iterator);
-	if(ret)
-		return 0;
+	err = (*client->dev)->CreateInterfaceIterator(client->dev, &interfaceRequest, &iterator);
+	if (err!=kIOReturnSuccess) return IRECV_E_UNKNOWN_ERROR;
 
 	while(iface = IOIteratorNext(iterator)) {
 		SInt32 score;
 		IOCFPlugInInterface **plugInInterface = NULL;
-
-		ret = IOCreatePlugInInterfaceForService(iface,
+		IOUSBInterfaceInterface182** currentInterface
+			
+		err = IOCreatePlugInInterfaceForService(iface,
 			kIOUSBInterfaceUserClientTypeID,
 			kIOCFPlugInInterfaceID,
 			&plugInInterface,
 			&score);
 
-		if ((kIOReturnSuccess == ret) && (plugInInterface != NULL) ) {
-			HRESULT res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID*)&interface);
+		if ((kIOReturnSuccess == err) && (plugInInterface != NULL) ) {
+			HRESULT res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID*)&currentInterface);
 			(*plugInInterface)->Release(plugInInterface);
-			if(!res && interface) {
+			if(!res && currentInterface) {
 				uint8_t num;
-				if((*interface)->USBInterfaceOpen(interface) == kIOReturnSuccess) {
+				if((*currentInterface)->USBInterfaceOpen(currentInterface) == kIOReturnSuccess) {
 					ret = IRECV_E_SUCCESS;
+					client->interface = currentInterface;
 				}
 			}
 		}
@@ -197,14 +200,14 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 	return ret;
 }
 
-irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int interface, int alt_interface) {
-	if (interface) (*interface)->SetAlternateInterface(interface, iface);
+irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int iface, int alt_iface) {
+	if (client->interface) (*client->interface)->SetAlternateInterface(client->interface, iface);
 		
 	return IRECV_E_SUCCESS;
 }
 
 irecv_error_t usb_release_interface(irecv_client_t client, int interface) {
-	if (interface) (*interface)->Release(interface);
+	if (client->interface) (*client->interface)->Release(client->interface);
 
 	return IRECV_E_SUCCESS;
 }
@@ -222,7 +225,7 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
 	req.noDataTimeout = timeout; 
     req.completionTimeout = timeout; 
 		
-	if((err = ((*dev)->DeviceRequestTO(dev, &req))) != kIOReturnSuccess) {
+	if((err = ((*client->dev)->DeviceRequestTO(client->dev, &req))) != kIOReturnSuccess) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 		
@@ -234,10 +237,10 @@ irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned ch
 	
 	if (request & 0x80 != 0) {
 		// reading
-		err = (*interface)->ReadPipeTO (interface, request, buffer, size, timeout, timeout);
+		err = (*client->interface)->ReadPipeTO (client->interface, request, buffer, size, timeout, timeout);
 	} else {
 		// writing
-		err = (*interface)->WritePipeTO (interface, request, buffer, *size, timeout, timeout);
+		err = (*client->interface)->WritePipeTO (client->interface, request, buffer, *size, timeout, timeout);
 		if (err!=kIOReturnSuccess) {
 			*size = 0;
 		}
