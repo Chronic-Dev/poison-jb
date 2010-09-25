@@ -1,4 +1,4 @@
-#include "libusb1.h"
+#include "iokit.h"
 #include "libirecovery.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -8,8 +8,17 @@
 
 IOUSBDeviceInterface182** dev;
 IOUSBInterfaceInterface182** interface;
+mach_port_t master_port;
 
 irecv_error_t usb_init() {
+	IOReturn err;
+	
+	if(!master_port) {
+		err = IOMasterPort(MACH_PORT_NULL, &master_port);
+		if(err != kIOReturnSuccess)
+			return IRECV_E_UNKNOWN_ERROR;
+	}
+	
 	return IRECV_E_SUCCESS;
 }
 
@@ -55,36 +64,38 @@ irecv_error_t usb_set_debug_level(irecv_client_t client, int debug) {
 
 irecv_error_t usb_get_device_list(irecv_client_t client, irecv_device_t** devices) {
 	// returns device count
-	kern_return_t res;
-	mach_port_t port;
-	CFMutableDictionaryRef _serviceDict;
-	CFNumberRef _usbID;
-	io_iterator_t usbIterator;
-	io_service_t usbItem;
-	int _id;
+	IOReturn err;
+	CFMutableDictionaryRef dict;
+	io_iterator_t anIterator;
 	
-	res = IOMasterPort(MACH_PORT_NULL, &port);
-	_serviceDict = IOServiceMatching(kIOUSBDeviceClassName);
-	
-	// vendor id
-	_id = device.descriptor->vendor;
-	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
-	CFDictionarySetValue(_serviceDict, CFSTR(kUSBVendorID), _usbID);
-	CFRelease(_usbID);
-	
-	// product id
-	_id = device.descriptor->product; 
-	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
-	CFDictionarySetValue(_serviceDict, CFSTR(kUSBProductID), _usbID);
-	CFRelease(_usbID);
-	
-	IOServiceGetMatchingServices(port, _serviceDict, &usbIterator);
-	
-	while(usbItem = IOIteratorNext(usbIterator)) {
-		printf("==> IOUSBDevice at 0x%X\n", (unsigned int)usbItem);
+	err = IOServiceGetMatchingServices(master_port, IOServiceMatching(kIOUSBDeviceClassName), &anIterator);
+	if(err != kIOReturnSuccess) return IRECV_E_UNKNOWN_ERROR;
+
+	io_object_t usbDevice;
+	while(usbDevice = IOIteratorNext(anIterator)) {
+		SInt32 score;
+		IOUSBDeviceInterface **device = NULL;
+		IOCFPlugInInterface **plugInInterface = NULL;
+
+		err = IOCreatePlugInInterfaceForService(usbDevice,
+				kIOUSBDeviceUserClientTypeID,
+				kIOCFPlugInInterfaceID,
+				&plugInInterface,
+				&score);
+
+		if ((kIOReturnSuccess == err) && (plugInInterface != NULL) ) {
+			HRESULT res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID), (LPVOID*)&device);
+			(*plugInInterface)->Release(plugInInterface);
+			if(!res && device) {
+				// add found device to list
+			}
+		}
+
+		IOObjectRelease(usbDevice);
 	}
 
-
+	IOObjectRelease(anIterator);
+	
 	return IRECV_E_SUCCESS;
 }
 
