@@ -112,7 +112,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 						return error;
 					}
 
-					error = irecv_set_interface(client, 1, 1);
+					error = irecv_set_interface(client, 0, 0);
 					if (error != IRECV_E_SUCCESS) {
 						return error;
 					}
@@ -153,11 +153,11 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
-
+/*
 	if (client->interface == interface) {
 		return IRECV_E_SUCCESS;
 	}
-
+*/
 	debug("Setting to interface %d:%d\n", interface, alt_interface);
 	if (libusb_claim_interface(client->handle, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
@@ -396,7 +396,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		return IRECV_E_NO_DEVICE;
 	}
 
-	int packet_size = recovery_mode ? 0x2000: 0x800;
+	int packet_size = 0x800;
 	int last = length % packet_size;
 	int packets = length / packet_size;
 	if (last != 0) {
@@ -406,7 +406,6 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	/* initiate transfer */
-	// pod2g: if commented out, irecovery won't upload correctly to 4.1 recovery mode
 	if (recovery_mode) {
 		error = libusb_control_transfer(client->handle, 0x41, 0, 0, 0, NULL, 0, 1000);
 		if (error != IRECV_E_SUCCESS) {
@@ -415,7 +414,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	}
 
 	int i = 0;
-	//double progress = 0;
+	double progress = 0;
 	unsigned long count = 0;
 	unsigned int status = 0;
 	int bytes = 0;
@@ -423,15 +422,11 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		int size = (i + 1) < packets ? packet_size : last;
 
 		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
-#ifndef __APPLE__
 		if (recovery_mode) {
 			error = libusb_bulk_transfer(client->handle, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
 		} else {
 			bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
 		}
-#else
-		bytes = libusb_control_transfer(client->handle, 0x21, 1, 0, 0, (unsigned char*) &buffer[i * packet_size], size, 1000);
-#endif
 
 		if (bytes != size) {
 			return IRECV_E_USB_UPLOAD;

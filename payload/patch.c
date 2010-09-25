@@ -23,9 +23,8 @@ const unsigned char* patch_cert = "\x00\x20\x00\x20";
 const unsigned char patch_ecid_seq[] = "\x02\x94\x03\x94\x01\x90\x28\x46";
 const unsigned char patch_ecid[] = "\x00\x20\x00\x20";
 
-const unsigned char patch_command_seq[] = "\x80\xB5\x00\xAF\x82\xB0\x4F\xF0";
+const unsigned char patch_command_seq[] = "\x80\xb5\x00\xaf\x82\xb0\x4f\xf0";
 const unsigned char patch_command[] = "\x00\x4b\x18\x47\x00\x00\x00\x41";
-
 
 int patch_init() {
 	cmd_add("patch", &patch_cmd, "patch firmware in memory");

@@ -1,33 +1,48 @@
 PLATFORM=/Developer/Platforms/iPhoneOS.platform
-SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS4.0.sdk
+SDKVER=4.0
+SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
-RAMDISK_VOLUME=POISONJB
 
-SOURCES=launchd.c utils.c syscalls.S
+RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
+RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+RAMDISK_TEMPLATE=018-7074-092.dmg
+
+LAUNCHD_SOURCES=launchd/launchd.c launchd/utils.c launchd/syscalls.S
+
+RAMDISK_VOLUME=POIS0N
 
 CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
-LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
-	-framework CoreFoundation 
+LDFLAGS=-c -F$(SDK)/System/Library/PrivateFrameworks \
+	-framework CoreFoundation \
 
-all: launchd
+UNAME := $(shell uname -s)
+PWD = $(shell pwd)
 
-launchd:
-	$(CC) $(CFLAGS) -static -o launchd $(SOURCES) -nostdlib
-	$(STRIP) launchd
-	/opt/local/bin/ldid -S launchd
-	chmod 755 launchd
-	mv launchd rdfs/sbin/launchd
+ifeq ($(UNAME),Darwin)
+all: ramdisk/sbin/launchd ramdisk.dmg encrypt
+else
+all: encrypt
+endif
 
-ramdisk: launchd
-	hdiutil create -srcfolder ./rdfs -align 512k -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk-img.dmg
-	hdiutil attach ramdisk-img.dmg
-	sudo chown 0:0 /Volumes/$(RAMDISK_VOLUME)/sbin/launchd
-	hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+ramdisk/sbin/launchd:
+	$(CC) $(CFLAGS) -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES)
+	strip ramdisk/sbin/launchd
+	ldid -S ramdisk/sbin/launchd
+
+ramdisk.dmg: launchd
+	#sudo chown -R 0:0 ramdisk/
+	sudo hdiutil create -srcfolder ./ramdisk -megabytes 1 -align 8 -fs HFS+ -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
+	sudo hdiutil attach ramdisk.dmg
+	sudo hdiutil detach /Volumes/$(RAMDISK_VOLUME)
+	#sudo chown -R 501:20 ramdisk/
+	sudo chown 501:20 ramdisk.dmg
+	cp ramdisk.dmg ramdisk.hfs
 
 encrypt:
-	xpwntool ramdisk-img.dmg ramdisk.dmg -t template-ipt2g4.0.dmg -iv b2b8949bd33b65f22bd0c7e55ccc836b -k 1e3e144a55fa8d1782db5153796238f0
+	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 
 clean:
-	rm -f ramdisk-img.dmg
+	rm -rf ramdisk.dmg
+	rm -rf ramdisk/sbin/launchd
