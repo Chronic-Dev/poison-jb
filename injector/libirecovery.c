@@ -34,8 +34,8 @@
 
 static int debug = 0;
 
-int irecv_write_file(const char* filename, const void* data, size_t size);
-int irecv_read_file(const char* filename, char** data, uint32_t* size);
+int irecv_write_file(const char* filename, const void* data, unsigned int size);
+int irecv_read_file(const char* filename, char** data, unsigned int* size);
 
 void irecv_init() {
 	usb_init();
@@ -70,19 +70,20 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 	if(debug) {
 		irecv_set_debug_level(debug);
 	}
+	irecv_descriptor_t descriptor;
 	count = usb_get_device_list(*pclient, &devices);
 	for (i = 0; i < count; i++) {
 		device = devices[i];
 		//usb_get_device_descriptor(device, &descriptor);
-		if (device->descriptor->vendor == APPLE_VENDOR_ID) {
+		if (descriptor->vendor == APPLE_VENDOR_ID) {
 			/* verify this device is in a mode we understand */
-			if (device->descriptor->product == kRecoveryMode1 ||
-					device->descriptor->product == kRecoveryMode2 ||
-					device->descriptor->product == kRecoveryMode3 ||
-					device->descriptor->product == kRecoveryMode4 ||
-					device->descriptor->product == kDfuMode) {
+			if (descriptor->product == kRecoveryMode1 ||
+					descriptor->product == kRecoveryMode2 ||
+					descriptor->product == kRecoveryMode3 ||
+					descriptor->product == kRecoveryMode4 ||
+					descriptor->product == kDfuMode) {
 
-				debug("opening device %04x:%04x...\n", device->descriptor->vendor, device->descriptor->product);
+				debug("opening device %04x:%04x...\n", descriptor->vendor, descriptor->product);
 
 				irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 				if (client == NULL) {
@@ -100,10 +101,9 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				}
 				usb_free_device_list(devices, 1);
 
-
 				memset(client, '\0', sizeof(struct irecv_client));
 				client->interface = 0;
-				client->mode = device->descriptor->product;
+				client->mode = (unsigned short) descriptor->product;
 				if (client->mode != kDfuMode) {
 					error = irecv_set_configuration(client, 1);
 					if (error != IRECV_E_SUCCESS) {
@@ -117,7 +117,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				}
 
 				/* cache usb serial */
-				usb_get_string_descriptor_ascii(client, device->descriptor->serial, client->serial, 255);
+				usb_get_string_descriptor_ascii(client, client->serial, client->serial, 255);
 
 				*pclient = client;
 				return IRECV_E_SUCCESS;
@@ -667,7 +667,7 @@ const char* irecv_strerror(irecv_error_t error) {
 		return "Unable to set device configuration";
 
 	case IRECV_E_PIPE:
-		return "Broken pipe";
+		return "Broken pipuint32_te";
 
 	case IRECV_E_TIMEOUT:
 		return "Timeout talking to device";
@@ -679,7 +679,7 @@ const char* irecv_strerror(irecv_error_t error) {
 	return NULL;
 }
 
-int irecv_write_file(const char* filename, const void* data, size_t size) {
+int irecv_write_file(const char* filename, const void* data, unsigned int size) {
 	size_t bytes = 0;
 	FILE* file = NULL;
 
@@ -700,7 +700,7 @@ int irecv_write_file(const char* filename, const void* data, size_t size) {
 	return size;
 }
 
-int irecv_read_file(const char* filename, char** data, uint32_t* size) {
+int irecv_read_file(const char* filename, char** data, unsigned int* size) {
 	size_t bytes = 0;
 	size_t length = 0;
 	FILE* file = NULL;
@@ -765,7 +765,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 
 	int i = 0;
 	int bytes = 0;
-	//double progress = 0;
+	//double progresuint32_ts = 0;
 	unsigned long count = 0;
 	unsigned int status = 0;
 	for (i = 0; i < packets; i++) {
@@ -806,8 +806,8 @@ irecv_error_t irecv_finish_transfer(irecv_client_t client) {
 
 irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	int device_id = DEVICE_UNKNOWN;
-	uint32_t bdid = 0;
-	uint32_t cpid = 0;
+	unsigned int bdid = 0;
+	unsigned int cpid = 0;
 
 	if (irecv_get_cpid(client, &cpid) < 0) {
 		return IRECV_E_UNKNOWN_ERROR;
