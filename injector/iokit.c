@@ -21,35 +21,10 @@ irecv_error_t usb_exit() {
 	return IRECV_E_SUCCESS;
 }
 
+
 irecv_error_t usb_open(irecv_client_t client, irecv_device_t device) {
-	kern_return_t res;
-	mach_port_t port;
-	CFMutableDictionaryRef _serviceDict;
-	CFNumberRef _usbID;
-	io_iterator_t usbIterator;
-	io_service_t usbItem;
-	int _id;
-	
-	res = IOMasterPort(MACH_PORT_NULL, &port);
-	_serviceDict = IOServiceMatching(kIOUSBDeviceClassName);
-	
-	// vendor id
-	_id = device.descriptor->vendor;
-	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
-	CFDictionarySetValue(_serviceDict, CFSTR(kUSBVendorID), _usbID);
-	CFRelease(_usbID);
-	
-	// product id
-	_id = device.descriptor->product; 
-	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
-	CFDictionarySetValue(_serviceDict, CFSTR(kUSBProductID), _usbID);
-	CFRelease(_usbID);
-	
-	IOServiceGetMatchingServices(port, _serviceDict, &usbIterator);
-	
-	while(usbItem = IOIteratorNext(usbIterator)) {
-		printf("==> IOUSBDevice at 0x%X\n", (unsigned int)usbItem);
-	}
+	IOReturn res;
+	res = (*dev)->USBDeviceOpen(dev);
 	
 	if (res == kIOReturnSuccess) {
 		return IRECV_E_SUCCESS;
@@ -83,6 +58,34 @@ irecv_error_t usb_set_debug_level(irecv_client_t client, int debug) {
 
 irecv_error_t usb_get_device_list(irecv_client_t client, irecv_device_t** devices) {
 	// returns device count
+	kern_return_t res;
+	mach_port_t port;
+	CFMutableDictionaryRef _serviceDict;
+	CFNumberRef _usbID;
+	io_iterator_t usbIterator;
+	io_service_t usbItem;
+	int _id;
+	
+	res = IOMasterPort(MACH_PORT_NULL, &port);
+	_serviceDict = IOServiceMatching(kIOUSBDeviceClassName);
+	
+	// vendor id
+	_id = device.descriptor->vendor;
+	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
+	CFDictionarySetValue(_serviceDict, CFSTR(kUSBVendorID), _usbID);
+	CFRelease(_usbID);
+	
+	// product id
+	_id = device.descriptor->product; 
+	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
+	CFDictionarySetValue(_serviceDict, CFSTR(kUSBProductID), _usbID);
+	CFRelease(_usbID);
+	
+	IOServiceGetMatchingServices(port, _serviceDict, &usbIterator);
+	
+	while(usbItem = IOIteratorNext(usbIterator)) {
+		printf("==> IOUSBDevice at 0x%X\n", (unsigned int)usbItem);
+	}
 
 
 	return IRECV_E_SUCCESS;
