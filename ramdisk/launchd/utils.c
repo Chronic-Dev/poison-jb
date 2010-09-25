@@ -22,7 +22,7 @@ int cp(char *src, char *dest) {
 	int in = open(src, O_RDONLY, 0);
 	int out = open(dest, O_WRONLY | O_CREAT, 0);
 	if (in == 0 || out == 0) {
-		return 1; //Unable to open one or the other
+		return -1; //Unable to open one or the other
 	}
 
 	do {
@@ -34,7 +34,7 @@ int cp(char *src, char *dest) {
 	close(in);
 	close(out);
 	if (count == -1) {
-		return 2; //Read or Write failed...
+		return -1; //Read or Write failed...
 	}
 	return 0;
 }

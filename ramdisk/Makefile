@@ -2,6 +2,8 @@ PLATFORM=/Developer/Platforms/iPhoneOS.platform
 SDKVER=4.0
 SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
+LD=$(PLATFORM)/Developer/usr/bin/ld
+AS=$(PLATFORM)/Developer/usr/bin/as
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
 
@@ -13,9 +15,8 @@ LAUNCHD_SOURCES=launchd/launchd.c launchd/utils.c launchd/syscalls.S
 
 RAMDISK_VOLUME=POIS0N
 
-CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include
-LDFLAGS=-c -F$(SDK)/System/Library/PrivateFrameworks \
-	-framework CoreFoundation \
+CFLAGS=-arch armv6 -isysroot $(SDK) -static -I./include -nostdlib -lgcc
+LDFLAGS=
 
 UNAME := $(shell uname -s)
 PWD = $(shell pwd)
@@ -27,8 +28,12 @@ all: encrypt
 endif
 
 ramdisk/sbin/launchd:
-	$(CC) $(CFLAGS) -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES)
-	strip ramdisk/sbin/launchd
+	#$(CC) $(CFLAGS) -c launchd/syscalls.S -o launchd/syscalls.o
+	#$(CC) $(CFLAGS) -c launchd/utils.c -o launchd/utils.o
+	#$(CC) $(CFLAGS) -c launchd/launchd.c -o launchd/launchd.o
+	#$(CC) $(CFLAGS) launchd/launchd.o launchd/utils.o launchd/syscalls.o -o ramdisk/sbin/launchd
+	$(CC) $(CFLAGS) $(LDFLAGS) -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES)
+	#strip ramdisk/sbin/launchd
 	ldid -S ramdisk/sbin/launchd
 
 ramdisk.dmg: launchd
@@ -44,5 +49,6 @@ encrypt:
 	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 
 clean:
+	rm -rf launchd/*.o
 	rm -rf ramdisk.dmg
 	rm -rf ramdisk/sbin/launchd
