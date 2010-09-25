@@ -1,6 +1,10 @@
 #include "libusb1.h"
 #include "libirecovery.h"
-#include <libusb-1.0/libusb.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOMessage.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
 
 IOUSBDeviceInterface** dev;
 IOUSBInterfaceInterface** interface;
@@ -18,9 +22,36 @@ irecv_error_t usb_exit() {
 }
 
 irecv_error_t usb_open(irecv_client_t client, irecv_device_t device) {
-	IOReturn err;
-	err = (*dev)->USBDeviceOpen(dev);
-	if (err == kIOReturnSuccess) {
+	kern_return_t res;
+	mach_port_t port;
+	CFMutableDictionaryRef _serviceDict;
+	CFNumberRef _usbID;
+	io_iterator_t usbIterator;
+	io_service_t usbItem;
+	int _id;
+	
+	res = IOMasterPort(MACH_PORT_NULL, &port);
+	_serviceDict = IOServiceMatching(kIOUSBDeviceClassName);
+	
+	// vendor id
+	_id = device.descriptor->vendor;
+	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
+	CFDictionarySetValue(_serviceDict, CFSTR(kUSBVendorID), _usbID);
+	CFRelease(_usbID);
+	
+	// product id
+	_id = device.descriptor->product; 
+	_usbID = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_id);
+	CFDictionarySetValue(_serviceDict, CFSTR(kUSBProductID), _usbID);
+	CFRelease(_usbID);
+	
+	IOServiceGetMatchingServices(port, _serviceDict, &usbIterator);
+	
+	while(usbItem = IOIteratorNext(usbIterator)) {
+		printf("==> IOUSBDevice at 0x%X\n", (unsigned int)usbItem);
+	}
+	
+	if (res == kIOReturnSuccess) {
 		return IRECV_E_SUCCESS;
 	} else {
 		return IRECV_E_UNABLE_TO_CONNECT;
