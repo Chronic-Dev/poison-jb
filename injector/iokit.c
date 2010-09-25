@@ -100,20 +100,43 @@ irecv_error_t usb_free_device_list(irecv_device_t* devices, int mode) {
 }
 
 irecv_error_t usb_get_string_descriptor_ascii(irecv_client_t client, unsigned char* buffer, unsigned int size) {
-
-
-	return IRECV_E_SUCCESS;
+	irecv_error_t ret;
+	unsigned short langid = 0;
+	unsigned char data[255];
+	int di, si;
+	memset(data, 0, sizeof(data));
+	memset(buffer, 0, size);
+	
+	ret = usb_control_transfer(dev, 0x80, 0x06, (0x03 << 8) | desc_index, langid, data, sizeof(data), 1000);
+	
+	if (ret < 0) return ret;
+	if (data[1] != 0x03) return IRECV_E_UNKNOWN_ERROR;
+	if (data[0] > ret) return IRECV_E_UNKNOWN_ERROR; 
+	
+	for (di = 0, si = 2; si < data[0]; si += 2) {
+		if (di >= (size - 1)) break;
+		if (data[si + 1]) {
+			/* high byte */
+			data[di++] = '?';
+		} else {
+			data[di++] = data[si];
+		}
+	}
+	data[di] = 0;
+	return di;
 }
 
 irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration) {
-
-
-	return IRECV_E_SUCCESS;
+	if((err = ((*dev)->GetConfiguration(dev, configuration))) != kIOReturnSuccess) {
+		return IRECV_E_UNKNOWN_ERROR;
+	}
+	return IRECV_E_SUCCESS;	
 }
 
 irecv_error_t usb_set_configuration(irecv_client_t client, int configuration) {
-
-
+	if((err = ((*dev)->SetConfiguration(dev, configuration))) != kIOReturnSuccess) {
+		return IRECV_E_UNKNOWN_ERROR;
+	}
 	return IRECV_E_SUCCESS;
 }
 
