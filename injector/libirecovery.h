@@ -23,7 +23,8 @@
 extern "C" {
 #endif
 
-#include <libusb-1.0/libusb.h>
+#undef NULL
+#define NULL 0
 
 #define APPLE_VENDOR_ID 0x05AC
 
@@ -59,6 +60,7 @@ extern "C" {
 #define DEVICE_IPAD1G        6
 #define DEVICE_IPHONE4       7
 #define DEVICE_IPOD4G        8
+
 
 enum {
 	kRecoveryMode1 = 0x1280,
@@ -105,22 +107,20 @@ typedef int irecv_context_t;
 struct irecv_client;
 typedef struct irecv_client* irecv_client_t;
 typedef struct irecv_device* irecv_device_t;
+typedef struct irecv_descriptor* irecv_descriptor_t;
+typedef struct irecv_firmware* irecv_firmware_t;
 typedef int(*irecv_event_cb_t)(irecv_client_t client, const irecv_event_t* event);
 
-typedef struct irecv_descriptor {
-	int product;
-	int vendor;
-	char* serial;
-} irecv_descriptor_t;
-
-struct irecv_device {
-	int index;
-	const char* product;
-	const char* model;
-	unsigned int board_id;
-	unsigned int chip_id;
-	irecv_descriptor_t* descriptor;
-	const char* url;
+struct irecv_descriptor {
+	unsigned char length;
+	unsigned char type;
+	unsigned char class;
+	unsigned char subclass;
+	unsigned char protocol;
+	unsigned char maxPacketSize;
+	unsigned short vendor;
+	unsigned short product;
+	unsigned char serial[256];
 };
 
 struct irecv_client {
@@ -131,8 +131,13 @@ struct irecv_client {
 	unsigned short mode;
 	char serial[256];
 	struct irecv_device_t* device;
-	struct libusb_context* context;
+	struct irecv_context_t* context;
+	struct irecv_device_t* descriptor;
+
+#ifndef __APPLE__
 	struct libusb_device_handle* handle;
+#endif
+
 	irecv_event_cb_t progress_callback;
 	irecv_event_cb_t received_callback;
 	irecv_event_cb_t connected_callback;
@@ -141,28 +146,61 @@ struct irecv_client {
 	irecv_event_cb_t disconnected_callback;
 };
 
+struct irecv_firmware {
+	char* version;
+	char* url;
+};
+
+struct irecv_device {
+	int index;
+	const char* product;
+	const char* model;
+	unsigned int board_id;
+	unsigned int chip_id;
+	struct irecv_firmware* firmware;
+};
+
+static struct irecv_firmware irecv_iphone31_firmware[] = {
+	{ "4.0",   NULL },
+	{ "4.0.1", NULL },
+	{ "4.0.2", NULL },
+	{ "4.1",   NULL }
+};
+
+static struct irecv_firmware irecv_ipod41_firmware[] = {
+	{ "4.1",   NULL }
+};
+
+static struct irecv_firmware irecv_ipad11_firmware[] = {
+	{ "3.2",   NULL },
+	{ "3.2.1", NULL },
+	{ "3.2.2", NULL },
+};
+
 static struct irecv_device irecv_devices[] = {
-	{  0, "iPhone1,1", "m68ap",  0,  8900, NULL,
+	{  0, "iPhone1,1", "m68ap",  0,  8900,
 	NULL },
-	{  1, "iPod1,1",   "n45ap",  2,  8900, NULL,
+	{  1, "iPod1,1",   "n45ap",  2,  8900,
 	NULL },
-	{  2, "iPhone1,2", "n82ap",  4,  8900, NULL,
+	{  2, "iPhone1,2", "n82ap",  4,  8900,
 	NULL },
-	{  3, "iPod2,1",   "n72ap",  0,  8720, NULL,
+	{  3, "iPod2,1",   "n72ap",  0,  8720,
 	NULL },
-	{  4, "iPhone2,1", "n88ap",  0,  8920, NULL,
+	{  4, "iPhone2,1", "n88ap",  0,  8920,
 	NULL },
-	{  5, "iPod3,1",   "n18ap",  2,  8922, NULL,
+	{  5, "iPod3,1",   "n18ap",  2,  8922,
 	NULL },
-	{  6, "iPad1,1",   "k48ap",  2,  8930, NULL,
-	"http://appldnld.apple.com/iPad/061-8801.20100811.CvfR5/iPad1,1_3.2.2_7B500_Restore.ipsw" },
-	{  7, "iPhone3,1", "n90ap",  0,  8930, NULL,
-	"http://appldnld.apple.com/iPhone4/061-7939.20100908.Lcyg3/iPhone3,1_4.1_8B117_Restore.ipsw" },
-	{  8, "iPod4,1",   "n81ap",  8,  8930, NULL,
-	"http://appldnld.apple.com/iPhone4/061-8490.20100901.hyjtR/iPod4,1_4.1_8B117_Restore.ipsw" },
-	{ -1,  NULL,        NULL,   -1,    -1, NULL,
+	{  6, "iPad1,1",   "k48ap",  2,  8930,
+	irecv_ipad11_firmware },
+	{  7, "iPhone3,1", "n90ap",  0,  8930,
+	irecv_iphone31_firmware },
+	{  8, "iPod4,1",   "n81ap",  8,  8930,
+	irecv_ipod41_firmware },
+	{ -1,  NULL,        NULL,   -1,    -1,
 	NULL }
 };
+
+static int debug;
 
 void irecv_set_debug_level(int level);
 const char* irecv_strerror(irecv_error_t error);

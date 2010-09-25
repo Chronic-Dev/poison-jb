@@ -38,7 +38,7 @@ irecv_error_t usb_set_debug_level(irecv_client_t client, int debug) {
 irecv_error_t usb_get_device_list(irecv_client_t client, irecv_device_t** devices) {
 	// returns device count
 	struct libusb_device** devicesx;
-	libusb_get_device_list(client->context, &devicesx);
+	libusb_get_device_list(NULL, &devicesx);
 	return IRECV_E_SUCCESS;
 }
 

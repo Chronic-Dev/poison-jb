@@ -31,7 +31,7 @@ int receive_data(int bytes) {
 }
 
 int fetch_image(char* path, char* output) {
-	if(download_file_from_zip(device->url, path, output) != 0) {
+	if(download_file_from_zip(device->firmware[0].url, path, output) != 0) {
 		return -1;
 	}
 	return 0;
