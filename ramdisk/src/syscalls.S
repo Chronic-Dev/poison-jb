@@ -1,13 +1,17 @@
 .text
 
-.globl exit
-.globl fork
-.globl read
-.globl write
-.globl open
-.globl close
-.globl unlink
-.globl chdir
+.globl _exit
+.globl _fork
+.globl _read
+.globl _write
+.globl _open
+.globl _close
+.globl _unlink
+.globl _chdir
+
+.globl _mlock
+.globl _mkdir
+.globl _unmount
 
 /*
 .global _mknod: 0xD  int mknod(const char *pathname, mode_t mode, dev_t dev)                      3
@@ -15,34 +19,34 @@
 .global _chown: 0x10  int chown(const char *path, uid_t owner, gid_t group)                       3
 */
 
-.globl sync
-.globl kill
-.globl dup
-.globl symlink
+.globl _sync
+.globl _kill
+.globl _dup
+.globl _symlink
 
 /*
 .global _execve: 0x3B  int execve(const char *filename, char *const argv[], char *const envp[])   3
 */
 
-.globl chroot
-.globl vfork
-.globl reboot
+.globl _chroot
+.globl _vfork
+.globl _reboot
 
 /*
 .global _munmap: 0x49  int munmap(void *addr, size_t length)                                 2
 .global _mprotect: 0x4A  int mprotect(const void *addr, size_t len, int prot)                     3
-.global _dup2: 0x5A  int dup2(int oldfd, int newfd)                                          2
 */
 
-.globl mount
-.globl stat
+.globl _dup2
+.globl _mount
+.globl _stat
 
 /*
 .global _mmap: 0xC5  void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) 6
 */
 
 /* void exit(int status) */
-exit:
+_exit:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -52,14 +56,14 @@ exit:
     ldmfd  sp!, {r12,pc}
     
 /* pid_t fork(void) */
-fork:
+_fork:
     stmfd  sp!, {r12,lr}
     mov    r12, #0x2
     swi    #0x80
     ldmfd  sp!, {r12,pc}
     
 /* ssize_t read(int fd, void *buf, size_t count) */
-read:
+_read:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0xC
     str    r0, [sp,#0x8]
@@ -71,7 +75,7 @@ read:
     ldmfd  sp!, {r12,pc}
     
 /* ssize_t write(int fd, const void *buf, size_t count) */
-write:
+_write:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0xC
     str    r0, [sp,#0x8]
@@ -83,7 +87,7 @@ write:
     ldmfd  sp!, {r12,pc}
     
 /* int open(const char *pathname, int flags, mode_t mode) */
-open:
+_open:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0xC
     str    r0, [sp,#0x8]
@@ -95,7 +99,7 @@ open:
     ldmfd  sp!, {r12,pc}
 
 /* int close(int fd) */
-close:
+_close:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -105,7 +109,7 @@ close:
     ldmfd  sp!, {r12,pc}
     
 /* int unlink(const char *pathname); */
-unlink:
+_unlink:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -115,7 +119,7 @@ unlink:
     ldmfd  sp!, {r12,pc}
     
 /* int chdir(const char *path) */
-chdir:
+_chdir:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -124,8 +128,52 @@ chdir:
     add    sp, sp, #0x4
     ldmfd  sp!, {r12,pc}
     
+/* int mlock(const void *addr, size_t len) */
+_mlock:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0xCB
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int mkdir(const char *path, mode_t mode) */
+_mkdir:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x88
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int unmount(const char *dir, int flags) */
+_unmount:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x9F
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int dup2(int oldfd, int newfd) */
+_dup2:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x5A
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
 /* int stat(const char *path, struct stat *buf) */
-stat:
+_stat:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x8
     str    r0, [sp,#0x4]
@@ -136,7 +184,7 @@ stat:
     ldmfd  sp!, {r12,pc}
     
 /* int mount(const char *filesystemtype, const char *target, int mountflags, void *source) */
-mount:
+_mount:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x10
     str    r0, [sp,#0xC]
@@ -149,14 +197,14 @@ mount:
     ldmfd  sp!, {r12,pc}
 
 /* void sync(void) */
-sync:
+_sync:
     stmfd  sp!, {r12,lr}
     mov    r12, #0x24 
     swi    #0x80
     ldmfd  sp!, {r12,pc}
     
 /* int kill(pid_t pid, int sig) */
-kill:
+_kill:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x8
     str    r0, [sp,#0x4]
@@ -167,7 +215,7 @@ kill:
     ldmfd  sp!, {r12,pc}
     
 /* int dup(int oldfd) */
-dup:
+_dup:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -177,7 +225,7 @@ dup:
     ldmfd  sp!, {r12,pc}
     
 /* int symlink(const char *oldpath, const char *newpath) */
-symlink:
+_symlink:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x8
     str    r0, [sp,#0x4]
@@ -188,7 +236,7 @@ symlink:
     ldmfd  sp!, {r12,pc}
     
 /* int chroot(const char *path) */
-chroot:
+_chroot:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]
@@ -198,14 +246,14 @@ chroot:
     ldmfd  sp!, {r12,pc}
     
 /* pid_t vfork(void) */
-vfork:
+_vfork:
     stmfd  sp!, {r12,lr}
     mov    r12, #0x42
     swi    #0x80
     ldmfd  sp!, {r12,pc}
 
 /* int reboot(int howto) */
-reboot:
+_reboot:
     stmfd  sp!, {r12,lr}
     sub    sp, sp, #0x4
     str    r0, [sp,#0x0]

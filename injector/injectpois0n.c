@@ -353,15 +353,11 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	debug("Preparing to fetch kernelcache from Apple's servers\n");
-	if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-
-	//info("Please unplug your device, and plug it back in\n");
-	//info("Press enter key to continue");
-	//getchar();
+	//debug("Preparing to fetch kernelcache from Apple's servers\n");
+	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
+	//	error("Unable to execute iBSS payload\n");
+	//	return -1;
+	//}
 
 	debug("Sending kernelcache\n");
 	error = irecv_send_file(client, "kernelcache", 0);
@@ -377,11 +373,16 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-/*
+	/*
 	info("Waiting for kernel to patch\n");
-	for(i = 0; i < 10; i++) {
+	for(i = 0; i < 3; i++) {
 		sleep(1);
 	}
+
+	info("Please unplug your device, and plug it back in\n");
+	info("Press enter key to continue");
+	getchar();
+	*/
 
 	debug("Preping and patching kernelcache\n");
 	error = irecv_send_command(client, "go kernel boot");
@@ -389,7 +390,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-*/
+
 
 //////////////////////////////////////////////////////////////////
 /* old stuff
@@ -507,14 +508,6 @@ int main(int argc, char* argv[]) {
 	if(execute_ibss_payload() < 0) {
 		error("Unable to execute iBSS payload\n");
 		quit();
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
-	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable to reconnect\n");
 		return -1;
 	}
 
