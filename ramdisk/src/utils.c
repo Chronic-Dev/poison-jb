@@ -35,18 +35,19 @@ int cp(const char *src, const char *dest) {
 	do {
 		//memset(buffer, '\0', 0x800);
 		count = read(in, buf, 0x800);
-		if (count != -1) {
+		if (count > 0) {
 			count = write(out, buf, count);
 		}
 
-	} while (count == 0x800);
+	} while (count > 0);
 
 	close(in);
 	close(out);
 
-	if (count == -1) {
+	if (count < 0) {
 		return -1; //Read or Write failed...
 	}
+
 	return 0;
 }
 
