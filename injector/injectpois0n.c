@@ -375,7 +375,7 @@ int execute_ibss_payload() {
 	}
 
 	debug("Sending kernelcache\n");
-	error = irecv_send_file(client, "kernelcache", 0);
+	error = irecv_send_file(client, kernelcache, 0);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
