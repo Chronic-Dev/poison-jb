@@ -1,7 +1,7 @@
 PLATFORM=/Developer/Platforms/iPhoneOS.platform
 SDKVER=4.0
 SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
-CC=$(PLATFORM)/Developer/usr/bin/gcc
+CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 LD=$(PLATFORM)/Developer/usr/bin/ld
 AS=$(PLATFORM)/Developer/usr/bin/as
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
@@ -13,11 +13,10 @@ RAMDISK_TEMPLATE=018-7074-092.dmg
 
 LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
 
-RAMDISK_VOLUME=pois0ndisk
+RAMDISK_LABEL=pois0ndisk
+RAMDISK_VOLUME=/Volumes/$(RAMDISK_LABEL)
 
-RAMDISK=/Volumes/$(RAMDISK_VOLUME)
-
-CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostdlib -I./include -I$(SDK)/usr/include
+CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I./include -I$(SDK)/usr/include
 LDFLAGS=
 
 UNAME := $(shell uname -s)
@@ -36,14 +35,12 @@ launchd:
 
 ramdisk:
 	sudo hdiutil attach ramdisk.dmg
-	#mkdir $(RAMDISK)/mnt
-	#mkdir $(RAMDISK)/dev
-	sudo rm -rf $(RAMDISK)/sbin/launchd
-	sudo cp stage/sbin/launchd $(RAMDISK)/sbin/launchd
-	sudo chown 0:0 $(RAMDISK)/sbin/launchd
-	sudo chmod 755 $(RAMDISK)/sbin/launchd
+	sudo rm -rf $(RAMDISK_VOLUME)/sbin/launchd
+	sudo cp stage/sbin/launchd $(RAMDISK_VOLUME)/sbin/launchd
+	sudo chown 0:0 $(RAMDISK_VOLUME)/sbin/launchd
+	sudo chmod 755 $(RAMDISK_VOLUME)/sbin/launchd
 	sync
-	sudo hdiutil detach $(RAMDISK)
+	sudo hdiutil detach $(RAMDISK_VOLUME)
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
