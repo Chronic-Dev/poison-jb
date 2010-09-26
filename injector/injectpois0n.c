@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "partial.h"
 #include "libirecovery.h"
 #include "injectpois0n.h"
@@ -318,7 +319,7 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-
+/*
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
@@ -338,7 +339,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-
+*/
 	debug("Sending ramdisk to device\n");
 	error = irecv_send_file(client, "ramdisk.dmg", 0);
 	if(error != IRECV_E_SUCCESS) {
@@ -358,6 +359,20 @@ int execute_ibss_payload() {
 	//	error("Unable to execute iBSS payload\n");
 	//	return -1;
 	//}
+
+	struct stat buf;
+	char kernelcache[255];
+	memset(kernelcache, '\0', 255);
+	memset(&buf, '\0', sizeof(struct stat));
+	snprintf(kernelcache, 255, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
+	debug("Checking if kernelcache already exists\n");
+	if(stat(kernelcache, &buf) != 0) {
+		debug("Preparing to fetch %s from Apple's servers\n", kernelcache);
+		if(fetch_image(kernelcache, kernelcache) < 0) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+	}
 
 	debug("Sending kernelcache\n");
 	error = irecv_send_file(client, "kernelcache", 0);
