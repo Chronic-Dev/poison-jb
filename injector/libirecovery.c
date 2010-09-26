@@ -43,7 +43,7 @@ irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
 	int i = 0;
 	for (i = 0; i < attempts; i++) {
 		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
-			debug("Connection failed. Waiting 1 sec before retry.");
+			debug("Connection failed. Waiting 1 sec before retry.\n");
 			sleep(1);
 		} else {
 			return IRECV_E_SUCCESS;
@@ -87,9 +87,15 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 					usb_exit(client);
 					return IRECV_E_OUT_OF_MEMORY;
 				}
+				
+				memset(client, '\0', sizeof(struct irecv_client));
 
 				usb_open(client, device);
+#ifndef __APPLE__
 				if (client->handle == NULL) {
+#else
+                if (client->dev == NULL) {
+#endif
 					usb_free_device_list(devices, 1);
 					usb_close(client);
 					usb_exit();
@@ -97,7 +103,6 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 				}
 				usb_free_device_list(devices, 1);
 
-				memset(client, '\0', sizeof(struct irecv_client));
 				client->interface = 0;
 				client->mode = (unsigned short) descriptor->product;
 				if (client->mode != kDfuMode) {
@@ -107,13 +112,13 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 					}
 
 					error = irecv_set_interface(client, 1, 1);
-					if (error != IRECV_E_SUCCESS) {
-						return error;
-					}
+					//if (error != IRECV_E_SUCCESS) {
+					//	return error;
+					//}
 				}
 
 				/* cache usb serial */
-				usb_get_string_descriptor_ascii(client, client->serial, client->serial, 255);
+				usb_get_string_descriptor_ascii(client, client->serial, 255);
 
 				*pclient = client;
 				return IRECV_E_SUCCESS;
@@ -804,8 +809,13 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	int device_id = DEVICE_UNKNOWN;
 	unsigned int bdid = 0;
 	unsigned int cpid = 0;
+	
+	// XXX: these are hardcoded as the CPID/BDID isn't transferred
+    device_id = DEVICE_IPAD1G;
+    device_id = DEVICE_IPHONE4;
+    device_id = DEVICE_IPOD4G;
 
-	if (irecv_get_cpid(client, &cpid) < 0) {
+	/*if (irecv_get_cpid(client, &cpid) < 0) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 
@@ -878,7 +888,7 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	default:
 		device_id = DEVICE_UNKNOWN;
 		break;
-	}
+	}*/
 
 	*device = &irecv_devices[device_id];
 	return IRECV_E_SUCCESS;
@@ -894,7 +904,7 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 
 	sleep(2); // let the time for the device to come up
 
-	error = irecv_open_attempts(&new_client, 10);
+	error = irecv_open_attempts(&new_client, 50);
 	if(error != IRECV_E_SUCCESS) {
 		return NULL;
 	}
