@@ -1,6 +1,5 @@
 .text
 
-.globl _start
 .globl _exit
 .globl _fork
 .globl _read
@@ -41,9 +40,6 @@
 /*
 .global _mmap: 0xC5  void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) 6
 */
-
-_start:
-    bl     _main
 
 /* void exit(int status) */
 _exit:

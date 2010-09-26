@@ -7,7 +7,6 @@ all:
 	make -C ramdisk
 	#make -C interface
 
-	
 clean:	
 	make clean -C exploit
 	make clean -C payload

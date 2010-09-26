@@ -1,8 +1,9 @@
 #include "utils.h"
+#include "syscalls.h"
 
 const char* greeting = "GreenPois0n Ramdisk - by Chronic-Dev\n";
 
-int main() {
+int main(int argc, char* argv[]) {
 	//LDR     R0, =aDevConsole ; "dev/console"
 	//MOV     R1, #0          ; int
 	//MOV     R2, #0
