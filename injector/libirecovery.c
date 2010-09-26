@@ -23,16 +23,10 @@
 
 #include "libirecovery.h"
 
-#ifdef __APPLE__
-#	include "iokit.h"
-#else
-#	include "libusb1.h"
-#endif
-
 #define BUFFER_SIZE 0x1000
 #define debug(...) if(debug) fprintf(stderr, __VA_ARGS__)
 
-static int debug = 0;
+static int debug = 1;
 
 int irecv_write_file(const char* filename, const void* data, unsigned int size);
 int irecv_read_file(const char* filename, char** data, unsigned int* size);
@@ -72,9 +66,11 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 	}
 	irecv_descriptor_t descriptor;
 	count = usb_get_device_list(*pclient, &devices);
+    debug("%d devices found.\n", count);
+    
 	for (i = 0; i < count; i++) {
 		device = devices[i];
-		//usb_get_device_descriptor(device, &descriptor);
+		usb_get_device_descriptor(device, &descriptor);
 		if (descriptor->vendor == APPLE_VENDOR_ID) {
 			/* verify this device is in a mode we understand */
 			if (descriptor->product == kRecoveryMode1 ||
@@ -83,7 +79,7 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 					descriptor->product == kRecoveryMode4 ||
 					descriptor->product == kDfuMode) {
 
-				debug("opening device %04x:%04x...\n", descriptor->vendor, descriptor->product);
+				debug("opening device %d (%04x:%04x)...\n", i, descriptor->vendor, descriptor->product);
 
 				irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 				if (client == NULL) {

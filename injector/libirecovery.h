@@ -106,13 +106,14 @@ typedef int irecv_context_t;
 
 struct irecv_client;
 typedef struct irecv_client* irecv_client_t;
+typedef struct irecv_descriptor* irecv_descriptor_t;
 typedef struct irecv_info* irecv_info_t;
 typedef struct irecv_device* irecv_device_t;
 typedef struct irecv_firmware* irecv_firmware_t;
 
 typedef int(*irecv_event_cb_t)(irecv_client_t client, const irecv_event_t* event);
 
-struct irecv_device {
+typedef struct irecv_descriptor {
 	unsigned char length;
 	unsigned char type;
 	unsigned char class;
@@ -123,6 +124,12 @@ struct irecv_device {
 	unsigned short product;
 	unsigned char serial[256];
 };
+
+#ifdef __APPLE__
+#	include "iokit.h"
+#else
+#	include "libusb1.h"
+#endif
 
 struct irecv_client {
 	int debug;
@@ -137,6 +144,10 @@ struct irecv_client {
 
 #ifndef __APPLE__
 	struct libusb_device_handle* handle;
+#else
+    void *handle;
+    IOUSBInterfaceInterface182 **usb_interface;
+    IOUSBDeviceInterface182 **dev;
 #endif
 
 	irecv_event_cb_t progress_callback;

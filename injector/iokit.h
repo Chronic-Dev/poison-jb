@@ -1,7 +1,13 @@
 #ifndef USB_H
 #define USB_H
 
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOMessage.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/usb/IOUSBLib.h>
+
 #include "libirecovery.h"
+
 
 irecv_error_t usb_init();
 irecv_error_t usb_exit();
@@ -12,9 +18,9 @@ irecv_error_t usb_close(irecv_client_t client);
 irecv_error_t usb_reset_device(irecv_client_t client);
 irecv_error_t usb_set_debug_level(irecv_client_t client, int debug);
 
-irecv_error_t usb_get_device_list();
-irecv_error_t usb_get_device_descriptor();
-irecv_error_t usb_free_device_list(irecv_device_t* devices, int mode);
+int usb_get_device_list(irecv_client_t client, void*** devices);
+irecv_error_t usb_get_device_descriptor(void** device, irecv_descriptor_t* descriptor);
+irecv_error_t usb_free_device_list(void*** devices, int mode);
 
 irecv_error_t usb_get_string_descriptor_ascii();
 irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration);
