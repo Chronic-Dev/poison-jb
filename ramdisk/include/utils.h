@@ -3,10 +3,14 @@
 
 #include "syscalls.h"
 
-#define puts _puts
-#define strlen _strlen
+extern int stdout;
+extern int stderr;
 
-void _puts(const char* text);
-int _strlen(const char *s);
+#define puts _puts
+
+int strlen(const char* s);
+void _puts(const char* msg);
+int cp(const char* src, const char* dest);
+int hfs_mount(char* device, char* mountdir, int options);
 
 #endif

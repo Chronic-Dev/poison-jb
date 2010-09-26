@@ -373,7 +373,7 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-
+	/*
 	info("Waiting for kernel to patch\n");
 	for(i = 0; i < 3; i++) {
 		sleep(1);
@@ -382,6 +382,7 @@ int execute_ibss_payload() {
 	info("Please unplug your device, and plug it back in\n");
 	info("Press enter key to continue");
 	getchar();
+	*/
 
 	debug("Preping and patching kernelcache\n");
 	error = irecv_send_command(client, "go kernel boot");
