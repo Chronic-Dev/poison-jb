@@ -354,12 +354,6 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	//debug("Preparing to fetch kernelcache from Apple's servers\n");
-	//if(fetch_image("kernelcache.release.n81", "kernelcache") < 0) {
-	//	error("Unable to execute iBSS payload\n");
-	//	return -1;
-	//}
-
 	struct stat buf;
 	char kernelcache[255];
 	memset(kernelcache, '\0', 255);
@@ -375,7 +369,7 @@ int execute_ibss_payload() {
 	}
 
 	debug("Sending kernelcache\n");
-	error = irecv_send_file(client, "kernelcache", 0);
+	error = irecv_send_file(client, kernelcache, 0);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;

@@ -46,7 +46,7 @@ int install() {
 
 int main(int argc, char* argv[]) {
 	// Lets see how far this is running
-	reboot(1);
+	//reboot(1);
 
 	int ret = 0;
 	int console = 0;
@@ -59,10 +59,12 @@ int main(int argc, char* argv[]) {
 
 	puts("Pois0nDisk - by Chronic-Dev\n");
 	puts("Searching for disk...\n");
-	while (stat("/dev/disk0", &status) != 0) {
+	while (stat("/dev/disk0s1", &status) != 0) {
+		sleep(1);
 		puts("Searching...\n");
 	}
 	puts("Disk found\n");
+	sleep(1);
 
 	puts("Mounting disk...\n");
 	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
@@ -70,7 +72,8 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	puts("Disk mounted\n");
-
+	sleep(1);
+/*
 	puts("Mounting devices...\n");
 	if (mount("devfs", "/dev", 0, NULL) != 0) {
 		puts("Unable to mount devices!\n");
@@ -78,7 +81,8 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	puts("Devices mounted\n");
-
+	sleep(1);
+*/
 	puts("Installing files...\n");
 	if (install() != 0) {
 		puts("Failed to install files!\n");
@@ -87,11 +91,12 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	puts("Files installed\n");
+	sleep(1);
 
 	puts("Rebooting device...\n");
 
 	unmount("/mnt", 0);
 	unmount("/dev", 0);
-	reboot(1);
+	//reboot(1);
 	return 0;
 }

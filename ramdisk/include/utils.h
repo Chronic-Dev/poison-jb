@@ -10,7 +10,8 @@ extern int stderr;
 
 int strlen(const char* s);
 void _puts(const char* msg);
+void sleep(unsigned int seconds);
 int cp(const char* src, const char* dest);
-int hfs_mount(char* device, char* mountdir, int options);
+int hfs_mount(const char* device, const char* mountdir, int options);
 
 #endif

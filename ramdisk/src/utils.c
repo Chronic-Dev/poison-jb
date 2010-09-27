@@ -5,6 +5,18 @@
 int stdout = 0;
 int stderr = 0;
 
+void sleep(unsigned int seconds) {
+	int i = 0;
+	int tmp = 0;
+	for(i = seconds * 100000000; i > 0; i--) {
+		// Taking
+		tmp = i;
+		// Up
+		i = tmp;
+		// Time
+	}
+}
+
 int strlen(const char *s) {
 	int i = 0;
 	while(i >= 0) {
@@ -51,15 +63,13 @@ int cp(const char *src, const char *dest) {
 	return 0;
 }
 
-int hfs_mount(char *device, char *mountdir, int options) {
+int hfs_mount(const char* device, const char* mountdir, int options) {
 	int i;
 	struct hfs_mount_args args;
-	/*
 	struct hfs_mount_args *p = &args;
 	for (i = 0; i < sizeof(args); i++) {
-	p[i] = 0;
+		p[i] = 0;
 	}
-	*/
 	args.fspec = device;
 
 	//Call mount
