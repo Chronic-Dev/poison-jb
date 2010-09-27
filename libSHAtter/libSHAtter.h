@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include "SHAtter.h"
 
 #define info(...) printf(__VA_ARGS__)
 #define error(...) fprintf(stderr, __VA_ARGS__)

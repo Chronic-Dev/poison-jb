@@ -3,6 +3,7 @@ all:
 	make -C exploit
 	make -C payload
 	#make -C loader
+	make -C libSHAtter
 	make -C injector
 	make -C ramdisk
 	#make -C interface
