@@ -45,9 +45,6 @@ int install() {
 }
 
 int main(int argc, char* argv[]) {
-	// Lets see how far this is running
-	//reboot(1);
-
 	int ret = 0;
 	int console = 0;
 	struct stat status;
