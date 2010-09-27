@@ -7,8 +7,11 @@ extern int stdout;
 extern int stderr;
 
 #define puts _puts
+#define putc _putc
 
 int strlen(const char* s);
+void puti(unsigned int integer);
+void _putc(const char c);
 void _puts(const char* msg);
 void sleep(unsigned int seconds);
 int cp(const char* src, const char* dest);

@@ -12,6 +12,9 @@
 
 void exit(int status);
 int fork(void);
+void sync(void);
+//int chmod(const char *path, int mode);
+int chown(const char *path, int owner, int group);
 int read(int fd, void* buf, unsigned int count);
 int write(int fd, const void *buf, unsigned int count);
 int open(const char* pathname, int flags, ...);

@@ -7,14 +7,7 @@ int stderr = 0;
 
 void sleep(unsigned int seconds) {
 	int i = 0;
-	int tmp = 0;
-	for(i = seconds * 100000000; i > 0; i--) {
-		// Taking
-		tmp = i;
-		// Up
-		i = tmp;
-		// Time
-	}
+	for(i = seconds * 10000000; i > 0; i--) {}
 }
 
 int strlen(const char *s) {
@@ -32,6 +25,24 @@ void _puts(const char* msg) {
 	while((*msg) != '\0') {
 		write(1, msg, 1);
 		msg++;
+	}
+	sync();
+}
+
+void _putc(const char c) {
+	char byte[2];
+	byte[0] = c;
+	byte[1] = '\0';
+	write(1, byte, 1);
+}
+
+void puti(unsigned int integer) {
+	int i = 0;
+	char nyble = 0;
+
+	for(i = 7; i >= 0; i--) {
+		nyble = (integer >> (4 * i)) & 0xF;
+		putc(nyble+0x30);
 	}
 }
 
@@ -64,14 +75,7 @@ int cp(const char *src, const char *dest) {
 }
 
 int hfs_mount(const char* device, const char* mountdir, int options) {
-	int i;
 	struct hfs_mount_args args;
-	struct hfs_mount_args *p = &args;
-	for (i = 0; i < sizeof(args); i++) {
-		p[i] = 0;
-	}
 	args.fspec = device;
-
-	//Call mount
 	return mount("hfs", mountdir, options, &args);
 }

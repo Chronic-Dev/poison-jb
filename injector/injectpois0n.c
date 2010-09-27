@@ -319,7 +319,7 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-/*
+
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
@@ -339,7 +339,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-*/
+
 	debug("Sending ramdisk to device\n");
 	error = irecv_send_file(client, "ramdisk.dmg", 0);
 	if(error != IRECV_E_SUCCESS) {
