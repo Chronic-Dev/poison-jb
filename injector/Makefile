@@ -16,4 +16,4 @@ all:
 	cp injectpois0n ../staging/injectpois0n
 		
 clean:
-	rm -rf *.o ../staging/injectpois0n
+	rm -rf *.o injectpois0n ../staging/injectpois0n

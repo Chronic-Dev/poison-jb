@@ -10,6 +10,16 @@ int injectpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
 
+char file_exists(char* filename) {
+    FILE* file = fopen(filename, "rb");
+    if (file != NULL) {
+        fclose(file);
+        return 1;
+    }
+    
+    return 0;
+}
+
 int receive_data(int bytes) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
@@ -32,9 +42,12 @@ int receive_data(int bytes) {
 }
 
 int fetch_image(char* path, char* output) {
+    if (file_exists(output)) return 0;
+    
 	if(download_file_from_zip(device->firmware[0].url, path, output) != 0) {
 		return -1;
 	}
+	
 	return 0;
 
 }

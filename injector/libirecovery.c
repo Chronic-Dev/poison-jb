@@ -111,10 +111,10 @@ irecv_error_t irecv_open(irecv_client_t* pclient) {
 						return error;
 					}
 
-					error = irecv_set_interface(client, 1, 1);
-					//if (error != IRECV_E_SUCCESS) {
-					//	return error;
-					//}
+                    error = irecv_set_interface(client, 0, 0);
+					if (error != IRECV_E_SUCCESS) {
+						return error;
+					}
 				}
 
 				/* cache usb serial */
@@ -154,19 +154,15 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
-
-	if (client->interface == interface) {
-		return IRECV_E_SUCCESS;
-	}
-
+	
 	if (usb_claim_interface(client, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
 	}
-
+	
 	if (usb_set_interface_alt_setting(client, interface, alt_interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
 	}
-
+	
 	client->interface = interface;
 	client->alt_interface = alt_interface;
 	return IRECV_E_SUCCESS;
@@ -420,10 +416,17 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 	int bytes = 0;
 	for (i = 0; i < packets; i++) {
 		int size = (i + 1) < packets ? packet_size : last;
+		
+        debug("sending packet %d of size %d\n", i, size);
 
 		/* Use bulk transfer for recovery mode and control transfer for DFU and WTF mode */
 		if (recovery_mode) {
-			error = usb_bulk_transfer(client, 0x04, &buffer[i * packet_size], size, &bytes, 1000);
+#ifdef __APPLE__
+            int pipe = 0x01;
+#else
+            int pipe = 0x04;
+#endif
+			error = usb_bulk_transfer(client, pipe, &buffer[i * packet_size], size, &bytes, 10000);
 		} else {
 			bytes = usb_control_transfer(client, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
 		}
@@ -811,8 +814,8 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	unsigned int cpid = 0;
 	
 	// XXX: these are hardcoded as the CPID/BDID isn't transferred
-    device_id = DEVICE_IPAD1G;
-    device_id = DEVICE_IPHONE4;
+    //device_id = DEVICE_IPAD1G;
+    //device_id = DEVICE_IPHONE4;
     device_id = DEVICE_IPOD4G;
 
 	/*if (irecv_get_cpid(client, &cpid) < 0) {

@@ -24,13 +24,13 @@ irecv_error_t usb_exit() {
 irecv_error_t usb_open(irecv_client_t client, void** device) {
 	IOReturn res;
 	
-    IOUSBDeviceInterface** dev = (IOUSBDeviceInterface **) device;
+    IOUSBDeviceInterface182** dev = (IOUSBDeviceInterface182 **) device;
     
 	if (!client->dev) {
         client->dev = dev;
 		res = (*client->dev)->USBDeviceOpen(client->dev);
         client->handle = client->dev;
-        client->serial = malloc(sizeof(char) * 255);
+        client->serial = calloc(sizeof(char), 255);
 	} else {
 		return IRECV_E_SUCCESS;
 	}
@@ -43,16 +43,20 @@ irecv_error_t usb_open(irecv_client_t client, void** device) {
 }
 
 irecv_error_t usb_close(irecv_client_t client) {
-	if (client->dev) {
-		if (client->usb_interface != NULL) (*client->usb_interface)->USBInterfaceClose(client->usb_interface);
+    irecv_error_t err = IRECV_E_SUCCESS;
+    
+	if (client->usb_interface != NULL) { 
+	    err = ((*client->usb_interface)->USBInterfaceClose(client->usb_interface) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
 		client->usb_interface = NULL;
-		irecv_error_t err = ((*client->dev)->USBDeviceClose(client->dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+	}
+		
+	if (client->dev != NULL) {
+		err = ((*client->dev)->USBDeviceClose(client->dev) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
 		(*client->dev)->Release(client->dev);
 		client->dev = NULL;
-		return err;
 	}
 
-	return IRECV_E_SUCCESS;
+    return err;
 }
 
 irecv_error_t usb_reset_device(irecv_client_t client) {
@@ -83,21 +87,12 @@ int usb_get_device_list(irecv_client_t client, void*** devices) {
 	io_object_t usbDevice;
 	while (usbDevice = IOIteratorNext(anIterator)) {
 		SInt32 score;
-		IOUSBDeviceInterface **device = NULL;
+		IOUSBDeviceInterface182 **device = NULL;
 		IOCFPlugInInterface **plugInInterface = NULL;
 		
 		io_connect_t dataPort;
 		err = IOServiceOpen(usbDevice, mach_task_self(), 0, &dataPort);
 
-        io_name_t myclass;
-        IOObjectGetClass(usbDevice, myclass);
-        io_name_t devName;
-        IORegistryEntryGetName(usbDevice, devName);
-
-        // FIXME: hack to avoid crashing
-        if (strcmp(devName, "Apple Mobile Device (DFU Mode)") != 0
-            && strcmp(devName, "Apple Mobile Device (Recovery Mode)") != 0) continue;
-		
 		err = IOCreatePlugInInterfaceForService(
 		    usbDevice,
 			kIOUSBDeviceUserClientTypeID,
@@ -109,7 +104,7 @@ int usb_get_device_list(irecv_client_t client, void*** devices) {
 		if ((err == kIOReturnSuccess) && (plugInInterface != NULL)) {		    
 			HRESULT res = (*plugInInterface)->QueryInterface(
 			    plugInInterface, 
-			    CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
+			    CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID182),
 			    (LPVOID *) &device
 			);
 			
@@ -118,7 +113,7 @@ int usb_get_device_list(irecv_client_t client, void*** devices) {
 			if(!res && device) {
                 device_count += 1;
                 
-                devs = realloc(devs, device_count);
+                devs = realloc(devs, device_count * sizeof(irecv_descriptor_t));
                 devs[device_count - 2] = device;
                 devs[device_count - 1] = NULL;
 			}
@@ -134,7 +129,7 @@ int usb_get_device_list(irecv_client_t client, void*** devices) {
 }
 
 irecv_error_t usb_get_device_descriptor(void** device, irecv_descriptor_t* descriptor) {
-    IOUSBDeviceInterface **dev = (IOUSBDeviceInterface **) device;
+    IOUSBDeviceInterface182 **dev = (IOUSBDeviceInterface182 **) device;
     
     *descriptor = malloc(sizeof(**descriptor));
     (*dev)->GetDeviceVendor(dev, &(*descriptor)->vendor);
@@ -205,14 +200,14 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 	io_iterator_t iterator;
 	io_service_t iface;
 	
-	interfaceRequest.bInterfaceClass = 255;
-	interfaceRequest.bInterfaceSubClass = 255;
-	interfaceRequest.bInterfaceProtocol = interface;
+	interfaceRequest.bInterfaceClass = kIOUSBFindInterfaceDontCare;
+	interfaceRequest.bInterfaceSubClass = kIOUSBFindInterfaceDontCare;
+	interfaceRequest.bInterfaceProtocol = kIOUSBFindInterfaceDontCare;
 	interfaceRequest.bAlternateSetting = kIOUSBFindInterfaceDontCare;
 
 	err = (*client->dev)->CreateInterfaceIterator(client->dev, &interfaceRequest, &iterator);
 	if (err != kIOReturnSuccess) return IRECV_E_UNKNOWN_ERROR;
-
+	
 	while (iface = IOIteratorNext(iterator)) {
 		SInt32 score;
 		IOCFPlugInInterface** plugInInterface = NULL;
@@ -223,17 +218,24 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 			kIOCFPlugInInterfaceID,
 			&plugInInterface,
 			&score);
-		
-		if ((kIOReturnSuccess == err) && (plugInInterface != NULL)) {
-			HRESULT res = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID*)&currentInterface);
+			
+		if ((err == kIOReturnSuccess) && (plugInInterface != NULL)) {
+			HRESULT res = (*plugInInterface)->QueryInterface(
+			    plugInInterface,
+			    CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID182),
+			    (LPVOID *) &currentInterface
+			);
+			
 			(*plugInInterface)->Release(plugInInterface);
 			
-			if (!res && currentInterface) {
+			if (!res && currentInterface != NULL) {
 				uint8_t num;
 				
 				if ((*currentInterface)->USBInterfaceOpen(currentInterface) == kIOReturnSuccess) {
 					client->usb_interface = currentInterface;
 					ret = IRECV_E_SUCCESS;
+
+                    break;
 				}
 			}
 		}
@@ -247,9 +249,12 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 }
 
 irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int iface, int alt_iface) {
-	if (client->usb_interface) (*client->usb_interface)->SetAlternateInterface(client->usb_interface, iface);
-		
-	return IRECV_E_SUCCESS;
+    irecv_error_t err;
+    
+    if (client->usb_interface != NULL) err = ((*client->usb_interface)->SetAlternateInterface(client->usb_interface, iface) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
+    else err = IRECV_E_UNKNOWN_ERROR;
+	
+	return err;
 }
 
 irecv_error_t usb_release_interface(irecv_client_t client, int interface) {
@@ -281,15 +286,22 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
 irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned char* buffer, int maxsize, unsigned int* size, int timeout) {
 	IOReturn err;
 	
-	if (request & 0x80 != 0) {
+    if (client->usb_interface == NULL) return IRECV_E_NO_DEVICE;
+	
+	if (request & 0x80 != 0 && request != 1) {
 		// reading
 		err = (*client->usb_interface)->ReadPipeTO(client->usb_interface, request, buffer, size, timeout, timeout);
 	} else {
 		// writing
 		err = (*client->usb_interface)->WritePipeTO(client->usb_interface, request, buffer, *size, timeout, timeout);
-		if (err!=kIOReturnSuccess) {
+		if (err != kIOReturnSuccess) {
 			*size = 0;
-		}
+		} else {
+            *size = maxsize;
+	    }
 	}
-	return (err==kIOReturnSuccess)?IRECV_E_SUCCESS:IRECV_E_UNKNOWN_ERROR;
+	
+    fprintf(stderr, "bulk transfer result: 0x%X\n", err);
+	
+	return (err == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
 }
