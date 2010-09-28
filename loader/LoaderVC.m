@@ -212,6 +212,8 @@
 
 	[self removeStuff];
 	[self performSelector:@selector(removeHUD) withObject:nil afterDelay:2.0];
+	
+	system("su mobile -c /usr/bin/uicache");
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download {
