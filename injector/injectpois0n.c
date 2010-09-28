@@ -6,6 +6,11 @@
 #include "libirecovery.h"
 #include "injectpois0n.h"
 
+// TODO: Change payload & firmware names
+// TODO: Load exploit, payloads, and ramdisk statically
+// TODO: Test, Test, Test
+// TODO: Clean up
+
 int injectpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
@@ -318,11 +323,21 @@ int execute_ibss_payload() {
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
 
+	return 0;
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
 		return -1;
 	}
+
+	// TODO: Fetch iBoot
+	// TODO: Upload iBoot
+	// TODO: Patch iBoot
+	// TODO: Load iBoot (implement image load from memory)
+	// TODO: Check if jailbroken
+	// TODO:   Else load ramdisk & set boot-args
+	// TODO: Load kernelcache from NAND
+	// TODO: Patch kernelcache
 
 	debug("Sending DeviceTree to device\n");
 	error = irecv_send_file(client, "DeviceTree", 0);
