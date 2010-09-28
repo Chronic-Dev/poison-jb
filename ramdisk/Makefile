@@ -1,7 +1,7 @@
 init: ramdisk.img3
 
 include theos/makefiles/common.mk
-SUBPROJECTS = src
+SUBPROJECTS = src ../loader
 include $(FW_MAKEDIR)/aggregate.mk
 
 RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
