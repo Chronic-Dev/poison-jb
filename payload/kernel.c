@@ -20,7 +20,7 @@
 #include "filesystem.h"
 
 static char* gKernelAddr = NULL;
-char* gBootArgs = (char*) 0x8401F2F0;//0x5FF3AAC4;
+char* gBootArgs = SELF_KERNEL_BOOTARGS;
 char** gKernelPhyMem = SELF_KERNEL_PHYMEM;
 
 int(*kernel_load)(void* input, int max_size, char** output) = SELF_KERNEL_LOAD;
@@ -36,7 +36,6 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	unsigned int size = 0;
 	unsigned int* compressed = 0;
 	unsigned char* address = NULL;
-	unsigned char* decompressed = NULL;
 	if(argc < 2) {
 		puts("usage: kernel <load/patch> [options]\n");
 		puts("  load <address> <size>         \t\tload filesystem kernel to address\n");
@@ -49,24 +48,28 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	size = argv[3].uinteger;
 	address = (unsigned char*) argv[2].uinteger;
 	if(!strcmp(action, "load")) {
-		void* image = 0;
 
 #if TARGET_FS_MOUNT && TARGET_FS_LOAD_FILE
 		fs_mount("nand0a", "hfs", "/boot");
 		fs_load_file(KERNEL_PATH, (void*) address, compressed);
+		printf("loaded kernelcache image at %p with %u bytes\n", address, *compressed);
 #endif
 
-		printf("Load kernelcache image at %p with %u bytes\n", address, *compressed);
+
+#if TARGET_KERNEL_BOOTARGS && TARGET_NVRAM_LIST
 		NvramVar* bootargs = nvram_find_var("boot-args");
 		printf("boot-args set to %s\n", bootargs->string);
-		strcpy(gBootArgs, bootargs->string);
+		strcpy(gBootArgs, "rd=md0 -v serial=1 debug=10");//bootargs->string);
+#endif
+
 		kernel_load((void*) address, size, &gKernelAddr);
-		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
+		printf("kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
 		patch_kernel(0x40000000, 0xF00000);
-		//jump_to(3, decompressed, *gKernelPhyMem);
+		printf("booting kernelcache...\n");
+		jump_to(3, gKernelAddr, *gKernelPhyMem);
 	}
 	else if(!strcmp(action, "patch")) {
-		printf("patching kernel..\n");
+		printf("patching kernel...\n");
 		patch_kernel(address, size);
 	}
 	else if(!strcmp(action, "boot")) {
@@ -132,3 +135,4 @@ int kernel_patch(void* address) {
 	printf("Not implemented yet\n");
 	return 0;
 }
+

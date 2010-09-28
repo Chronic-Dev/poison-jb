@@ -1,7 +1,5 @@
 .text
 
-.globl start
-.globl _start
 .globl _exit
 .globl _fork
 .globl _read
@@ -11,12 +9,15 @@
 .globl _unlink
 .globl _chdir
 
+.globl _mlock
+.globl _mkdir
+.globl _unmount
+
 /*
 .global _mknod: 0xD  int mknod(const char *pathname, mode_t mode, dev_t dev)                      3
-.global _chmod: 0xF  int chmod(const char *path, mode_t mode)                                2
-.global _chown: 0x10  int chown(const char *path, uid_t owner, gid_t group)                       3
 */
-
+.globl _chmod
+.globl _chown
 .globl _sync
 .globl _kill
 .globl _dup
@@ -33,19 +34,15 @@
 /*
 .global _munmap: 0x49  int munmap(void *addr, size_t length)                                 2
 .global _mprotect: 0x4A  int mprotect(const void *addr, size_t len, int prot)                     3
-.global _dup2: 0x5A  int dup2(int oldfd, int newfd)                                          2
 */
 
+.globl _dup2
 .globl _mount
 .globl _stat
 
 /*
 .global _mmap: 0xC5  void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) 6
 */
-
-start:
-_start:
-    bl     _main
 
 /* void exit(int status) */
 _exit:
@@ -130,6 +127,81 @@ _chdir:
     add    sp, sp, #0x4
     ldmfd  sp!, {r12,pc}
     
+/* int chmod(const char *path, int mode) */
+_chmod:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0xF
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int chown(const char *path, int owner, int group) */
+_chown:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x10
+    str    r0, [sp,#0xC]
+    str    r1, [sp,#0x8]
+    str    r2, [sp,#0x4]
+    str    r3, [sp,#0x0]
+    mov    r12, #0x10
+    swi    #0x80
+    add    sp, sp, #0x10
+    ldmfd  sp!, {r12,pc}
+
+/* void sync(void) */
+_sync:
+    stmfd  sp!, {r12,lr}
+    mov    r12, #0x24
+    swi    #0x80
+    ldmfd  sp!, {r12,pc}
+
+/* int mlock(const void *addr, size_t len) */
+_mlock:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0xCB
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int mkdir(const char *path, mode_t mode) */
+_mkdir:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x88
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int unmount(const char *dir, int flags) */
+_unmount:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x9F
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int dup2(int oldfd, int newfd) */
+_dup2:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x5A
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
 /* int stat(const char *path, struct stat *buf) */
 _stat:
     stmfd  sp!, {r12,lr}
@@ -152,13 +224,6 @@ _mount:
     mov    r12, #0xA7
     swi    #0x80
     add    sp, sp, #0x10
-    ldmfd  sp!, {r12,pc}
-
-/* void sync(void) */
-_sync:
-    stmfd  sp!, {r12,lr}
-    mov    r12, #0x24 
-    swi    #0x80
     ldmfd  sp!, {r12,pc}
     
 /* int kill(pid_t pid, int sig) */

@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "partial.h"
+#include "libpois0n.h"
 #include "libirecovery.h"
-#include "injectpois0n.h"
 
 int injectpois0n_debug = 1;
 static irecv_client_t client = NULL;
@@ -39,6 +39,7 @@ int fetch_image(char* path, char* output) {
 
 }
 
+
 int fetch_dfu_image(char* type) {
 	char name[32];
 	char path[256];
@@ -70,6 +71,7 @@ int fetch_firmware_image(char* type) {
 
 	return 0;
 }
+
 
 int upload_dfu_image(char* type) {
 	irecv_error_t error = 0;
@@ -157,7 +159,7 @@ int overwrite_sha1_registers() {
 		error("Unable to overwrite SHA1 registers\n");
 		return -1;
 	}
-	
+
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
@@ -264,7 +266,7 @@ int upload_ibss() {
 		error("Unable upload iBSS\n");
 		return -1;
 	}
-	
+
 	return 0;
 }
 
@@ -432,34 +434,36 @@ void quit() {
 	irecv_exit();
 }
 
-int main(int argc, char* argv[]) {
-	irecv_error_t error = 0;
+int initInjector() {
 	irecv_init();
 	irecv_set_debug_level(1);
+	return 0;
+}
 
-	//////////////////////////////////////
-	// Begin
+int isInDFU() {
+	irecv_error_t error = 0;
 	debug("Connecting to device\n");
 	error = irecv_open(&client);
 	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
+		irecv_close(client);
 		return -1;
 	}
 
-	//////////////////////////////////////
-	// Check device
-	debug("Checking the device mode\n");
+	debug("Checking device mode\n");
 	if (client->mode != kDfuMode) {
-		error("Device must be in DFU mode to continue\n");
-		quit();
-		return -1;
+		irecv_close(client);
+		return -2;
 	}
+	return 0;
+}
 
-	debug("Checking the device type\n");
+int isCompatibleDevice() {
+	irecv_error_t error;
+	debug("Checking the device type\n");;
 	error = irecv_get_device(client, &device);
 	if (device == NULL || device->index == DEVICE_UNKNOWN) {
 		error("ERROR: Unable to discover device type\n");
-		quit();
+		irecv_close(client);
 		return -1;
 	}
 	info("Identified device as %s\n", device->product);
@@ -467,10 +471,14 @@ int main(int argc, char* argv[]) {
 	debug("Checking if this device is compatible with this jailbreak\n");
 	if (device->chip_id != 8930) {
 		error("Sorry this device is not compatible with this jailbreak");
-		quit();
-		return -1;
+		irecv_close(client);
+		return -2;
 	}
+	return 0;
+}
 
+int SHAtter() {
+	irecv_error_t error;
 	//////////////////////////////////////
 	// Send exploit
 	debug("Preparing to overwrite SHA1 registers\n");
@@ -479,7 +487,7 @@ int main(int argc, char* argv[]) {
 		quit();
 		return -1;
 	}
-	
+
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit() < 0) {
 		error("Unable to upload exploit data\n");

@@ -19,6 +19,9 @@
 #ifdef TARGET_KERNEL_PHYMEM
 #	define SELF_KERNEL_PHYMEM ((void*)(TARGET_BASEADDR + TARGET_KERNEL_PHYMEM))
 #endif
+#ifdef TARGET_KERNEL_BOOTARGS
+#	define SELF_KERNEL_BOOTARGS ((void*)(TARGET_BASEADDR + TARGET_KERNEL_BOOTARGS))
+#endif
 
 #ifndef SELF_KERNEL_LOAD
 #	define SELF_KERNEL_LOAD 0
@@ -28,6 +31,11 @@
 #ifndef SELF_KERNEL_PHYMEM
 #	define SELF_KERNEL_PHYMEM 0
 #	warning "SELF_KERNEL_PHYMEM not defined"
+#endif
+
+#ifndef SELF_KERNEL_BOOTARGS
+#	define SELF_KERNEL_BOOTARGS 0
+#	warning "SELF_KERNEL_BOOTARGS not defined"
 #endif
 
 extern char* gBootArgs;

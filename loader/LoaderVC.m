@@ -192,7 +192,7 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
 	//system("/bin/cdev-tar xf /tmp/loader_package.tar -C /");
-	execl("/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
+	execl("/bin/cdev-tar", "/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
 
 	[self performSelectorOnMainThread:@selector(cleanUp) withObject:nil waitUntilDone:YES];
 
