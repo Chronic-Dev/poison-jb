@@ -5,6 +5,27 @@
 int stdout = 0;
 int stderr = 0;
 
+int install(const char* src, const char* dst, int uid, int gid, int mode) {
+	int ret = 0;
+
+	ret = cp(src, dst);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = chown(dst, uid, gid);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = chmod(dst, mode);
+	if (ret < 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
 void sleep(unsigned int seconds) {
 	int i = 0;
 	for(i = seconds * 10000000; i > 0; i--) {}

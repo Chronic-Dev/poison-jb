@@ -16,5 +16,6 @@ void _puts(const char* msg);
 void sleep(unsigned int seconds);
 int cp(const char* src, const char* dest);
 int hfs_mount(const char* device, const char* mountdir, int options);
+int install(const char* src, const char* dst, int uid, int gid, int mode);
 
 #endif

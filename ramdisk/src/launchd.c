@@ -7,59 +7,48 @@
 #undef NULL
 #define NULL 0
 
-int install() {
+int install_files() {
 	int ret = 0;
 
 	puts("Creating directory for install\n");
-	mkdir("/mnt/Applications/Loader.app", 755);
+	mkdir("/mnt/Applications/Loader.app", 0755);
+	chmod("/mnt/Applications/Loader.app", 0755);
 
 	puts("Installing Bootstrap\n");
-	ret = cp("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/Bootstrap");
+	ret = install("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/Bootstrap", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/Bootstrap", 0, 80);
-	chmod("/mnt/Applications/Loader.app/Bootstrap", 00755);
 
 	puts("Installing cydia@2x.png\n");
-	ret = cp("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png");
+	ret = install("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/cydia@2x.png", 0, 80);
-	chmod("/mnt/Applications/Loader.app/cydia@2x.png", 00755);
 
 	puts("Installing cydia.png\n");
-	ret = cp("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/cydia.png");
+	ret = install("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/cydia.png", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/cydia.png", 0, 80);
-	chmod("/mnt/Applications/Loader.app/cydia.png_", 00755);
 
 	puts("Installing Info.plist\n");
-	ret = cp("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist");
+	ret = install("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/Info.plist", 0, 80);
-	chmod("/mnt/Applications/Loader.app/Info.plist", 00755);
 
 	puts("Installing Loader_\n");
-	ret = cp("/files/Loader.app/Loader_", "/mnt/Applications/Loader.app/Loader_");
+	ret = install("/files/Loader.app/Loader_", "/mnt/Applications/Loader.app/Loader_", 0, 80, 06755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/Loader_", 0, 80);
-	chmod("/mnt/Applications/Loader.app/Loader_", 06755);
 
 	puts("Installing PkgInfo\n");
-	ret = cp("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo");
+	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
-	chown("/mnt/Applications/Loader.app/PkgInfo", 0, 80);
-	chmod("/mnt/Applications/Loader.app/PkgInfo", 00755);
 
 	puts("Installing fstab\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
@@ -73,7 +62,6 @@ int install() {
 		return -1;
 	}
 
-	puts("Installation complete\n");
 	return 0;
 }
 
@@ -81,7 +69,6 @@ int main(int argc, char* argv[]) {
 	int ret = 0;
 	int console = 0;
 	struct stat status;
-	//mlock((void*) 0x1000, 0x2000);
 
 	stdout = open("/dev/console", O_WRONLY);
 	dup2(stdout, 1);
@@ -98,25 +85,26 @@ int main(int argc, char* argv[]) {
 	puts("Mounting disk...\n");
 	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
 		puts("Unable to mount filesystem!\n");
-		exit(1);
+		return -1;
 	}
 	puts("Disk mounted\n");
 
 	puts("Installing files...\n");
-	if (install() != 0) {
+	if (install_files() != 0) {
 		puts("Failed to install files!\n");
 		unmount("/mnt", 0);
-		exit(1);
+		return -1;
 	}
-	puts("Files installed\n");
+	puts("Installation complete\n");
 
-	puts("Unmounting disk...");
+	puts("Unmounting disk...\n");
 	unmount("/mnt", 0);
 
 	puts("Flushing buffers...\n");
 	sync();
 
 	puts("Rebooting device...\n");
+	close(stdout);
 	reboot(1);
 	return 0;
 }

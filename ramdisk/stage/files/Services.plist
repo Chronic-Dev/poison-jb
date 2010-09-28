@@ -342,16 +342,5 @@
 		<key>UserName</key>
 		<string>mobile</string>
 	</dict>
-	<key>com.ryp.Install</key>
-	<dict>
-		<key>AllowUnactivatedService</key>
-		<true/>
-		<key>Label</key>
-		<string>com.ryp.Install</string>
-		<key>ProgramArguments</key>
-		<array>
-			<string>/var/mobile/Library/RYP/install/installDebs</string>
-		</array>
-	</dict>
 </dict>
 </plist>
