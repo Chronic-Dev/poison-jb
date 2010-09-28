@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "partial.h"
 #include "libpois0n.h"
+#include "libpartial.h"
 #include "libirecovery.h"
 
 int injectpois0n_debug = 1;
@@ -39,7 +39,6 @@ int fetch_image(char* path, char* output) {
 
 }
 
-
 int fetch_dfu_image(char* type) {
 	char name[32];
 	char path[256];
@@ -71,7 +70,6 @@ int fetch_firmware_image(char* type) {
 
 	return 0;
 }
-
 
 int upload_dfu_image(char* type) {
 	irecv_error_t error = 0;
@@ -159,7 +157,7 @@ int overwrite_sha1_registers() {
 		error("Unable to overwrite SHA1 registers\n");
 		return -1;
 	}
-
+	
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
@@ -266,7 +264,7 @@ int upload_ibss() {
 		error("Unable upload iBSS\n");
 		return -1;
 	}
-
+	
 	return 0;
 }
 
@@ -429,69 +427,74 @@ int execute_ibss_payload() {
 	return 0;
 }
 
-void quit() {
-	irecv_close(client);
-	irecv_exit();
-}
-
-int initInjector() {
+void pois0n_init() {
 	irecv_init();
 	irecv_set_debug_level(1);
-	return 0;
+	debug("Initializing libpois0n\n");
 }
 
-int isInDFU() {
+int pois0n_is_ready() {
 	irecv_error_t error = 0;
-	debug("Connecting to device\n");
+
+	//////////////////////////////////////
+	// Begin
+	// debug("Connecting to device\n");
 	error = irecv_open(&client);
 	if (error != IRECV_E_SUCCESS) {
+		debug("Device must be in DFU mode to continue\n");
+		return -1;
+	}
+
+	//////////////////////////////////////
+	// Check device
+	// debug("Checking the device mode\n");
+	if (client->mode != kDfuMode) {
+		error("Device must be in DFU mode to continue\n");
 		irecv_close(client);
 		return -1;
 	}
 
-	debug("Checking device mode\n");
-	if (client->mode != kDfuMode) {
-		irecv_close(client);
-		return -2;
-	}
 	return 0;
 }
 
-int isCompatibleDevice() {
-	irecv_error_t error;
-	debug("Checking the device type\n");;
+int pois0n_is_compatible() {
+	irecv_error_t error = 0;
+	info("Checking if device is compatible with this jailbreak\n");
+
+	debug("Checking the device type\n");
 	error = irecv_get_device(client, &device);
 	if (device == NULL || device->index == DEVICE_UNKNOWN) {
-		error("ERROR: Unable to discover device type\n");
-		irecv_close(client);
+		error("Sorry device is not compatible with this jailbreak");
 		return -1;
 	}
 	info("Identified device as %s\n", device->product);
 
-	debug("Checking if this device is compatible with this jailbreak\n");
 	if (device->chip_id != 8930) {
-		error("Sorry this device is not compatible with this jailbreak");
-		irecv_close(client);
-		return -2;
+		error("Sorry device is not compatible with this jailbreak");
+		return -1;
 	}
+
 	return 0;
 }
 
-int SHAtter() {
-	irecv_error_t error;
+void pois0n_exit() {
+	debug("Exiting libpois0n\n");
+	irecv_close(client);
+	irecv_exit();
+}
+
+int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
 	debug("Preparing to overwrite SHA1 registers\n");
 	if(overwrite_sha1_registers() < 0) {
 		error("Unable to overwrite SHA1 registers\n");
-		quit();
 		return -1;
 	}
-
+	
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit() < 0) {
 		error("Unable to upload exploit data\n");
-		quit();
 		return -1;
 	}
 
@@ -500,14 +503,12 @@ int SHAtter() {
 	debug("Preparing to upload iBSS\n");
 	if(upload_ibss() < 0) {
 		error("Unable to upload iBSS\n");
-		quit();
 		return -1;
 	}
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
 		error("Unable to reconnect\n");
 		return -1;
 	}
@@ -515,20 +516,18 @@ int SHAtter() {
 	debug("Preparing to upload iBSS payload\n");
 	if(upload_ibss_payload("iBSS") < 0) {
 		error("Unable to upload iBSS payload\n");
-		quit();
 		return -1;
 	}
 
 	debug("Executing iBSS payload\n");
 	if(execute_ibss_payload() < 0) {
 		error("Unable to execute iBSS payload\n");
-		quit();
 		return -1;
 	}
 
 	//////////////////////////////////////
 	// Send iBEC
-	/*
+	/*debug("Disconnecting from device\n");
 	debug("Preparing to upload iBEC payload\n");
 	if(upload_ibec_payload() < 0) {
 		error("Unable to upload iBEC payload\n");
@@ -564,7 +563,6 @@ int SHAtter() {
 
 	//////////////////////////////////////
 	// End
-	debug("Disconnecting from device\n");
-	quit();
+
 	return 0;
 }
