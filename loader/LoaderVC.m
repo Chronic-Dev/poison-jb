@@ -5,6 +5,7 @@
 #import "MemLoaderOperation.h"
 #import "NSURLDownload.h"
 #import <unistd.h> 
+#import "tar.h"
 
 @implementation LoaderVC
 
@@ -192,7 +193,8 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
 	//system("/bin/cdev-tar xf /tmp/loader_package.tar -C /");
-	execl("/bin/cdev-tar", "/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
+	//execl("/bin/cdev-tar", "/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
+	untar("/tmp/loader_package.tar", "/");
 
 	[self performSelectorOnMainThread:@selector(cleanUp) withObject:nil waitUntilDone:YES];
 
