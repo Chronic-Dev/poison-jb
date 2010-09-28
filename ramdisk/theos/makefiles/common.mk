@@ -78,9 +78,9 @@ PACKAGE_BUILDNAME ?= debug
 endif
 
 INTERNAL_CFLAGS = -DTARGET_$(_FW_TARGET_NAME_DEFINE)=1 $(OPTFLAG) -I$(FW_INCDIR) -include $(FRAMEWORKDIR)/Prefix.pch -Wall
-ifneq ($(GO_EASY_ON_ME),1)
-	INTERNAL_CFLAGS += -Werror
-endif
+#ifneq ($(GO_EASY_ON_ME),1)
+	#INTERNAL_CFLAGS += -Werror
+#endif
 INTERNAL_CFLAGS += $(SHARED_CFLAGS)
 
 FW_BUILD_DIR ?= .
