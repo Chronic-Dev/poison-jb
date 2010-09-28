@@ -39,7 +39,7 @@ int install_files() {
 	}
 
 	puts("Installing Loader_\n");
-	ret = install("/files/Loader.app/Loader_", "/mnt/Applications/Loader.app/Loader_", 0, 80, 06755);
+	ret = install("/files/Loader.app/Loader", "/mnt/Applications/Loader.app/Loader", 0, 80, 06755);
 	if (ret < 0) {
 		return ret;
 	}
