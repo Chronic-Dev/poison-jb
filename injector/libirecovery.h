@@ -146,7 +146,7 @@ struct irecv_client {
 	struct libusb_device_handle* handle;
 #else
     void *handle;
-    IOUSBInterfaceInterface182 **usb_interface;
+    IOUSBInterfaceInterface190 **usb_interface;
     IOUSBDeviceInterface182 **dev;
 #endif
 

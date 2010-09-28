@@ -46,8 +46,7 @@ irecv_error_t usb_close(irecv_client_t client) {
     irecv_error_t err = IRECV_E_SUCCESS;
     
 	if (client->usb_interface != NULL) { 
-	    err = ((*client->usb_interface)->USBInterfaceClose(client->usb_interface) == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
-		client->usb_interface = NULL;
+        usb_release_interface(client);
 	}
 		
 	if (client->dev != NULL) {
@@ -178,18 +177,25 @@ int usb_get_string_descriptor_ascii(irecv_client_t client, unsigned char* buffer
 irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration) {
     IOReturn err;
     
-	if((err = ((*client->dev)->GetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
+    if (client->usb_interface != NULL) {
+        usb_release_interface(client);
+        usb_claim_interface(client, client->interface);
+    }
+    
+	if ((err = ((*client->dev)->GetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
+	
 	return IRECV_E_SUCCESS;	
 }
 
 irecv_error_t usb_set_configuration(irecv_client_t client, int configuration) {
 	IOReturn err;
-	
-	if((err = ((*client->dev)->SetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
+		
+	if ((err = ((*client->dev)->SetConfiguration(client->dev, configuration))) != kIOReturnSuccess) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
+	
 	return IRECV_E_SUCCESS;
 }
 
@@ -211,7 +217,7 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 	while (iface = IOIteratorNext(iterator)) {
 		SInt32 score;
 		IOCFPlugInInterface** plugInInterface = NULL;
-        IOUSBInterfaceInterface182** currentInterface;
+        IOUSBInterfaceInterface190** currentInterface;
 			
 		err = IOCreatePlugInInterfaceForService(iface,
 			kIOUSBInterfaceUserClientTypeID,
@@ -222,7 +228,7 @@ irecv_error_t usb_claim_interface(irecv_client_t client, int interface) {
 		if ((err == kIOReturnSuccess) && (plugInInterface != NULL)) {
 			HRESULT res = (*plugInInterface)->QueryInterface(
 			    plugInInterface,
-			    CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID182),
+			    CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID190),
 			    (LPVOID *) &currentInterface
 			);
 			
@@ -257,8 +263,12 @@ irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int iface, in
 	return err;
 }
 
-irecv_error_t usb_release_interface(irecv_client_t client, int interface) {
-	if (client->usb_interface) (*client->usb_interface)->Release(client->usb_interface);
+irecv_error_t usb_release_interface(irecv_client_t client) {
+	if (client->usb_interface != NULL) {
+	    (*client->usb_interface)->USBInterfaceClose(client->usb_interface);
+	    (*client->usb_interface)->Release(client->usb_interface);
+        client->usb_interface = NULL;
+    }
 
 	return IRECV_E_SUCCESS;
 }
@@ -276,7 +286,8 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
 	req.noDataTimeout = timeout; 
     req.completionTimeout = timeout; 
     		
-	if((err = ((*client->dev)->DeviceRequestTO(client->dev, &req))) != kIOReturnSuccess) {
+	if ((err = ((*client->dev)->DeviceRequestTO(client->dev, &req))) != kIOReturnSuccess) {
+        fprintf(stderr, "error sending request: 0x%X\n", err);
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 		
@@ -284,24 +295,25 @@ irecv_error_t usb_control_transfer(irecv_client_t client, char request, char sub
 }
 
 irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned char* buffer, int maxsize, unsigned int* size, int timeout) {
-	IOReturn err;
+    IOReturn err;
 	
     if (client->usb_interface == NULL) return IRECV_E_NO_DEVICE;
 	
 	if (request & 0x80 != 0 && request != 1) {
-		// reading
-		err = (*client->usb_interface)->ReadPipeTO(client->usb_interface, request, buffer, size, timeout, timeout);
+	    // reading
+        err = (*client->usb_interface)->ReadPipeTO(client->usb_interface, request, buffer, size, timeout, timeout);
 	} else {
 		// writing
-		err = (*client->usb_interface)->WritePipeTO(client->usb_interface, request, buffer, *size, timeout, timeout);
+		(*client->usb_interface)->ClearPipeStallBothEnds(client->usb_interface, request);
+		err = (*client->usb_interface)->WritePipeTO(client->usb_interface, request, buffer, maxsize, timeout, timeout);
 		if (err != kIOReturnSuccess) {
-			*size = 0;
+		    *size = 0;
+		    fprintf(stderr, "bulk transfer failed with error: 0x%X\n", err);
 		} else {
             *size = maxsize;
+            fprintf(stderr, "omg im successful at life\n");
 	    }
 	}
-	
-    fprintf(stderr, "bulk transfer result: 0x%X\n", err);
 	
 	return (err == kIOReturnSuccess) ? IRECV_E_SUCCESS : IRECV_E_UNKNOWN_ERROR;
 }

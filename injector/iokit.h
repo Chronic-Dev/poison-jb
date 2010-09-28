@@ -27,7 +27,7 @@ irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration);
 irecv_error_t usb_set_configuration(irecv_client_t client, int configuration);
 
 irecv_error_t usb_claim_interface(irecv_client_t client, int interface);
-irecv_error_t usb_release_interface(irecv_client_t client, int interface);
+irecv_error_t usb_release_interface(irecv_client_t client);
 irecv_error_t usb_set_interface_alt_setting(irecv_client_t client, int interface, int alt_interface);
 
 irecv_error_t usb_bulk_transfer(irecv_client_t client, char request, unsigned char* buffer, int maxsize, unsigned int* size, int timeout);

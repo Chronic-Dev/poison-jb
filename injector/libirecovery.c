@@ -251,10 +251,10 @@ irecv_error_t irecv_close(irecv_client_t client) {
 
 		if (client->handle != NULL) {
 			if (client->mode != kDfuMode) {
-				usb_release_interface(client, client->interface);
+				usb_release_interface(client);
 			}
+			
 			usb_close(client);
-			client->handle = NULL;
 		}
 
 		free(client);
@@ -276,9 +276,14 @@ static irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command
 	if (length >= 0x100) {
 		length = 0xFF;
 	}
+	
+    debug("sending raw command: %s\n", command);
 
 	if (length > 0) {
 		int ret = usb_control_transfer(client, 0x40, 0, 0, 0, (unsigned char*) command, length + 1, 1000);
+		
+        if (ret == IRECV_E_UNKNOWN_ERROR) return IRECV_E_UNKNOWN_ERROR;
+		
 		/*
 		if ((ret < 0) || (ret != (length + 1))) {
 			if (ret == LIBUSB_ERROR_PIPE)
@@ -306,11 +311,11 @@ irecv_error_t irecv_send_command(irecv_client_t client, char* command) {
 	}
 
 	irecv_event_t event;
-	if(client->precommand_callback != NULL) {
+	if (client->precommand_callback != NULL) {
 		event.size = length;
 		event.data = command;
 		event.type = IRECV_PRECOMMAND;
-		if(client->precommand_callback(client, &event)) {
+		if (client->precommand_callback(client, &event)) {
 			return IRECV_E_SUCCESS;
 		}
 	}
@@ -322,11 +327,11 @@ irecv_error_t irecv_send_command(irecv_client_t client, char* command) {
 			return error;
 	}
 
-	if(client->postcommand_callback != NULL) {
+	if (client->postcommand_callback != NULL) {
 		event.size = length;
 		event.data = command;
 		event.type = IRECV_POSTCOMMAND;
-		if(client->postcommand_callback(client, &event)) {
+		if (client->postcommand_callback(client, &event)) {
 			return IRECV_E_SUCCESS;
 		}
 	}
@@ -426,7 +431,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 #else
             int pipe = 0x04;
 #endif
-			error = usb_bulk_transfer(client, pipe, &buffer[i * packet_size], size, &bytes, 10000);
+			error = usb_bulk_transfer(client, pipe, &buffer[i * packet_size], size, &bytes, 3000);
 		} else {
 			bytes = usb_control_transfer(client, 0x21, 1, 0, 0, &buffer[i * packet_size], size, 1000);
 		}
