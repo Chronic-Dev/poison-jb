@@ -126,12 +126,7 @@ void _uicache() {
 
 - (void)applicationWillTerminate:(UIApplication *)application {
 	_uicache();
-}
-
-- (void)applicationWillResignActive:(UIApplication *)application {
-	[self applicationWillTerminate:nil];
 	sleep(1);
-	system("killall Loader_");
 }
 
 - (void)dealloc {
