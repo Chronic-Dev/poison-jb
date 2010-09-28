@@ -2,10 +2,7 @@
 #include "libpois0n.h"
 
 int main(int argc, char* argv[]) {
-	if(pois0n_init() < 0) {
-		error("Unable to initialize libpois0n\n");
-		return -1;
-	}
+	pois0n_init();
 
 	info("Waiting for device to enter DFU mode\n");
 	while(pois0n_is_ready()) {

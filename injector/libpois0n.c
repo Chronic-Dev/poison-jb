@@ -6,9 +6,15 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
-int injectpois0n_debug = 1;
+int libpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
+
+/*
+void print_progress_bar(double progress);
+int read_file(const char* filename, void** data, int* size);
+int write_file(const char* filename, const void* data, int size);
+*/
 
 int receive_data(int bytes) {
 	char* buffer = NULL;
