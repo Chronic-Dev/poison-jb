@@ -18,38 +18,48 @@ int install() {
 	if (ret < 0) {
 		return -1;
 	}
+	chown("/mnt/Applications/Loader.app/Bootstrap", 0, 80);
+	chmod("/mnt/Applications/Loader.app/Bootstrap", 00755);
 
 	puts("Installing cydia@2x.png\n");
 	ret = cp("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png");
 	if (ret < 0) {
 		return -1;
 	}
+	chown("/mnt/Applications/Loader.app/cydia@2x.png", 0, 80);
+	chmod("/mnt/Applications/Loader.app/cydia@2x.png", 00755);
 
 	puts("Installing cydia.png\n");
 	ret = cp("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/cydia.png");
 	if (ret < 0) {
 		return -1;
 	}
+	chown("/mnt/Applications/Loader.app/cydia.png", 0, 80);
+	chmod("/mnt/Applications/Loader.app/cydia.png_", 00755);
 
 	puts("Installing Info.plist\n");
 	ret = cp("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist");
 	if (ret < 0) {
 		return -1;
 	}
+	chown("/mnt/Applications/Loader.app/Info.plist", 0, 80);
+	chmod("/mnt/Applications/Loader.app/Info.plist", 00755);
 
 	puts("Installing Loader_\n");
 	ret = cp("/files/Loader.app/Loader_", "/mnt/Applications/Loader.app/Loader_");
 	if (ret < 0) {
 		return -1;
 	}
-	chown("/mnt/Applications/Loader.app/Loader_", 0, 0);
-	chmod("/mnt/Applications/Loader.app/Loader_", 6755);
+	chown("/mnt/Applications/Loader.app/Loader_", 0, 80);
+	chmod("/mnt/Applications/Loader.app/Loader_", 06755);
 
 	puts("Installing PkgInfo\n");
 	ret = cp("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo");
 	if (ret < 0) {
 		return -1;
 	}
+	chown("/mnt/Applications/Loader.app/PkgInfo", 0, 80);
+	chmod("/mnt/Applications/Loader.app/PkgInfo", 00755);
 
 	puts("Installing fstab\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");

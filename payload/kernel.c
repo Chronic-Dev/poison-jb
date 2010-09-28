@@ -60,7 +60,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 #if TARGET_KERNEL_BOOTARGS
 		NvramVar* bootargs = nvram_find_var("boot-args");
 		printf("boot-args set to %s\n", bootargs->string);
-		strcpy(gBootArgs, "rd=md0 -v serial=1 debug=10");//bootargs->string);
+		strcpy(gBootArgs, "-v serial=1 debug=10");//bootargs->string);
 #endif
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("Kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
