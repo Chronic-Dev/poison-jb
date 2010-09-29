@@ -6,6 +6,8 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
+#include "exploit.h"
+#include "ramdisk.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n90ap.h"
 #include "payloads/iBSS.n81ap.h"
@@ -69,8 +71,8 @@ int fetch_dfu_image(const char* type, const char* output) {
 }
 
 int fetch_firmware_image(const char* type, const char* output) {
-	char name[32];
-	char path[256];
+	char name[64];
+	char path[255];
 
 	memset(name, '\0', 64);
 	memset(path, '\0', 255);
@@ -86,7 +88,7 @@ int fetch_firmware_image(const char* type, const char* output) {
 }
 
 int upload_dfu_image(const char* type) {
-	char image[256];
+	char image[255];
 	struct stat buf;
 	irecv_error_t error = 0;
 
@@ -101,15 +103,17 @@ int upload_dfu_image(const char* type) {
 		}
 	}
 
-	debug("Resetting device");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		debug("%s\n", irecv_strerror(error));
-		return -1;
+	if(client->mode != kDfuMode) {
+		debug("Resetting device counters\n");
+		error = irecv_reset_counters(client);
+		if (error != IRECV_E_SUCCESS) {
+			debug("%s\n", irecv_strerror(error));
+			return -1;
+		}
 	}
 
 	debug("Uploading %s to device\n", image);
-	error = irecv_send_file(client, image, 0);
+	error = irecv_send_file(client, image, 1);
 	if(error != IRECV_E_SUCCESS) {
 		debug("%s\n", irecv_strerror(error));
 		return -1;
@@ -121,8 +125,8 @@ int upload_firmware_image(const char* type) {
 	struct stat buf;
 	irecv_error_t error = 0;
 
-	memset(&image, '\0', 255);
-	snprintf(image, 255, "%s.%s", type, device->model);
+	memset(image, '\0', 255);
+	snprintf(image, 254, "%s.%s", type, device->model);
 
 	debug("Checking if %s already exists\n", image);
 	if(stat(image, &buf) != 0) {
@@ -132,7 +136,7 @@ int upload_firmware_image(const char* type) {
 		}
 	}
 
-	debug("Resetting device");
+	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
 		error("Unable to upload firmware image\n");
@@ -149,7 +153,8 @@ int upload_firmware_image(const char* type) {
 	}
 }
 
-int upload_dfu_payload(char* type) {
+int upload_firmware_payload(char* type) {
+	int size = 0;
 	char* payload = NULL;
 	irecv_error_t error = 0;
 
@@ -157,10 +162,12 @@ int upload_dfu_payload(char* type) {
 	case DEVICE_IPAD1G:
 		if(!strcmp(type, "iBSS")) {
 			payload = iBSS_k48ap;
+			size = sizeof(iBSS_k48ap);
 			debug("Loaded payload for iBSS on k48ap\n");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_k48ap;
+			//size = sizeof(iBEC_k48ap);
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
 		break;
@@ -168,10 +175,12 @@ int upload_dfu_payload(char* type) {
 	case DEVICE_IPHONE4:
 		if(!strcmp(type, "iBSS")) {
 			payload = iBSS_n90ap;
+			size = sizeof(iBSS_n90ap);
 			debug("Loaded payload for iBSS on n90ap\n");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_n90ap;
+			//size = sizeof(iBEC_n90ap);
 			debug("Loaded payload for iBEC on n90ap\n");
 		}
 		break;
@@ -179,10 +188,12 @@ int upload_dfu_payload(char* type) {
 	case DEVICE_IPOD4G:
 		if(!strcmp(type, "iBSS")) {
 			payload = iBSS_n81ap;
+			size = sizeof(iBSS_n81ap);
 			debug("Loaded payload for iBSS on n81ap\n");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_n81ap;
+			//size = sizeof(iBEC_n81ap);
 			debug("Loaded payload for iBEC on n81ap\n");
 		}
 		break;
@@ -202,7 +213,7 @@ int upload_dfu_payload(char* type) {
 	}
 
 	debug("Uploading iBSS payload\n");
-	error = irecv_send_buffer(client, payload, 1);
+	error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to upload firmware payload\n");
 		return -1;
@@ -294,7 +305,7 @@ int upload_exploit() {
 	}
 
 	debug("Sending exploit data\n");
-	error = irecv_send_file(client, "exploit.dfu", 0);
+	error = irecv_send_buffer(client, (unsigned char*) exploit, sizeof(exploit), 0);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to send exploit data\n");
 		return -1;
@@ -341,22 +352,25 @@ int upload_devicetree() {
 	return 0;
 }
 
-int upload_kernelcache() {
-	if(upload_firmware_image("kernelcache") < 0) {
-		error("Unable upload kernelcache\n");
+int upload_ramdisk() {
+	if(irecv_send_buffer(client, (unsigned char*) ramdisk, sizeof(ramdisk), 0) < 0) {
+		error("Unable upload ramdisk\n");
 		return -1;
 	}
 	return 0;
+}
+
+int upload_kernelcache() {
 	struct stat buf;
 	char kernelcache[255];
 	irecv_error_t error = 0;
 
 	memset(kernelcache, '\0', 255);
 	memset(&buf, '\0', sizeof(buf));
-	snprintf(kernelcache, 255, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
+	snprintf(kernelcache, 254, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
 	debug("Checking if kernelcache already exists\n");
 	if(stat(kernelcache, &buf) != 0) {
-		if(fetch_kernelcache() < 0) {
+		if(fetch_image(kernelcache, kernelcache) < 0) {
 			error("Unable to upload kernelcache\n");
 			return -1;
 		}
@@ -381,7 +395,7 @@ int upload_kernelcache() {
 }
 
 int upload_ibss_payload() {
-	if(upload_dfu_payload("iBSS") < 0) {
+	if(upload_firmware_payload("iBSS") < 0) {
 		error("Unable to upload iBSS payload\n");
 		return -1;
 	}
@@ -389,7 +403,7 @@ int upload_ibss_payload() {
 }
 
 int upload_ibec_payload() {
-	if(upload_dfu_payload("iBEC") < 0) {
+	if(upload_firmware_payload("iBEC") < 0) {
 		error("Unable to upload iBEC payload\n");
 		return -1;
 	}
@@ -402,30 +416,22 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-/*
-	debug("Preparing to fetch DeviceTree from Apple's servers\n");
-	if(fetch_firmware_image("DeviceTree") < 0) {
-		error("Unable to execut iBSS payload\n");
-		return -1;
-	}
 
-	debug("Sending DeviceTree to device\n");
-	error = irecv_send_file(client, "DeviceTree", 0);
-	if(error != IRECV_E_SUCCESS) {
+	debug("Preparing to upload DeviceTree\n");
+	if(upload_devicetree() < 0) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
-	debug("Executing DevicTree\n");
+	debug("Executing DeviceTree\n");
 	error = irecv_send_command(client, "devicetree");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
-	debug("Sending ramdisk to device\n");
-	error = irecv_send_file(client, "ramdisk.dmg", 0);
-	if(error != IRECV_E_SUCCESS) {
+	debug("Preparing to upload ramdisk\n");
+	if(upload_ramdisk() < 0) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
@@ -437,9 +443,8 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	debug("Sending kernelcache\n");
-	error = irecv_send_file(client, kernelcache, 0);
-	if(error != IRECV_E_SUCCESS) {
+	debug("Preparing to upload kernelcache\n");
+	if(upload_kernelcache() < 0) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
@@ -449,27 +454,10 @@ int execute_ibss_payload() {
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
-
-	info("Waiting for kernel to patch\n");
-	for(i = 0; i < 3; i++) {
-		sleep(1);
 	}
 
-	info("Please unplug your device, and plug it back in\n");
-	info("Press enter key to continue");
-	getchar();
-
-	debug("Preping and patching kernelcache\n");
-	error = irecv_send_command(client, "go kernel boot");
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-	*/
-
-
-//////////////////////////////////////////////////////////////////
-/* old stuff
+	/***************************************************
+	/* old stuff
 	debug("Booting ramdisk\n");
 	error = irecv_send_command(client, "bootx");
 	if(error != IRECV_E_SUCCESS) {
@@ -492,7 +480,7 @@ int execute_ibss_payload() {
 	upload_dfu_payload("iBoot");
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-*/
+	***************************************************/
 	return 0;
 }
 
@@ -583,7 +571,7 @@ int pois0n_inject() {
 	}
 
 	debug("Preparing to upload iBSS payload\n");
-	if(upload_ibss_payload("iBSS") < 0) {
+	if(upload_ibss_payload() < 0) {
 		error("Unable to upload iBSS payload\n");
 		return -1;
 	}

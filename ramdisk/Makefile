@@ -4,6 +4,7 @@ SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 LD=$(PLATFORM)/Developer/usr/bin/ld
 AS=$(PLATFORM)/Developer/usr/bin/as
+BIN2C=../tools/bin2c
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
 
@@ -44,7 +45,7 @@ ramdisk:
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	cp ramdisk.img3 ../staging/ramdisk.dmg
+	$(BIN2C) ramdisk.img3 ../injector/resources/ramdisk.h ramdisk
 
 clean:
 	rm -rf src/*.o

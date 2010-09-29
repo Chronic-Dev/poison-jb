@@ -388,7 +388,7 @@ irecv_error_t irecv_get_status(irecv_client_t client, unsigned int* status) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length, int dfuNotifyFinished) {
+irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, unsigned long length, int dfuNotifyFinished) {
 	irecv_error_t error = 0;
 	int recovery_mode = (client->mode != kDfuMode);
 

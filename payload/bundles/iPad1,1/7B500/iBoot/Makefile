@@ -2,6 +2,7 @@ CROSS ?= arm-elf-
 CC = $(CROSS)gcc
 LD = $(CROSS)ld
 SRC = ../../../..
+BIN2C = $(SRC)/../tools/bin2c
 LOADADDR = 0x42000000
 TYPE = iBoot
 MODEL = k48ap	
@@ -19,7 +20,7 @@ LDFLAGS = -Ttext=$(LOADADDR) -mthumb-interwork -nostdlib -lc -lm -lgcc
 all: payload
 
 payload: payload.elf
-	$(SRC)/tools/bin2c payload $(SRC)/../injector/payloads/$(TYPE).$(MODEL).h $(TYPE)_$(MODEL) 
+	$(BIN2C) payload $(SRC)/../injector/payloads/$(TYPE).$(MODEL).h $(TYPE)_$(MODEL) 
 	
 payload.elf: $(OBJECTS)
 	$(CC) -o $(@) $(OBJECTS) $(LDFLAGS)
