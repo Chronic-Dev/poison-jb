@@ -1,5 +1,6 @@
 include theos/makefiles/common.mk
 
+SDKVERSION=3.2
 APPLICATION_NAME = Loader
 TOOL_NAME = Bootstrap
 Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm LoaderVC.m
