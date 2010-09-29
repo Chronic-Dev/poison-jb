@@ -16,7 +16,7 @@ LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
 RAMDISK_LABEL=pois0ndisk
 RAMDISK_VOLUME=/Volumes/$(RAMDISK_LABEL)
 
-CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I./include -I/usr/include -I$(SDK)/usr/include -Wl,-e,_main
+CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I$(SDK)/usr/include -Wl,-e,_main
 LDFLAGS=
 
 UNAME := $(shell uname -s)
