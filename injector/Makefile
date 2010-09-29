@@ -18,4 +18,4 @@ all:
 	$(CP) injectpois0n ../staging/injectpois0n
 		
 clean:
-	rm -rf *.o payloads/* libpois0n.a injectpois0n
+	rm -rf *.o payloads resources libpois0n.a injectpois0n

@@ -1,7 +1,9 @@
 all:
 	mkdir -p staging
 	make -C tools
+	mkdir -p injector/resources
 	make -C exploit
+	mkdir -p injector/payloads
 	make -C payload
 	#make -C loader
 	make -C ramdisk
