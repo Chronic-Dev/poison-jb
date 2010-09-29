@@ -6,19 +6,22 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
+#include "payloads/iBSS.k48ap.h"
+#include "payloads/iBSS.n90ap.h"
+#include "payloads/iBSS.n81ap.h"
+
 int libpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
 
-/*
-void print_progress_bar(double progress);
-int read_file(const char* filename, void** data, int* size);
-int write_file(const char* filename, const void* data, int size);
-*/
+void print_progress(double progress) {
+
+}
 
 int receive_data(int bytes) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
+
 
 	buffer = (char*) malloc(bytes);
 	if(buffer == NULL) {
@@ -37,88 +40,171 @@ int receive_data(int bytes) {
 	return 0;
 }
 
-int fetch_image(char* path, char* output) {
+int fetch_image(const char* path, const char* output) {
+	debug("Fetching %s...\n", path);
 	if(download_file_from_zip(device->url, path, output) != 0) {
+		error("Unable to fetch %s\n", path);
 		return -1;
 	}
 	return 0;
 
 }
 
-int fetch_dfu_image(char* type) {
+int fetch_dfu_image(const char* type, const char* output) {
+	char name[64];
+	char path[255];
+
+	memset(name, '\0', 64);
+	memset(path, '\0', 255);
+	snprintf(name, 63, "%s.%s.RELEASE.dfu", type, device->model);
+	snprintf(path, 254, "Firmware/dfu/%s", name);
+
+	debug("Preparing to fetch DFU image from Apple's servers\n");
+	if(fetch_image(path, output)  < 0) {
+		error("Unable to fetch DFU image from Apple's servers\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int fetch_firmware_image(const char* type, const char* output) {
 	char name[32];
 	char path[256];
 
-	memset(name, '\0', 32);
-	memset(path, '\0', 256);
-	snprintf(name, 31, "%s.%s.RELEASE.dfu", type, device->model);
-	snprintf(path, 255, "Firmware/dfu/%s", name);
+	memset(name, '\0', 64);
+	memset(path, '\0', 255);
+	snprintf(name, 63, "%s.%s.img3", type, device->model);
+	snprintf(path, 254, "Firmware/all_flash/all_flash.%s.production/%s", device->model, name);
 
-	if(fetch_image(path, type)  < 0) {
-		return -1;
+	debug("Preparing to fetch firmware image from Apple's servers\n");
+	if(fetch_image(path, output)  < 0) {
+		error("Unable to fetch firmware image from Apple's servers\n");
 	}
 
 	return 0;
 }
 
-int fetch_firmware_image(char* type) {
-	char name[32];
-	char path[256];
-
-	memset(name, '\0', 32);
-	memset(path, '\0', 256);
-	snprintf(name, 31, "%s.%s.img3", type, device->model);
-	snprintf(path, 255, "Firmware/all_flash/all_flash.%s.production/%s", device->model, name);
-
-	if(fetch_image(path, type)  < 0) {
-		return -1;
-	}
-
-	return 0;
-}
-
-int upload_dfu_image(char* type) {
+int upload_dfu_image(const char* type) {
+	char image[256];
+	struct stat buf;
 	irecv_error_t error = 0;
 
-	debug("Attempting to fetch iBSS from Apple's servers\n");
-	if(fetch_dfu_image(type) < 0) {
-		debug("%s\n", irecv_strerror(error));\
-		return -1;
+	memset(image, '\0', 255);
+	snprintf(image, 254, "%s.%s", type, device->model);
+
+	debug("Checking if %s already exists\n", image);
+	if(stat(image, &buf) != 0) {
+		if(fetch_dfu_image(type, image) < 0) {
+			error("Unable to upload DFU image\n");
+			return -1;
+		}
 	}
 
-	debug("Resetting device counters\n");
+	debug("Resetting device");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
-		debug("%s\n", irecv_strerror(error));\
+		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
 
-	error = irecv_send_file(client, "iBSS", 0
-			);
+	debug("Uploading %s to device\n", image);
+	error = irecv_send_file(client, image, 0);
 	if(error != IRECV_E_SUCCESS) {
-		debug("%s\n", irecv_strerror(error));\
+		debug("%s\n", irecv_strerror(error));
+		return -1;
+	}
+}
+
+int upload_firmware_image(const char* type) {
+	char image[255];
+	struct stat buf;
+	irecv_error_t error = 0;
+
+	memset(&image, '\0', 255);
+	snprintf(image, 255, "%s.%s", type, device->model);
+
+	debug("Checking if %s already exists\n", image);
+	if(stat(image, &buf) != 0) {
+		if(fetch_firmware_image(type, image) < 0) {
+			error("Unable to upload firmware image\n");
+			return -1;
+		}
+	}
+
+	debug("Resetting device");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("Unable to upload firmware image\n");
+		debug("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Uploading %s to device\n", image);
+	error = irecv_send_file(client, image, 0);
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to upload firmware image\n");
+		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
 }
 
 int upload_dfu_payload(char* type) {
-	char name[32];
+	char* payload = NULL;
 	irecv_error_t error = 0;
+
+	switch(device->index) {
+	case DEVICE_IPAD1G:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_k48ap;
+			debug("Loaded payload for iBSS on k48ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_k48ap;
+			debug("Loaded payload for iBEC on k48ap\n");
+		}
+		break;
+
+	case DEVICE_IPHONE4:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n90ap;
+			debug("Loaded payload for iBSS on n90ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n90ap;
+			debug("Loaded payload for iBEC on n90ap\n");
+		}
+		break;
+
+	case DEVICE_IPOD4G:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n81ap;
+			debug("Loaded payload for iBSS on n81ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n81ap;
+			debug("Loaded payload for iBEC on n81ap\n");
+		}
+		break;
+	}
+
+	if(payload == NULL) {
+		error("Unable to upload firmware payload\n");
+		return -1;
+	}
 
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
+		error("Unable to upload firmware payload\n");
+		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
 
-	memset(name, '\0', 32);
-	snprintf(name, 31, "%s.%s", type, device->model);
-
 	debug("Uploading iBSS payload\n");
-	error = irecv_send_file(client, name, 1);
+	error = irecv_send_buffer(client, payload, 1);
 	if(error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
+		error("Unable to upload firmware payload\n");
 		return -1;
 	}
 
@@ -231,70 +317,63 @@ int upload_exploit() {
 	return 0;
 }
 
-int fetch_ibss() {
-	if(fetch_dfu_image("iBSS") < 0) {
-		error("Unable to download iBSS from Apple's servers\n");
-		return -1;
-	}
-	return 0;
-}
-
-int fetch_ibec() {
-	if(fetch_dfu_image("iBEC") < 0) {
-		error("Unable to download iBEC from Apple's servers\n");
-		return -1;
-	}
-	return 0;
-}
-
 int upload_ibss() {
-	irecv_error_t error = 0;
-
-	debug("Attempting to fetch iBSS from Apple's servers\n");
-	if(fetch_ibss() < 0) {
+	if(upload_dfu_image("iBSS") < 0) {
 		error("Unable upload iBSS\n");
 		return -1;
 	}
-
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable upload iBSS\n");
-		return -1;
-	}
-
-	error = irecv_send_file(client, "iBSS", 1);
-	if(error != IRECV_E_SUCCESS) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable upload iBSS\n");
-		return -1;
-	}
-	
 	return 0;
 }
 
-int upload_ibec() {
+int upload_iboot() {
+	if(upload_firmware_image("iBoot") < 0) {
+		error("Unable upload iBoot\n");
+		return -1;
+	}
+	return 0;
+}
+
+int upload_devicetree() {
+	if(upload_firmware_image("DeviceTree") < 0) {
+		error("Unable upload DeviceTree\n");
+		return -1;
+	}
+	return 0;
+}
+
+int upload_kernelcache() {
+	if(upload_firmware_image("kernelcache") < 0) {
+		error("Unable upload kernelcache\n");
+		return -1;
+	}
+	return 0;
+	struct stat buf;
+	char kernelcache[255];
 	irecv_error_t error = 0;
 
-	debug("Attempting to fetch iBEC from Apple's servers\n");
-	if(fetch_ibec() < 0) {
-		error("Unable to upload iBEC\n");
-		return -1;
+	memset(kernelcache, '\0', 255);
+	memset(&buf, '\0', sizeof(buf));
+	snprintf(kernelcache, 255, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
+	debug("Checking if kernelcache already exists\n");
+	if(stat(kernelcache, &buf) != 0) {
+		if(fetch_kernelcache() < 0) {
+			error("Unable to upload kernelcache\n");
+			return -1;
+		}
 	}
 
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
 		debug("%s\n", irecv_strerror(error));
-		error("Unable upload iBEC\n");
+		error("Unable upload kernelcache\n");
 		return -1;
 	}
 
-	error = irecv_send_file(client, "iBEC", 1);
+	error = irecv_send_file(client, kernelcache, 1);
 	if(error != IRECV_E_SUCCESS) {
 		debug("%s\n", irecv_strerror(error));
-		error("Unable upload iBEC\n");
+		error("Unable upload kernelcache\n");
 		return -1;
 	}
 
@@ -323,7 +402,7 @@ int execute_ibss_payload() {
 
 	debug("Initializing greenpois0n in iBSS\n");
 	irecv_send_command(client, "go");
-
+/*
 	debug("Preparing to fetch DeviceTree from Apple's servers\n");
 	if(fetch_firmware_image("DeviceTree") < 0) {
 		error("Unable to execut iBSS payload\n");
@@ -358,20 +437,6 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	struct stat buf;
-	char kernelcache[255];
-	memset(kernelcache, '\0', 255);
-	memset(&buf, '\0', sizeof(struct stat));
-	snprintf(kernelcache, 255, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
-	debug("Checking if kernelcache already exists\n");
-	if(stat(kernelcache, &buf) != 0) {
-		debug("Preparing to fetch %s from Apple's servers\n", kernelcache);
-		if(fetch_image(kernelcache, kernelcache) < 0) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-	}
-
 	debug("Sending kernelcache\n");
 	error = irecv_send_file(client, kernelcache, 0);
 	if(error != IRECV_E_SUCCESS) {
@@ -384,9 +449,7 @@ int execute_ibss_payload() {
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
-	}
 
-	/*
 	info("Waiting for kernel to patch\n");
 	for(i = 0; i < 3; i++) {
 		sleep(1);
@@ -395,7 +458,6 @@ int execute_ibss_payload() {
 	info("Please unplug your device, and plug it back in\n");
 	info("Press enter key to continue");
 	getchar();
-	*/
 
 	debug("Preping and patching kernelcache\n");
 	error = irecv_send_command(client, "go kernel boot");
@@ -403,6 +465,7 @@ int execute_ibss_payload() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
+	*/
 
 
 //////////////////////////////////////////////////////////////////

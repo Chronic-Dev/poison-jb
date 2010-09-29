@@ -26,7 +26,7 @@ int image_cmd(int argc, CmdArg* argv) {
 	void* address = NULL;
 	char* action = NULL;
 	if(argc < 2) {
-		puts("usage: task <list/load> [options]\n");
+		puts("usage: image <list/load> [options]\n");
 		puts("  list                   \t\tdisplay list of active tasks\n");
 		puts("  load <image> <address> \t\tdisplay list of active tasks\n");
 		return 0;
