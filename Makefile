@@ -1,5 +1,6 @@
 all:
 	mkdir -p staging
+	make -C tools
 	make -C exploit
 	make -C payload
 	#make -C loader
@@ -8,6 +9,7 @@ all:
 	#make -C interface
 
 clean:	
+	make clean -C tools
 	make clean -C exploit
 	make clean -C payload
 	#make clean -C loader

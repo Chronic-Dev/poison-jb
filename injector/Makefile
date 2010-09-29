@@ -4,10 +4,10 @@ CP = cp
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME),Darwin)
-	CFLAGS = -I./include -I/usr/local/include -I/opt/local/include
+	CFLAGS = -I./include -I./resources -I/usr/local/include -I/opt/local/include
 	LDFLAGS = -L/opt/local/lib -L/usr/local/lib -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit
 else
-	CFLAGS = -I./include
+	CFLAGS = -g -I./include -I./resources
 	LDFLAGS = -lusb-1.0 -lcurl -lz
 endif
 
@@ -18,4 +18,4 @@ all:
 	$(CP) injectpois0n ../staging/injectpois0n
 		
 clean:
-	rm -rf *.o libpois0n.a injectpois0n
+	rm -rf *.o payloads/* libpois0n.a injectpois0n

@@ -4,6 +4,7 @@ SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 LD=$(PLATFORM)/Developer/usr/bin/ld
 AS=$(PLATFORM)/Developer/usr/bin/as
+BIN2C=../tools/bin2c
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
 
@@ -16,7 +17,7 @@ LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
 RAMDISK_LABEL=pois0ndisk
 RAMDISK_VOLUME=/Volumes/$(RAMDISK_LABEL)
 
-CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I$(SDK)/usr/include -Wl,-e,_main
+CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I./include -I$(SDK)/usr/include -Wl,-e,_main
 LDFLAGS=
 
 UNAME := $(shell uname -s)
@@ -44,7 +45,7 @@ ramdisk:
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	cp ramdisk.img3 ../staging/ramdisk.dmg
+	$(BIN2C) ramdisk.img3 ../injector/resources/ramdisk.h ramdisk
 
 clean:
 	rm -rf src/*.o

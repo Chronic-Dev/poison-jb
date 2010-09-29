@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "libpois0n.h"
 
 int main(int argc, char* argv[]) {
@@ -8,9 +7,12 @@ int main(int argc, char* argv[]) {
 	while(pois0n_is_ready()) {
 		sleep(1);
 	}
-	info("Found device in DFU mode\n");
 
-	pois0n_inject();
+	info("Found device in DFU mode\n");
+	if(!pois0n_is_compatible()) {
+		pois0n_inject();
+	}
+
 	pois0n_exit();
 	return 0;
 }
