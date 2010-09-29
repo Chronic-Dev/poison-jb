@@ -27,14 +27,22 @@ int image_cmd(int argc, CmdArg* argv) {
 	char* action = NULL;
 	if(argc < 2) {
 		puts("usage: image <list/load> [options]\n");
-		puts("  list                   \t\tdisplay list of active tasks\n");
-		puts("  load <image> <address> \t\tdisplay list of active tasks\n");
+		puts("  list                   \t\tdisplay list of bdev images\n");
+		puts("  load <image> <address> \t\tload an img3 from bdev\n");
+		puts("  decrypt <address>      \t\tdecrypt an img3 in memory\n");
 		return 0;
 	}
 
 	action = argv[1].string;
 	if(!strcmp(action, "list")) {
 		image_display_list();
+	}
+
+	if(argc == 3) {
+		if(!strcmp(action, "decrypt")) {
+			address = (void*) argv[2].uinteger;
+			return image_decrypt(address);
+		}
 	}
 
 	if(argc == 4) {
