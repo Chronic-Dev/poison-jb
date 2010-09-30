@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <windows.h>
-//#include "libirecovery.h"
 
 enum {
 	kDFUMode = 1,
@@ -19,20 +18,20 @@ typedef struct usb_control_request {
 	char data[];
 } USBControlRequest;
 
-typedef struct irecv_client_t {
+typedef struct irecv_client {
 	HANDLE hIB;
 	HANDLE hDFU;
 	HANDLE hDFUPipe;
 	TCHAR* iBootPath;
 	TCHAR* DfuPath;
 	TCHAR* DfuPipePath;
-	struct irecv_device_t next;
-};
+	struct irecv_device next;
+} *irecv_client_t;
 
-irecv_error_t usb_init();
-irecv_error_t usb_exit();
+irecv_client_t usb_init();
+void usb_exit(irecv_client_t);
 
-irecv_error_t usb_open(irecv_client_t client, irecv_device_t device);
+irecv_error_t usb_open(irecv_client_t client);
 irecv_error_t usb_close(irecv_client_t client);
 
 irecv_error_t usb_reset_device(irecv_client_t client);
@@ -40,7 +39,7 @@ irecv_error_t usb_set_debug_level(irecv_client_t client, int debug);
 
 irecv_error_t usb_get_device_list();
 irecv_error_t usb_get_device_descriptor();
-irecv_error_t usb_free_device_list(irecv_device_t* devices, int mode);
+irecv_error_t usb_free_device_list(irecv_client_t devices, int mode);
 
 irecv_error_t usb_get_string_descriptor_ascii();
 irecv_error_t usb_get_configuration(irecv_client_t client, int* configuration);

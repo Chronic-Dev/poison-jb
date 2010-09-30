@@ -6,10 +6,18 @@
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
+#include "libirecovery.h"
+
+typedef struct irecv_client {
+	mach_port_t master_port;
+} *irecv_client_t;
+
 irecv_client_t usb_init();
 void usb_exit(irecv_client_t client);
 
-irecv_error_t usb_open(irecv_client_t client, void** device);
+//typedef int irecv_error_t;
+
+irecv_error_t usb_open(irecv_client_t client);
 irecv_error_t usb_close(irecv_client_t client);
 
 irecv_error_t usb_reset_device(irecv_client_t client);

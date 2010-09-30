@@ -1,25 +1,26 @@
-#include "iokit.h"
-#include "libirecovery.h"
 #include <CoreFoundation/CoreFoundation.h>
+
+#include "libirecovery.h"
+#include "iokit.h"
 
 mach_port_t master_port;
 
-irecv_error_t usb_init() {
+irecv_client_t usb_init() {
 	IOReturn err;
+	irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 	
-	if(!master_port) {
-		err = IOMasterPort(MACH_PORT_NULL, &master_port);
+	if(!client->master_port) {
+		err = IOMasterPort(MACH_PORT_NULL, &client->master_port);
 		if(err != kIOReturnSuccess)
 			return IRECV_E_UNKNOWN_ERROR;
 	}
 	
-	return IRECV_E_SUCCESS;
+	return client;
 }
 
-irecv_error_t usb_exit() {
-	return IRECV_E_SUCCESS;
+void usb_exit(irecv_client_t client) {
+	free(client);
 }
-
 
 irecv_error_t usb_open(irecv_client_t client, void** device) {
 	IOReturn res;

@@ -14,7 +14,7 @@ static const GUID GUID_DEVINTERFACE_DFU = {0xB8085869L, 0xFEB9, 0x404B, {0x8C, 0
 static const GUID GUID_DEVINTERFACE_IBOOT = {0xED82A167L, 0xD61A, 0x4AF6, {0x9A, 0xB6, 0x11, 0xE5, 0x22, 0x36, 0xC5, 0x76}};
 
 irecv_client_t usb_init() {
-	irecv_client_t client = (irecv_client_t) malloc(sizeof(struct AppleMobileDevice));
+	irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 
 	client->iBootPath = NULL;
 
@@ -100,7 +100,7 @@ irecv_client_t usb_init() {
 	client->hDFU = NULL;
 	client->hDFUPipe = NULL;
 
-	return IRECV_E_SUCCESS;
+	return client;
 }
 
 void usb_exit(irecv_client_t client) {
