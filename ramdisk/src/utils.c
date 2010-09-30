@@ -70,26 +70,30 @@ void puti(unsigned int integer) {
 int cp(const char *src, const char *dest) {
 	int count = 0;
 	char buf[0x800];
+
 	int in = open(src, O_RDONLY, 0);
+	if (in < 0) {
+		return -1;
+	}
+
 	int out = open(dest, O_WRONLY | O_CREAT, 0);
-	if (in == 0 || out == 0) {
-		return -1; //Unable to open one or the other
+	if (out < 0) {
+		close(in);
+		return -1;
 	}
 
 	do {
-		//memset(buffer, '\0', 0x800);
 		count = read(in, buf, 0x800);
 		if (count > 0) {
 			count = write(out, buf, count);
 		}
-
 	} while (count > 0);
 
 	close(in);
 	close(out);
 
 	if (count < 0) {
-		return -1; //Read or Write failed...
+		return -1;
 	}
 
 	return 0;

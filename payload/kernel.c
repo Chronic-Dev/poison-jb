@@ -37,7 +37,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	unsigned int* compressed = 0;
 	unsigned char* address = NULL;
 	if(argc < 2) {
-		puts("usage: kernel <load/patch> [options]\n");
+		puts("usage: kernel <load/patch/boot> [options]\n");
 		puts("  load <address> <size>         \t\tload filesystem kernel to address\n");
 		puts("  patch <address> <size>        \t\tpatches kernel at address in memory\n");
 		puts("  boot                          \t\tboot a loaded kernel\n");

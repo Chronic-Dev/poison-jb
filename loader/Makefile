@@ -1,6 +1,7 @@
+SDKVERSION=4.0
+GO_EASY_ON_ME=1
 include theos/makefiles/common.mk
 
-SDKVERSION=3.2
 APPLICATION_NAME = Loader
 TOOL_NAME = Bootstrap
 Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm LoaderVC.m

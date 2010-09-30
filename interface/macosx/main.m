@@ -6,7 +6,9 @@
 //  Copyright Squish Software 2009. All rights reserved.
 //
 
+#include <libpois0n.h>
 #import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 #define OPAQUE_HEXCOLOR(c) [NSColor colorWithDeviceRed:((c>>16)&0xFF)/255.0 \
 green:((c>>8)&0xFF)/255.0 \
@@ -44,6 +46,16 @@ BOOL reset = false;
 	[resetButton setEnabled:TRUE];
 	[jailbreakButton setEnabled:NO];
 	[jailbreakButton setTitle:@"Waiting for DFU..."];
+	[NSBlockOperation blockOperationWithBlock:^{
+		while(pois0n_is_ready()) {
+			sleep(1);
+		}
+		
+		if(!pois0n_is_compatible()) {
+			pois0n_inject();
+		}
+	}];
+
 	[mainBox addSubview:secondsLabel];
 	[mainBox addSubview:secondsTextLabel];
 	[[greenpois0nLogo animator] setAlphaValue:0.0];
@@ -131,8 +143,9 @@ int main(int argc, char *argv[]) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	[NSApplication sharedApplication];
 	NSString *appName = @"greenpois0n";
-	
 	buildMenus(appName);
+	
+	pois0n_init();
 	
 	Callback *callback = [[Callback alloc] init];
 	NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(250, 312, 480, 270) styleMask:NSClosableWindowMask|NSTitledWindowMask|NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:NO];
@@ -221,6 +234,8 @@ int main(int argc, char *argv[]) {
 	[greenView addSubview:copyrightLabel];
 	[greenView addSubview:instructionLabel];
 	[greenView addSubview:poisonJBLabel];
+	
+	pois0n_exit();
 	
 	[window makeKeyAndOrderFront:nil];
 	[window center];
