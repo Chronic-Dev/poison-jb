@@ -23,6 +23,18 @@
 extern "C" {
 #endif
 
+#ifdef __APPLE__
+#	include "iokit.h"
+#endif
+
+#ifdef __WIN32__
+#	include "winusb.h"
+#endif
+
+#ifdef __LINUX__
+#	include "libusb1.h"
+#endif
+
 #undef NULL
 #define NULL 0
 
@@ -105,8 +117,6 @@ typedef struct {
 	irecv_event_type type;
 } irecv_event_t;
 
-typedef int irecv_context_t;
-
 struct irecv_client;
 typedef struct irecv_client* irecv_client_t;
 typedef struct irecv_descriptor* irecv_descriptor_t;
@@ -126,40 +136,7 @@ typedef struct irecv_descriptor {
 	unsigned short vendor;
 	unsigned short product;
 	unsigned char serial[256];
-};
-
-#ifdef __APPLE__
-#	include "iokit.h"
-#else
-#	include "libusb1.h"
-#endif
-
-struct irecv_client {
-	int debug;
-	int config;
-	int interface;
-	int alt_interface;
-	unsigned short mode;
-	unsigned char* serial;
-	struct irecv_info_t* info;
-	struct irecv_device_t* device;
-	struct irecv_context_t* context;
-
-#ifndef __APPLE__
-	struct libusb_device_handle* handle;
-#else
-    void *handle;
-    IOUSBInterfaceInterface190 **usb_interface;
-    IOUSBDeviceInterface182 **dev;
-#endif
-
-	irecv_event_cb_t progress_callback;
-	irecv_event_cb_t received_callback;
-	irecv_event_cb_t connected_callback;
-	irecv_event_cb_t precommand_callback;
-	irecv_event_cb_t postcommand_callback;
-	irecv_event_cb_t disconnected_callback;
-};
+} *irecv_descriptor_t;
 
 struct irecv_firmware {
 	char* version;

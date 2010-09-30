@@ -1,7 +1,33 @@
 #ifndef WINUSB_H
 #define WINUSB_H
 
-#include "libirecovery.h"
+#include <stdint.h>
+#include <windows.h>
+//#include "libirecovery.h"
+
+enum {
+	kDFUMode = 1,
+	kRecoveryMode = 2
+};
+
+typedef struct usb_control_request {
+	uint8_t bmRequestType;
+	uint8_t bRequest;
+	uint16_t wValue;
+	uint16_t wIndex;
+	uint16_t wLength;
+	char data[];
+} USBControlRequest;
+
+typedef struct irecv_client_t {
+	HANDLE hIB;
+	HANDLE hDFU;
+	HANDLE hDFUPipe;
+	TCHAR* iBootPath;
+	TCHAR* DfuPath;
+	TCHAR* DfuPipePath;
+	struct irecv_device_t next;
+};
 
 irecv_error_t usb_init();
 irecv_error_t usb_exit();

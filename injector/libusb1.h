@@ -3,6 +3,18 @@
 
 #include "libirecovery.h"
 
+struct irecv_client {
+	int debug;
+	int config;
+	int interface;
+	int alt_interface;
+	unsigned short mode;
+	unsigned char* serial;
+	struct irecv_info_t* info;
+	struct irecv_device_t* device;
+	struct irecv_context_t* context;
+};
+
 irecv_error_t usb_init();
 irecv_error_t usb_exit();
 

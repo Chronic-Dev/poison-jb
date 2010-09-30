@@ -1,16 +1,13 @@
-#ifndef USB_H
-#define USB_H
+#ifndef IOKIT_H
+#define IOKIT_H
 
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOMessage.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/usb/IOUSBLib.h>
 
-#include "libirecovery.h"
-
-
-irecv_error_t usb_init();
-irecv_error_t usb_exit();
+irecv_client_t usb_init();
+void usb_exit(irecv_client_t client);
 
 irecv_error_t usb_open(irecv_client_t client, void** device);
 irecv_error_t usb_close(irecv_client_t client);

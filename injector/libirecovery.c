@@ -21,28 +21,47 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#	include "iokit.h"
+#endif
+
+#ifdef __WIN32__
+#	include "winusb.h"
+#endif
+
+#ifdef __LINUX__
+#	include "libusb1.h"
+#endif
+
 #include "libirecovery.h"
 
 #define BUFFER_SIZE 0x1000
-#define debug(...) if(debug) fprintf(stderr, __VA_ARGS__)
+#define debug(...) if(libirecovery_debug) fprintf(stderr, __VA_ARGS__)
 
-static int debug = 1;
+static int libirecovery_debug = 1;
+
+static irecv_event_cb_t progress_callback = NULL;
+static irecv_event_cb_t received_callback = NULL;
+static irecv_event_cb_t connected_callback = NULL;
+static irecv_event_cb_t precommand_callback = NULL;
+static irecv_event_cb_t postcommand_callback = NULL;
+static irecv_event_cb_t disconnected_callback = NULL;
 
 int irecv_write_file(const char* filename, const void* data, unsigned int size);
 int irecv_read_file(const char* filename, char** data, unsigned int* size);
 
-void irecv_init() {
-	usb_init();
+irecv_client_t irecv_init() {
+	return usb_init();
 }
 
-void irecv_exit() {
-	usb_exit();
+void irecv_exit(irecv_client_t client) {
+	usb_exit(client);
 }
 
-irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
+irecv_error_t irecv_open_attempts(irecv_client_t client, int attempts) {
 	int i = 0;
 	for (i = 0; i < attempts; i++) {
-		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
+		if (irecv_open(client) != IRECV_E_SUCCESS) {
 			debug("Connection failed. Waiting 1 sec before retry.\n");
 			sleep(1);
 		} else {
@@ -53,80 +72,16 @@ irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
 	return IRECV_E_UNABLE_TO_CONNECT;       
 }
 
-irecv_error_t irecv_open(irecv_client_t* pclient) {
-	int i = 0;
-	int count = 0;
-	irecv_device_t device = NULL;
-	irecv_device_t* devices = NULL;
-	irecv_error_t error = IRECV_E_SUCCESS;
-
-	*pclient = NULL;
-	if(debug) {
-		irecv_set_debug_level(debug);
-	}
-	irecv_descriptor_t descriptor;
-	count = usb_get_device_list(*pclient, &devices);
-    debug("%d devices found.\n", count);
-    
-	for (i = 0; i < count; i++) {
-		device = devices[i];
-		usb_get_device_descriptor(device, &descriptor);
-		if (descriptor->vendor == APPLE_VENDOR_ID) {
-			/* verify this device is in a mode we understand */
-			if (descriptor->product == kRecoveryMode1 ||
-					descriptor->product == kRecoveryMode2 ||
-					descriptor->product == kRecoveryMode3 ||
-					descriptor->product == kRecoveryMode4 ||
-					descriptor->product == kDfuMode) {
-
-				debug("opening device %d (%04x:%04x)...\n", i, descriptor->vendor, descriptor->product);
-
-				irecv_client_t client = (irecv_client_t) malloc(sizeof(struct irecv_client));
-				if (client == NULL) {
-					usb_close(client);
-					usb_exit(client);
-					return IRECV_E_OUT_OF_MEMORY;
-				}
-				
-				memset(client, '\0', sizeof(struct irecv_client));
-
-				usb_open(client, device);
-#ifndef __APPLE__
-				if (client->handle == NULL) {
-#else
-                if (client->dev == NULL) {
-#endif
-					usb_free_device_list(devices, 1);
-					usb_close(client);
-					usb_exit();
-					return IRECV_E_UNABLE_TO_CONNECT;
-				}
-				usb_free_device_list(devices, 1);
-
-				client->interface = 0;
-				client->mode = (unsigned short) descriptor->product;
-				if (client->mode != kDfuMode) {
-					error = irecv_set_configuration(client, 1);
-					if (error != IRECV_E_SUCCESS) {
-						return error;
-					}
-
-                    error = irecv_set_interface(client, 0, 0);
-					if (error != IRECV_E_SUCCESS) {
-						return error;
-					}
-				}
-
-				/* cache usb serial */
-				usb_get_string_descriptor_ascii(client, client->serial, 255);
-
-				*pclient = client;
-				return IRECV_E_SUCCESS;
-			}
-		}
+irecv_error_t irecv_open(irecv_client_t client) {
+	if(irecv_debug) {
+		irecv_set_debug_level(irecv_debug);
 	}
 
-	return IRECV_E_UNABLE_TO_CONNECT;
+	if(usb_open(client) != IRECV_E_SUCCESS) {
+		return IRECV_E_UNABLE_TO_CONNECT;
+	}
+
+	return IRECV_E_SUCCESS;
 }
 
 irecv_error_t irecv_set_configuration(irecv_client_t client, int configuration) {
