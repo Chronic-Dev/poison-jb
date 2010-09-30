@@ -92,7 +92,7 @@ void* image_find_tag(void* image, unsigned int tag, unsigned int size) {
 	return 0;
 }
 
-void image_decrypt(void* image) {
+int image_decrypt(void* image) {
 	void* data = NULL;
 
 	ImageHeader* header = (ImageHeader*) image;
@@ -100,13 +100,13 @@ void image_decrypt(void* image) {
 
 	if (data == 0) {
 		puts("Unable to find DATA tag\n");
-		return;
+		return -1;
 	}
 
 	ImageKbag* kbag = (ImageKbag*) image_find_tag(image, IMAGE_KBAG, header->fullSize);
 	if (kbag == 0) {
 		puts("Unable to find KBAG tag\n");
-		return;
+		return -1;
 	}
 
 	ImageTagHeader* data_header = (ImageTagHeader*) data;
@@ -119,6 +119,7 @@ void image_decrypt(void* image) {
     /* Decrypt data */
     //FIXME: derive AES type from kbag type
 	aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+	return 0;
 }
 
 ImageDescriptor* image_find(unsigned int signature) {
