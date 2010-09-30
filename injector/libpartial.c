@@ -6,7 +6,7 @@
 #include <zlib.h>
 #include <libgen.h>
 
-#include "partial.h"
+#include "libpartial.h"
 
 char endianness = IS_LITTLE_ENDIAN;
 

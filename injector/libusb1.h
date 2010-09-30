@@ -1,5 +1,5 @@
-#ifndef USB_H
-#define USB_H
+#ifndef LIBUSB_H
+#define LIBUSB_H
 
 #include "libirecovery.h"
 

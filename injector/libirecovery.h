@@ -38,6 +38,7 @@ extern "C" {
 #define CPID_IPAD1G       8930
 #define CPID_IPHONE4      8930
 #define CPID_IPOD4G       8930
+#define CPID_APPLETV2     8930
 
 #define BDID_UNKNOWN        -1
 #define BDID_IPHONE2G        0
@@ -49,6 +50,7 @@ extern "C" {
 #define BDID_IPAD1G          2
 #define BDID_IPHONE4         0
 #define BDID_IPOD4G          8
+#define BDID_APPLETV2       10
 
 #define DEVICE_UNKNOWN      -1
 #define DEVICE_IPHONE2G      0
@@ -60,6 +62,7 @@ extern "C" {
 #define DEVICE_IPAD1G        6
 #define DEVICE_IPHONE4       7
 #define DEVICE_IPOD4G        8
+#define DEVICE_APPLETV2      9
 
 
 enum {
@@ -192,6 +195,11 @@ static struct irecv_firmware irecv_ipad11_firmware[] = {
 	{ NULL, NULL }
 };
 
+static struct irecv_firmware irecv_appletv21_firmware[] = {
+	{ "4.1", NULL },
+	{ NULL, NULL }
+};
+
 static struct irecv_device irecv_devices[] = {
 	{  0, "iPhone1,1", "m68ap",  0,  8900, NULL },
 	{  1, "iPod1,1",   "n45ap",  2,  8900, NULL },
@@ -202,6 +210,7 @@ static struct irecv_device irecv_devices[] = {
 	{  6, "iPad1,1",   "k48ap",  2,  8930, irecv_ipad11_firmware },
 	{  7, "iPhone3,1", "n90ap",  0,  8930, irecv_iphone31_firmware },
 	{  8, "iPod4,1",   "n81ap",  8,  8930, irecv_ipod41_firmware },
+	{  9, "AppleTV2,1","k66ap", 10,  8930, irecv_appletv21_firmware },
 	{ -1,  NULL,        NULL,   -1,    -1, NULL }
 };
 
@@ -223,7 +232,7 @@ irecv_error_t irecv_event_unsubscribe(irecv_client_t client, irecv_event_type ty
 
 irecv_error_t irecv_send_file(irecv_client_t client, const char* filename, int dfuNotifyFinished);
 irecv_error_t irecv_send_command(irecv_client_t client, char* command);
-irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length, int dfuNotifyFinished);
+irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, unsigned long length, int dfuNotifyFinished);
 
 irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** value);
 irecv_error_t irecv_setenv(irecv_client_t client, const char* variable, const char* value);

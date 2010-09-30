@@ -57,6 +57,7 @@
 // Kernel offsets
 #define TARGET_KERNEL_LOAD                (0x1199C+1)
 #define TARGET_KERNEL_PHYMEM              (0x267C0)
+#define TARGET_KERNEL_BOOTARGS            (0x1F2F0)
 
 // NVRAM offsets
 #define TARGET_NVRAM_LIST                 (0x22810)

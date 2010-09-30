@@ -154,8 +154,9 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
-	
-	if (usb_claim_interface(client, interface) < 0) {
+
+	debug("Setting to interface %d:%d\n", interface, alt_interface);
+	if (usb_claim_interface(client->handle, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
 	}
 	
@@ -284,15 +285,6 @@ static irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command
 		
         if (ret == IRECV_E_UNKNOWN_ERROR) return IRECV_E_UNKNOWN_ERROR;
 		
-		/*
-		if ((ret < 0) || (ret != (length + 1))) {
-			if (ret == LIBUSB_ERROR_PIPE)
-				return IRECV_E_PIPE;
-			if (ret == LIBUSB_ERROR_TIMEOUT)
-				return IRECV_E_TIMEOUT;
-			return IRECV_E_UNKNOWN_ERROR;
-		}
-		*/
 	}
 
 	return IRECV_E_SUCCESS;
@@ -389,7 +381,7 @@ irecv_error_t irecv_get_status(irecv_client_t client, unsigned int* status) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length, int dfuNotifyFinished) {
+irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, unsigned long length, int dfuNotifyFinished) {
 	irecv_error_t error = 0;
 	int recovery_mode = (client->mode != kDfuMode);
 
@@ -397,7 +389,7 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned lo
 		return IRECV_E_NO_DEVICE;
 	}
 
-	int packet_size = recovery_mode ? 0x2000: 0x800;
+	int packet_size = 0x800;
 	int last = length % packet_size;
 	int packets = length / packet_size;
 	if (last != 0) {
@@ -821,9 +813,9 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	// XXX: these are hardcoded as the CPID/BDID isn't transferred
     //device_id = DEVICE_IPAD1G;
     //device_id = DEVICE_IPHONE4;
-    device_id = DEVICE_IPOD4G;
+    //device_id = DEVICE_IPOD4G;
 
-	/*if (irecv_get_cpid(client, &cpid) < 0) {
+	if (irecv_get_cpid(client, &cpid) < 0) {
 		return IRECV_E_UNKNOWN_ERROR;
 	}
 
@@ -887,6 +879,9 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 			device_id = DEVICE_IPOD4G;
 			break;
 
+		case BDID_APPLETV2:
+			device_id = DEVICE_APPLETV2;
+
 		default:
 			device_id = DEVICE_UNKNOWN;
 			break;
@@ -896,7 +891,7 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	default:
 		device_id = DEVICE_UNKNOWN;
 		break;
-	}*/
+	}
 
 	*device = &irecv_devices[device_id];
 	return IRECV_E_SUCCESS;

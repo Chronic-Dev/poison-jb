@@ -24,8 +24,10 @@
 #define TARGET_BASEADDR                   (0x84000000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x12220+1)
-#define TARGET_MALLOC                     (0x1222C+1)
+//#define TARGET_FREE                       (0x12220+1) //image3_free
+#define TARGET_FREE                       (0x117D4+1) //free
+//#define TARGET_MALLOC                     (0x1222C+1) //image3_malloc
+#define TARGET_MALLOC                     (0x11A58+1) //malloc
 #define TARGET_JUMP_TO                    (0x15E18+1)
 #define TARGET_PRINTF                     (0x1B684+1)
 #define TARGET_VPRINTF                    (0x1AF54+1)
@@ -52,6 +54,11 @@
 //#define TARGET_FS_MOUNT                   (0x0)
 //#define TARGET_FS_UNMOUNT                 (0x0)
 //#define TARGET_FS_LOAD_FILE               (0x0)
+
+// Kernel offsets
+#define TARGET_KERNEL_LOAD                (0x12D70+1)
+#define TARGET_KERNEL_PHYMEM              (0x28980)
+#define TARGET_KERNEL_BOOTARGS            (0x20B04)
 
 // NVRAM offsets
 #define TARGET_NVRAM_LIST                 (0x24958)
