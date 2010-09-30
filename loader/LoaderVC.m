@@ -5,6 +5,11 @@
 #import "MemLoaderOperation.h"
 #import "NSURLDownload.h"
 #import <unistd.h> 
+#import "tar.h"
+
+@interface UIDevice (LoaderExt) 
+- (BOOL)isWildcat;
+@end
 
 @implementation LoaderVC
 
@@ -191,12 +196,20 @@
 - (void)extractPackage {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	//system("/bin/cdev-tar xf /tmp/loader_package.tar -C /");
-	execl("/bin/cdev-tar", "/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
+	untar("/tmp/loader_package.tar", "/");
 
 	[self performSelectorOnMainThread:@selector(cleanUp) withObject:nil waitUntilDone:YES];
 
 	[pool release];
+}
+
+
+- (BOOL)isWildcat {
+	if([[UIDevice currentDevice] respondsToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] isWildcat]) {
+		return YES;
+	}
+
+	return NO;
 }
 
 - (void)cleanUp {
@@ -210,6 +223,25 @@
 
 	[self removeStuff];
 	[self performSelector:@selector(removeHUD) withObject:nil afterDelay:2.0];
+	
+	if([self isWildcat]) {
+		NSString *filePath = @"/System/Library/CoreServices/SpringBoard.app/K48AP.plist";
+		
+		NSMutableDictionary *capabilityDict, *fileDict;
+
+		fileDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
+		capabilityDict = [[NSMutableDictionary alloc] initWithDictionary:[fileDict objectForKey:@"capabilities"]];
+		
+		[capabilityDict setObject:[NSNumber numberWithBool:NO] forKey:@"hide-non-default-apps"];
+
+		[fileDict setObject:capabilityDict forKey:@"capabilities"];
+		[fileDict writeToFile:filePath atomically:NO];
+
+		[fileDict release];
+		[capabilityDict release];
+	}
+
+	system("su mobile -c /usr/bin/uicache");
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download {

@@ -103,7 +103,7 @@ extern LinkedList* gImageList;
 int image_init();
 int image_cmd(int argc, CmdArg* argv);
 void image_display_list();
-void image_decrypt(void* image);
+int image_decrypt(void* image);
 ImageDescriptor* image_find(unsigned int signature);
 void* image_find_tag(void* image, unsigned int tag, unsigned int size);
 int image_load(unsigned int signature, void* dataout, unsigned int maxsize);

@@ -13,4 +13,10 @@
     DTSDKName = iphoneos3.0;
     LSRequiresIPhoneOS = 1;
     MinimumOSVersion = 3.0;
+	UIApplicationExitsOnSuspend = 1;
+	UIDeviceFamily = (
+		1,
+		2
+	);
+	
 }

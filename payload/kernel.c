@@ -37,7 +37,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	unsigned int* compressed = 0;
 	unsigned char* address = NULL;
 	if(argc < 2) {
-		puts("usage: kernel <load/patch> [options]\n");
+		puts("usage: kernel <load/patch/boot> [options]\n");
 		puts("  load <address> <size>         \t\tload filesystem kernel to address\n");
 		puts("  patch <address> <size>        \t\tpatches kernel at address in memory\n");
 		puts("  boot                          \t\tboot a loaded kernel\n");
@@ -64,7 +64,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 
 		kernel_load((void*) address, size, &gKernelAddr);
 		printf("kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
-		patch_kernel(0x40000000, 0xF00000);
+		patch_kernel(0x40000000, 0xA00000);
 		printf("booting kernelcache...\n");
 		jump_to(3, gKernelAddr, *gKernelPhyMem);
 	}

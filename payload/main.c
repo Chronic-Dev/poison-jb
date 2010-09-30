@@ -26,6 +26,7 @@
 #include "nvram.h"
 #include "image.h"
 #include "patch.h"
+#include "memory.h"
 #include "kernel.h"
 #include "common.h"
 #include "commands.h"
@@ -36,6 +37,8 @@ Bool gGpHasInit = FALSE;
 int gp_init() {
 	if(cmd_init()) return -1;
 	if(patch_init()) return -1;
+	if(memory_init()) return -1;
+
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
 #endif
@@ -65,7 +68,19 @@ int main(int argc, CmdArg* argv) {
 			return -1;
 		}
 		printf("Greenpois0n initialized\n");
+		return 0;
 	}
+
+#if TARGET_NVRAM_LIST
+	int i = 0;
+	for(i = 1; i < argc; i++) {
+		if(!strcmp(argv[i].string, "$_")) {
+			NvramVar* retval = nvram_find_var("?");
+			printf("substituting $_ with %s\n", retval->string);
+			argv[i].string = retval->string;
+		}
+	}
+#endif
 
 	if(argc > 1) {
 		int i = 0;
