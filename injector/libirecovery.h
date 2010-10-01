@@ -37,6 +37,7 @@ extern "C" {
 #define CPID_IPAD1G       8930
 #define CPID_IPHONE4      8930
 #define CPID_IPOD4G       8930
+#define CPID_APPLETV2     8930
 
 #define BDID_UNKNOWN        -1
 #define BDID_IPHONE2G        0
@@ -48,6 +49,7 @@ extern "C" {
 #define BDID_IPAD1G          2
 #define BDID_IPHONE4         0
 #define BDID_IPOD4G          8
+#define BDID_APPLETV2       10
 
 #define DEVICE_UNKNOWN      -1
 #define DEVICE_IPHONE2G      0
@@ -59,6 +61,7 @@ extern "C" {
 #define DEVICE_IPAD1G        6
 #define DEVICE_IPHONE4       7
 #define DEVICE_IPOD4G        8
+#define DEVICE_APPLETV2      9
 
 enum {
 	kRecoveryMode1 = 0x1280,
@@ -131,24 +134,26 @@ struct irecv_device {
 };
 
 static struct irecv_device irecv_devices[] = {
-	{  0, "iPhone1,1", "m68ap",  0,  8900,
+	{  0, "iPhone1,1",  "m68ap",  0,  8900,
 	NULL },
-	{  1, "iPod1,1",   "n45ap",  2,  8900,
+	{  1, "iPod1,1",    "n45ap",  2,  8900,
 	NULL },
-	{  2, "iPhone1,2", "n82ap",  4,  8900,
+	{  2, "iPhone1,2",  "n82ap",  4,  8900,
 	NULL },
-	{  3, "iPod2,1",   "n72ap",  0,  8720,
+	{  3, "iPod2,1",    "n72ap",  0,  8720,
 	NULL },
-	{  4, "iPhone2,1", "n88ap",  0,  8920,
+	{  4, "iPhone2,1",  "n88ap",  0,  8920,
 	NULL },
-	{  5, "iPod3,1",   "n18ap",  2,  8922,
+	{  5, "iPod3,1",    "n18ap",  2,  8922,
 	NULL },
-	{  6, "iPad1,1",   "k48ap",  2,  8930,
+	{  6, "iPad1,1",    "k48ap",  2,  8930,
 	"http://appldnld.apple.com/iPad/061-8801.20100811.CvfR5/iPad1,1_3.2.2_7B500_Restore.ipsw" },
-	{  7, "iPhone3,1", "n90ap",  0,  8930,
+	{  7, "iPhone3,1",  "n90ap",  0,  8930,
 	"http://appldnld.apple.com/iPhone4/061-7939.20100908.Lcyg3/iPhone3,1_4.1_8B117_Restore.ipsw" },
-	{  8, "iPod4,1",   "n81ap",  8,  8930,
+	{  8, "iPod4,1",    "n81ap",  8,  8930,
 	"http://appldnld.apple.com/iPhone4/061-8490.20100901.hyjtR/iPod4,1_4.1_8B117_Restore.ipsw" },
+	{  9, "AppleTV2,1", "k66ap", 10,  8930,
+	"http://appldnld.apple.com/AppleTV/061-8940.20100926.Tvtnz/AppleTV2,1_4.1_8M89_Restore.ipsw" },
 	{ -1,  NULL,        NULL,   -1,    -1,
 	NULL }
 };

@@ -878,6 +878,10 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 			device_id = DEVICE_IPOD4G;
 			break;
 
+		case BDID_APPLETV2:
+			device_id = DEVICE_APPLETV2;
+			break;
+
 		default:
 			device_id = DEVICE_UNKNOWN;
 			break;

@@ -8,6 +8,7 @@
 
 #include "exploit.h"
 #include "ramdisk.h"
+#include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n90ap.h"
 #include "payloads/iBSS.n81ap.h"
@@ -159,16 +160,39 @@ int upload_firmware_payload(char* type) {
 	irecv_error_t error = 0;
 
 	switch(device->index) {
+	case DEVICE_APPLETV2:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_k66ap;
+			size = sizeof(iBSS_k66ap);
+			debug("Loaded payload for iBSS on k66ap\n0");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_k66ap;
+			//size = sizeof(iBEC_k66ap);
+			debug("Loaded payload for iBEC on k66ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			//payload = iBoot_k66ap;
+			//size = sizeof(iBoot_k66ap);
+			debug("Loaded payload for iBoot on k66ap\n");
+		}
+		break;
+
 	case DEVICE_IPAD1G:
 		if(!strcmp(type, "iBSS")) {
 			payload = iBSS_k48ap;
 			size = sizeof(iBSS_k48ap);
-			debug("Loaded payload for iBSS on k48ap\n");
+			debug("Loaded payload for iBSS on k48ap\n0");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_k48ap;
 			//size = sizeof(iBEC_k48ap);
 			debug("Loaded payload for iBEC on k48ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			//payload = iBoot_k48ap;
+			//size = sizeof(iBoot_k48ap);
+			debug("Loaded payload for iBoot on k48ap\n");
 		}
 		break;
 
@@ -177,11 +201,24 @@ int upload_firmware_payload(char* type) {
 			payload = iBSS_n90ap;
 			size = sizeof(iBSS_n90ap);
 			debug("Loaded payload for iBSS on n90ap\n");
+		}		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_k66ap;
+			//size = sizeof(iBEC_k66ap);
+			debug("Loaded payload for iBEC on k66ap\n");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_n90ap;
 			//size = sizeof(iBEC_n90ap);
 			debug("Loaded payload for iBEC on n90ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_k66ap;
+			//size = sizeof(iBEC_k66ap);
+			debug("Loaded payload for iBEC on k66ap\n");
+		}
+			//payload = iBoot_n90ap;
+			//size = sizeof(iBoot_n90ap);
+			debug("Loaded payload for iBoot on n90ap\n");
 		}
 		break;
 
@@ -195,6 +232,11 @@ int upload_firmware_payload(char* type) {
 			//payload = iBEC_n81ap;
 			//size = sizeof(iBEC_n81ap);
 			debug("Loaded payload for iBEC on n81ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			//payload = iBoot_n81ap;
+			//size = sizeof(iBoot_n81ap);
+			debug("Loaded payload for iBoot on n81ap\n");
 		}
 		break;
 	}
