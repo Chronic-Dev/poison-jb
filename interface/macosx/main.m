@@ -29,6 +29,7 @@ NSBox *mainBox;
 void buildMenus(NSString *appName);
 void labelIfy(NSTextField *textField);
 BOOL reset = false;
+BOOL stop = false;
 
 @interface Callback : NSObject {}
 @end
@@ -46,15 +47,6 @@ BOOL reset = false;
 	[resetButton setEnabled:TRUE];
 	[jailbreakButton setEnabled:NO];
 	[jailbreakButton setTitle:@"Waiting for DFU..."];
-	[NSBlockOperation blockOperationWithBlock:^{
-		while(pois0n_is_ready()) {
-			sleep(1);
-		}
-		
-		if(!pois0n_is_compatible()) {
-			pois0n_inject();
-		}
-	}];
 
 	[mainBox addSubview:secondsLabel];
 	[mainBox addSubview:secondsTextLabel];
@@ -114,8 +106,32 @@ BOOL reset = false;
 		[secondsLabel setStringValue:@"10"];
 		[thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 		[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande Bold" size:12.0]];
+        [NSThread detachNewThreadSelector:@selector(check) toTarget:[Callback class] withObject:nil];
 		[self performSelector:@selector(stage5) withObject:nil afterDelay:1.0];
 	}
+}
+
++ (void)check {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    if (stop) {
+        return;
+    }
+    pois0n_init();
+    while (stop == false) {
+        if (pois0n_is_ready() != -1 && pois0n_is_compatible() != -1) {
+            stop = true;
+            [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+            [secondsLabel setStringValue:@"0"];
+            [progressIndicator setIndeterminate:YES];
+            [progressIndicator startAnimation:nil];
+            [jailbreakButton setTitle:@"Exploiting..."];
+            pois0n_inject();
+        }
+    }
+    [progressIndicator stopAnimation:nil];
+    [jailbreakButton setTitle:@"Done! Please wait."];
+    pois0n_exit();
+    [pool release];
 }
 - (void)stage5 {
 	if (reset) {
@@ -123,19 +139,24 @@ BOOL reset = false;
 		[self callback];
 		return;
 	}
+    
+    // I know... system() isn't great programming practice... But when I tried to get the code that loops through the list of running processes to work, I ended up killing every running process on my computer, and I just don't have time to test that right now, since it takes like 10 minutes to reboot.
+    system("killall iTunes\ Helper");
+    system("killall iTunes");
 	int current = [[secondsLabel stringValue] intValue];
-	if (current != 0) {
-		[secondsLabel setStringValue:[NSString stringWithFormat:@"%d", current-1]];
-		[self performSelector:@selector(stage5) withObject:nil afterDelay:1.0];
-	} else {
-		[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-		[[greenpois0nLogo animator] setAlphaValue:1.0];
-		[[secondsLabel animator] setAlphaValue:0.0];
-		[[secondsTextLabel animator] setAlphaValue:0.0];
-		[resetButton setEnabled:NO];
-		[progressIndicator setIndeterminate:YES];
-		[progressIndicator startAnimation:nil];
-	}
+	
+    if (current != 0) {
+        [secondsLabel setStringValue:[NSString stringWithFormat:@"%d", current-1]];
+        [self performSelector:@selector(stage5) withObject:nil afterDelay:1.0];
+    } else {
+        [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+        [[greenpois0nLogo animator] setAlphaValue:1.0];
+        [[secondsLabel animator] setAlphaValue:0.0];
+        [[secondsTextLabel animator] setAlphaValue:0.0];
+        [resetButton setEnabled:NO];
+        [progressIndicator setIndeterminate:YES];
+        [progressIndicator startAnimation:nil];
+    }
 }
 @end
 
@@ -144,8 +165,6 @@ int main(int argc, char *argv[]) {
 	[NSApplication sharedApplication];
 	NSString *appName = @"greenpois0n";
 	buildMenus(appName);
-	
-	pois0n_init();
 	
 	Callback *callback = [[Callback alloc] init];
 	NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(250, 312, 480, 270) styleMask:NSClosableWindowMask|NSTitledWindowMask|NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:NO];
@@ -235,7 +254,6 @@ int main(int argc, char *argv[]) {
 	[greenView addSubview:instructionLabel];
 	[greenView addSubview:poisonJBLabel];
 	
-	pois0n_exit();
 	
 	[window makeKeyAndOrderFront:nil];
 	[window center];
