@@ -9,7 +9,7 @@
 
 int install_files() {
 	int ret = 0;
-
+/*
 	puts("Creating directory for install\n");
 	mkdir("/mnt/Applications/Loader.app", 0755);
 	chmod("/mnt/Applications/Loader.app", 0755);
@@ -49,7 +49,7 @@ int install_files() {
 	if (ret < 0) {
 		return ret;
 	}
-
+*/
 	puts("Installing fstab\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	if (ret < 0) {
