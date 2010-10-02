@@ -12,6 +12,10 @@
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n90ap.h"
 #include "payloads/iBSS.n81ap.h"
+//#include "payloads/iBoot.k66ap.h"
+//#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.n90ap.h"
+#include "payloads/iBoot.n81ap.h"
 
 int libpois0n_debug = 1;
 static irecv_client_t client = NULL;
@@ -201,23 +205,15 @@ int upload_firmware_payload(char* type) {
 			payload = iBSS_n90ap;
 			size = sizeof(iBSS_n90ap);
 			debug("Loaded payload for iBSS on n90ap\n");
-		}		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_k66ap;
-			//size = sizeof(iBEC_k66ap);
-			debug("Loaded payload for iBEC on k66ap\n");
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_n90ap;
 			//size = sizeof(iBEC_n90ap);
 			debug("Loaded payload for iBEC on n90ap\n");
 		}
-		if(!strcmp(type, "iBoot")) {		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_k66ap;
-			//size = sizeof(iBEC_k66ap);
-			debug("Loaded payload for iBEC on k66ap\n");
-		}
-			//payload = iBoot_n90ap;
-			//size = sizeof(iBoot_n90ap);
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n90ap;
+			size = sizeof(iBoot_n90ap);
 			debug("Loaded payload for iBoot on n90ap\n");
 		}
 		break;
@@ -234,8 +230,8 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on n81ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_n81ap;
-			//size = sizeof(iBoot_n81ap);
+			payload = iBoot_n81ap;
+			size = sizeof(iBoot_n81ap);
 			debug("Loaded payload for iBoot on n81ap\n");
 		}
 		break;
@@ -453,110 +449,8 @@ int upload_ibec_payload() {
 }
 
 int boot_ramdisk() {
-	return 0;
-}
-
-int boot_tethered() {
-	return 0;
-}
-
-int boot_verbose() {
-	return 0;
-}
-
-int execute_ibss_payload() {
-	int i = 0;
-	char* bootargs = NULL;
 	irecv_error_t error = 0;
 
-	debug("Initializing greenpois0n in iBSS\n");
-	irecv_send_command(client, "go");
-
-	/*
-	// WIP: Code to detect whether to boot ramdisk or filesystem
-	debug("Checking if device is already jailbroken\n");
-	error = irecv_getenv(client, "boot-args", &bootargs);
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-	if(!strcmp(bootargs, "")) {
-		debug("Booting jailbreak ramdisboot_verbose()k\n");
-		error = irecv_setenv(client, "boot-args", "1");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_ramdisk() < 0) {
-			error("Unable to boot device into tethered mode\n");
-			return -1;
-		}
-	}
-	else if(!strcmp(bootargs, "1")) {
-		debug("Booting tethered device\n");
-		if(boot_tethered() < 0) {
-			error("Unable to boot device into tethered mode\n");
-			return -1;
-		}
-	}
-	else if(!strcmp(bootargs, "2")) {
-		debug("Booting device in verbose mode\n");
-		if(boot_verbose() < 0) {
-			error("Unable to boot device into verbose mode\n");
-			return -1;
-		}
-	}
-	else if(!strcmp(bootargs, "3")) {
-		debug("Booting iBSS in payload mode\n");
-		return 0;
-	}
-	else if(!strcmp(bootargs, "5")) {
-		debug("Booting ramdisk in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "6");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_ramdisk() < 0) {
-			error("Unable to boot jailbreaking ramdisk\n");
-			return -1;
-		}
-		return 0;
-	}
-	else if(!strcmp(bootargs, "6")) {
-		debug("Booting filesystem in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "5");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_tethered() < 0) {
-			error("Unable to boot tethered filesystem\n");
-			return -1;
-		}
-	}
-	*/
 	debug("Preparing to upload DeviceTree\n");
 	if(upload_devicetree() < 0) {
 		error("Unable to execute iBSS payload\n");
@@ -596,14 +490,14 @@ int execute_ibss_payload() {
 		return -1;
 	}
 
-	/***************************************************
-	/* old stuff
-	debug("Booting ramdisk\n");
-	error = irecv_send_command(client, "bootx");
-	if(error != IRECV_E_SUCCESS) { boot
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
+	return 0;
+}
+
+int boot_tethered() {
+	irecv_error_t error = 0;
+
+	irecv_setenv(client, "auto-boot", "false");
+	irecv_saveenv(client);
 
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
@@ -613,14 +507,146 @@ int execute_ibss_payload() {
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client);
 	if (client == NULL) {
-		error("Unable to reconnect to device\n");
+		error("Unable to boot the device tethered\n");
 		return -1;
 	}
 
-	upload_dfu_payload("iBoot");
+	// Warning this payload will be broken since we can assume
+	//   we have the correct offset, only use commands that don't
+	//   need specific offsets!!!!
+	if(upload_firmware_payload("iBoot") < 0) {
+		error("Unable to boot the device tethered\n");
+		return -1;
+	}
+
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-	***************************************************/
+
+	irecv_setenv(client, "boot-args", "0");
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
+
+	irecv_send_command(client, "go kernel load 0x41000000 0xF00000");
+
+	return 0;
+}
+
+int boot_verbose() {
+	return 0;
+}
+
+int execute_ibss_payload() {
+	int i = 0;
+	char* bootargs = NULL;
+	irecv_error_t error = 0;
+
+	debug("Initializing greenpois0n in iBSS\n");
+	irecv_send_command(client, "go");
+
+	// Code to detect whether to boot ramdisk or filesystem
+	debug("Checking if device is already jailbroken\n");
+	error = irecv_getenv(client, "boot-args", &bootargs);
+	if(error != IRECV_E_SUCCESS) {
+		debug("%s\n", irecv_strerror(error));
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	// If boot-args hasn't been set then we've never been jailbroken
+	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0")) {
+		debug("Booting jailbreak ramdisk\n");
+		error = irecv_setenv(client, "boot-args", "1");
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		error = irecv_setenv(client, "auto-boot", "true");
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		error = irecv_saveenv(client);
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		if(boot_ramdisk() < 0) {
+			error("Unable to boot device into tethered mode\n");
+			return -1;
+		}
+	}
+	// If boot-args is 1 then boot device into tethered mode
+	else if(!strcmp(bootargs, "1")) {
+		debug("Booting tethered device\n");
+		if(boot_tethered() < 0) {
+			error("Unable to boot device into tethered mode\n");
+			return -1;
+		}
+	}
+	// If boot-args is 2 then boot tethered in verbose (needed?)
+	else if(!strcmp(bootargs, "2")) {
+		debug("Booting device in verbose mode\n");
+		if(boot_verbose() < 0) {
+			error("Unable to boot device into verbose mode\n");
+			return -1;
+		}
+	}
+	// If boot-args is 3, then don't boot kernel, just execute payload
+	else if(!strcmp(bootargs, "3")) {
+		debug("Booting iBSS in payload mode\n");
+		return 0;
+	}
+	// This is for testing!
+	//   it will alternate between booting ramdisk and filesystm
+	else if(!strcmp(bootargs, "4")) {
+		debug("Booting ramdisk in debug mode\n");
+		error = irecv_setenv(client, "boot-args", "5");
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		error = irecv_setenv(client, "auto-boot", "false");
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		error = irecv_saveenv(client);
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		if(boot_ramdisk() < 0) {
+			error("Unable to boot jailbreaking ramdisk\n");
+			return -1;
+		}
+		return 0;
+	}
+	else if(!strcmp(bootargs, "5")) {
+		debug("Booting filesystem in debug mode\n");
+		error = irecv_setenv(client, "boot-args", "4");
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		error = irecv_saveenv(client);
+		if(error != IRECV_E_SUCCESS) {
+			error("Unable to execute iBSS payload\n");
+			return -1;
+		}
+
+		if(boot_tethered() < 0) {
+			error("Unable to boot tethered filesystem\n");
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

@@ -241,7 +241,6 @@
 		[capabilityDict release];
 	}
 
-	system("su mobile -c /usr/bin/uicache");
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download {

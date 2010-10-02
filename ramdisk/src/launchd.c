@@ -10,9 +10,24 @@
 int install_files() {
 	int ret = 0;
 
-	puts("Creating directory for install\n");
+	puts("Creating directories for install\n");
+	mkdir("/mnt/private", 0755);
+	mkdir("/mnt/private/etc", 0755);
+	mkdir("/mnt/private/var", 0755);
+	mkdir("/mnt/private/var/db", 0755);
 	mkdir("/mnt/Applications/Loader.app", 0755);
-	chmod("/mnt/Applications/Loader.app", 0755);
+
+	puts("Installing fstab\n");
+	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	if (ret < 0) {
+		return -1;
+	}
+
+	puts("Installing Services.plist\n");
+	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
+	if (ret < 0) {
+		return -1;
+	}
 
 	puts("Installing Bootstrap\n");
 	ret = install("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/Bootstrap", 0, 80, 0755);
@@ -50,43 +65,35 @@ int install_files() {
 		return ret;
 	}
 
-	puts("Installing fstab\n");
-	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	// iPad-check maybe?
+	puts("Installing K48AP.plist\n");
+	ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
 	if (ret < 0) {
-		return -1;
+		return ret;
 	}
 
-	puts("Installing Services.plist\n");
-	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
-	if (ret < 0) {
-		return -1;
-	}
-/*
+	/*
 	puts("Installing libgmalloc.dylib\n");
-	//unlink("/mnt/usr/lib/libgmalloc.dylib");
+	unlink("/mnt/usr/lib/libgmalloc.dylib");
 	ret = install("/files/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
 	if (ret < 0) {
 		return -1;
 	}
 
 	puts("Installing libpf2.dylib\n");
-	//unlink("/mnt/usr/lib/libpf2.dylib");
+	unlink("/mnt/usr/lib/libpf2.dylib");
 	ret = install("/files/libpf2.dylib", "/mnt/usr/lib/libpf2.dylib", 0, 80, 0755);
 	if (ret < 0) {
 		return -1;
 	}
 
 	puts("Installing .launchd_use_gmalloc\n");
-	unlink("/mnt/private/var/db");
-	mkdir("/mnt/private/var/db", 0755);
-	chmod("/mnt/private/var/db", 0755);
-
-	//unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	ret = install("/files/.launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0666);
+	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
+	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0644);
 	if (ret < 0) {
 		return -1;
 	}
-*/
+	*/
 	return 0;
 }
 

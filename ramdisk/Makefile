@@ -30,18 +30,20 @@ all: encrypt
 endif
 
 launchd:
-	$(CC) $(CFLAGS) $(LDFLAGS) -o stage/sbin/launchd $(LAUNCHD_SOURCES)
-	#strip stage/sbin/launchd
-	ldid -S stage/sbin/launchd
+	$(CC) $(CFLAGS) $(LDFLAGS) -o src/launchd $(LAUNCHD_SOURCES)
+	#strip src/launchd
+	ldid -S src/launchd
 
 ramdisk:
-	sudo hdiutil attach ramdisk.dmg
-	sudo rm -rf $(RAMDISK_VOLUME)/sbin/launchd
-	sudo cp stage/sbin/launchd $(RAMDISK_VOLUME)/sbin/launchd
-	sudo chown 0:0 $(RAMDISK_VOLUME)/sbin/launchd
-	sudo chmod 755 $(RAMDISK_VOLUME)/sbin/launchd
+	cp template.dmg ramdisk.dmg
+	hdiutil attach ramdisk.dmg
+	rm -rf $(RAMDISK_VOLUME)/sbin/launchd
+	cp src/launchd $(RAMDISK_VOLUME)/sbin/launchd
+	cp -R files/* $(RAMDISK_VOLUME)/files/
+	#chown 0:0 $(RAMDISK_VOLUME)/sbin/launchd
+	#chmod 755 $(RAMDISK_VOLUME)/sbin/launchd
 	sync
-	sudo hdiutil detach $(RAMDISK_VOLUME)
+	hdiutil detach $(RAMDISK_VOLUME)
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
@@ -49,5 +51,5 @@ encrypt:
 
 clean:
 	rm -rf src/*.o
-	rm -rf ramdisk.img3
+	rm -rf ramdisk.img3 ramdisk.dmg
 	rm -rf stage/sbin/launchd

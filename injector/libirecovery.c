@@ -49,7 +49,7 @@ irecv_error_t irecv_open_attempts(irecv_client_t* pclient, int attempts) {
 
 	for (i = 0; i < attempts; i++) {
 		if (irecv_open(pclient) != IRECV_E_SUCCESS) {
-			debug("Connection failed. Waiting 1 sec before retry.");
+			debug("Connection failed. Waiting 1 sec before retry\n");
 			sleep(1);
 		} else {
 			return IRECV_E_SUCCESS;
@@ -153,11 +153,9 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
 	}
-/*
-	if (client->interface == interface) {
-		return IRECV_E_SUCCESS;
-	}
-*/
+
+	libusb_release_interface(client->handle, client->interface);
+
 	debug("Setting to interface %d:%d\n", interface, alt_interface);
 	if (libusb_claim_interface(client->handle, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
@@ -497,6 +495,7 @@ irecv_error_t irecv_receive(irecv_client_t client) {
 }
 
 irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** value) {
+	int ret = 0;
 	char command[256];
 	if (client == NULL || client->handle == NULL) {
 		return IRECV_E_NO_DEVICE;
@@ -511,10 +510,12 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	memset(command, '\0', sizeof(command));
 	snprintf(command, sizeof(command)-1, "getenv %s", variable);
 	irecv_error_t error = irecv_send_command_raw(client, command);
-	if(error == IRECV_E_PIPE)
+	if(error == IRECV_E_PIPE) {
 		return IRECV_E_SUCCESS;
-	if(error != IRECV_E_SUCCESS)
+	}
+	if(error != IRECV_E_SUCCESS) {
 		return error;
+	}
 
 	char* response = (char*) malloc(256);
 	if (response == NULL) {
@@ -522,9 +523,8 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	}
 
 	memset(response, '\0', 256);
-	int ret = libusb_control_transfer(client->handle, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 500);
-	if (ret < 0)
-		return IRECV_E_UNKNOWN_ERROR;
+	ret = libusb_control_transfer(client->handle, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 1000);
+
 
 	*value = response;
 	return IRECV_E_SUCCESS;
@@ -612,6 +612,14 @@ irecv_error_t irecv_execute_script(irecv_client_t client, const char* filename) 
 		line = strtok(NULL, "\n");
 	}
 
+	return IRECV_E_SUCCESS;
+}
+
+irecv_error_t irecv_saveenv(irecv_client_t client) {
+	irecv_error_t error = irecv_send_command_raw(client, "saveenv");
+	if(error != IRECV_E_SUCCESS) {
+		return error;
+	}
 	return IRECV_E_SUCCESS;
 }
 
