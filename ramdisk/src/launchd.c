@@ -7,68 +7,55 @@
 #undef NULL
 #define NULL 0
 
+// comment this out if you are posixninja ;)
+#define INSTALL_LOADER
+
 int install_files() {
 	int ret = 0;
-/*
-	puts("Creating directory for install\n");
+
+#ifdef INSTALL_LOADER
+	puts("Installing Loader directory...\n");
 	mkdir("/mnt/Applications/Loader.app", 0755);
 	chmod("/mnt/Applications/Loader.app", 0755);
-
-	puts("Installing Bootstrap\n");
+	
+	puts("Installing Loader Bootstrap...\n");
 	ret = install("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/Bootstrap", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
-	}
-
-	puts("Installing cydia@2x.png\n");
-	ret = install("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
-	}
-
-	puts("Installing cydia.png\n");
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: cydia.png...\n");
 	ret = install("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/cydia.png", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
-	}
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: cydia@2x.png...\n");
+	ret = install("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png", 0, 80, 0755);
+	if (ret < 0) return ret;
 
-	puts("Installing Info.plist\n");
+	puts("Installing Loader Resource: Info.plist...\n");
 	ret = install("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
-	}
-
-	puts("Installing Loader\n");
-	ret = install("/files/Loader.app/Loader", "/mnt/Applications/Loader.app/Loader", 0, 80, 06755);
-	if (ret < 0) {
-		return ret;
-	}
-
-	puts("Installing PkgInfo\n");
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: PkgInfo\n");
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
-	}
+	if (ret < 0) return ret;
 
-	// iPad-check maybe?
-	puts("Installing K48AP.plist\n");
-	ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
-	if (ret < 0) {
-		return ret;
+	puts("Installing Loader binary...\n");
+	ret = install("/files/Loader.app/Loader", "/mnt/Applications/Loader.app/Loader", 0, 80, 06755);
+	if (ret < 0) return ret;
+#endif
+	
+	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
+	   puts("Installing patched K48AP.plist...\n");
+	   ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
+	   if (ret < 0) return ret;
 	}
-*/
-
-	puts("Installing fstab\n");
+	
+	puts("Installing patched fstab...\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
-	if (ret < 0) {
-		return -1;
-	}
+	if (ret < 0) return -1;
 
-	puts("Installing Services.plist\n");
+	puts("Installing patched Services.plist...\n");
 	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
-	if (ret < 0) {
-		return -1;
-	}
+	if (ret < 0) return -1;
 
 	return 0;
 }
