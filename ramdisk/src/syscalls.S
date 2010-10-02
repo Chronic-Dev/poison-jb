@@ -44,6 +44,8 @@
 .global _mmap: 0xC5  void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) 6
 */
 
+.globl _access
+
 /* void exit(int status) */
 _exit:
     stmfd  sp!, {r12,lr}
@@ -284,3 +286,14 @@ _reboot:
     swi    #0x80
     add    sp, sp, #0x4
     ldmfd  sp!, {r12,pc}
+
+/* access(const char *path, int amode) */
+_access:
+	stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x8
+    str    r0, [sp,#0x4]
+    str    r1, [sp,#0x0]
+    mov    r12, #0x21
+    swi    #0x80
+    add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}	

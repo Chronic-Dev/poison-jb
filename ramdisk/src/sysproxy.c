@@ -44,3 +44,8 @@ int _stat(const char *path, struct stat *buf) {
 	return stat(path, buf);
 }
 
+/* int access(const char *path, int mode) */ 
+int _access(const char *path, int mode) {
+	return access(path, mode);
+}
+
