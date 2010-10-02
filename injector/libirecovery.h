@@ -23,7 +23,13 @@
 extern "C" {
 #endif
 
+#ifndef WIN32
 #include <libusb-1.0/libusb.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#define sleep(n) Sleep(1000 * n)
+#endif
 
 #define APPLE_VENDOR_ID 0x05AC
 
@@ -115,7 +121,19 @@ struct irecv_client {
 	int alt_interface;
 	unsigned short mode;
 	char serial[256];
+	
+#ifndef WIN32
 	libusb_device_handle* handle;
+#else
+	HANDLE handle;
+	HANDLE hDFU;
+	HANDLE hDFUPipe;
+	HANDLE hIB;
+	LPSTR iBootPath;
+	LPSTR DfuPath;
+	LPSTR DfuPipePath;
+#endif
+	
 	irecv_event_cb_t progress_callback;
 	irecv_event_cb_t received_callback;
 	irecv_event_cb_t connected_callback;

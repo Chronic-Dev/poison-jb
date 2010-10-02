@@ -8,6 +8,9 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#ifdef WIN32
+#define sleep(n) Sleep(1000 * n)
+#endif
 
 #define info(...) printf(__VA_ARGS__)
 #define error(...) fprintf(stderr, __VA_ARGS__)
