@@ -34,7 +34,7 @@
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-	if([[[UIDevice currentDevice] systemVersion] intValue] > 4) {
+	if([[[UIDevice currentDevice] systemVersion] intValue] >= 4) {
 		// no backgrounding for you!
 		system("su mobile -c uicache");
 		sleep(2);
