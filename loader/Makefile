@@ -9,3 +9,6 @@ Bootstrap_INSTALL_PATH = /Applications/Loader.app/
 
 include $(FW_MAKEDIR)/application.mk
 include $(FW_MAKEDIR)/tool.mk
+
+after-Loader-stage::
+	$(FAKEROOT) chmod 6755 $(FW_SHARED_BUNDLE_RESOURCE_PATH)/Loader
