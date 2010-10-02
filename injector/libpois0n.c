@@ -460,7 +460,7 @@ int boot_tethered() {
 	return 0;
 }
 
-boot_verbose() {
+int boot_verbose() {
 	return 0;
 }
 

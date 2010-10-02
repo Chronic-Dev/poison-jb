@@ -9,7 +9,7 @@
 
 int install_files() {
 	int ret = 0;
-/*
+
 	puts("Creating directory for install\n");
 	mkdir("/mnt/Applications/Loader.app", 0755);
 	chmod("/mnt/Applications/Loader.app", 0755);
@@ -49,7 +49,7 @@ int install_files() {
 	if (ret < 0) {
 		return ret;
 	}
-*/
+
 	puts("Installing fstab\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	if (ret < 0) {
@@ -61,7 +61,32 @@ int install_files() {
 	if (ret < 0) {
 		return -1;
 	}
+/*
+	puts("Installing libgmalloc.dylib\n");
+	//unlink("/mnt/usr/lib/libgmalloc.dylib");
+	ret = install("/files/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
+	if (ret < 0) {
+		return -1;
+	}
 
+	puts("Installing libpf2.dylib\n");
+	//unlink("/mnt/usr/lib/libpf2.dylib");
+	ret = install("/files/libpf2.dylib", "/mnt/usr/lib/libpf2.dylib", 0, 80, 0755);
+	if (ret < 0) {
+		return -1;
+	}
+
+	puts("Installing .launchd_use_gmalloc\n");
+	unlink("/mnt/private/var/db");
+	mkdir("/mnt/private/var/db", 0755);
+	chmod("/mnt/private/var/db", 0755);
+
+	//unlink("/mnt/private/var/db/.launchd_use_gmalloc");
+	ret = install("/files/.launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0666);
+	if (ret < 0) {
+		return -1;
+	}
+*/
 	return 0;
 }
 
@@ -83,7 +108,7 @@ int main(int argc, char* argv[]) {
 	puts("Disk found\n");
 
 	puts("Mounting disk...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
+	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS/*| MNT_FORCE*/) != 0) {
 		puts("Unable to mount filesystem!\n");
 		return -1;
 	}
