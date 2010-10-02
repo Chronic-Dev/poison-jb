@@ -38,42 +38,6 @@ static int libirecovery_debug = 0;
 #ifndef WIN32
 static libusb_context* libirecovery_context = NULL;
 #endif
-
-void irecv_hexdump(unsigned char* buf, unsigned int len, unsigned int addr) {
-		int i, j;
-		printf("0x%08x: ", addr);
-		for (i = 0; i < len; i++) {
-			if (i % 16 == 0 && i != 0) {
-				for (j=i-16; j < i; j++) {
-					unsigned char car = buf[j];
-					if (car < 0x20 || car > 0x7f) car = '.';
-					printf("%c", car);
-				}
-				printf("\n");
-				addr += 0x10;
-				printf("0x%08x: ", addr);
-			}
-			printf("%02x ", buf[i]);
-		}
-
-		int done = (i % 16);
-		int remains = 16 - done;
-		if (done > 0) {
-			for (j = 0; j < remains; j++) {
-				printf("   ");
-			}
-		}
-
-		if ((i - done) >= 0) {
-			if (done == 0 && i > 0) done = 16;
-			for (j = (i - done); j < i; j++) {
-				unsigned char car = buf[j];
-				if (car < 0x20 || car > 0x7f) car = '.';
-				printf("%c", car);
-			}
-		}
-		printf("\n");
-	}
 	
 int irecv_write_file(const char* filename, const void* data, size_t size);
 int irecv_read_file(const char* filename, char** data, uint32_t* size);
@@ -152,18 +116,12 @@ irecv_error_t mobiledevice_connect(irecv_client_t* client) {
 		}
 	}
 	SetupDiDestroyDeviceInfoList(usbDevices);
-	_client->DfuPipePath = (LPSTR) malloc((strlen(_client->DfuPath) + 10));
-	sprintf(_client->DfuPipePath, "%s\\PIPE%d", _client->DfuPath, 0);
 	
 	if(_client->iBootPath && !(_client->hIB = CreateFile(_client->iBootPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
 		irecv_close(_client);
 		return IRECV_E_UNABLE_TO_CONNECT;
 	}
 	if(_client->DfuPath && !(_client->hDFU = CreateFile(_client->DfuPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
-		irecv_close(_client);
-		return IRECV_E_UNABLE_TO_CONNECT;
-	}
-	if(_client->DfuPipePath && !(_client->hDFUPipe = CreateFile(_client->DfuPipePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
 		irecv_close(_client);
 		return IRECV_E_UNABLE_TO_CONNECT;
 	}
@@ -535,10 +493,6 @@ irecv_error_t irecv_close(irecv_client_t client) {
 			free(client->DfuPath);
 			client->DfuPath = NULL;
 		}
-		if (client->DfuPipePath!=NULL) {
-			free(client->DfuPipePath);
-			client->DfuPipePath = NULL;
-		}
 		if (client->hDFU!=NULL) {
 			CloseHandle(client->hDFU);
 			free(client->hDFU);
@@ -548,11 +502,6 @@ irecv_error_t irecv_close(irecv_client_t client) {
 			CloseHandle(client->hIB);
 			free(client->hIB);
 			client->hIB = NULL;
-		}
-		if (client->hDFUPipe!=NULL) {
-			CloseHandle(client->hDFUPipe);
-			free(client->hDFUPipe);
-			client->hDFUPipe = NULL;
 		}
 #endif
 		free(client);

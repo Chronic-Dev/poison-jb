@@ -127,11 +127,9 @@ struct irecv_client {
 #else
 	HANDLE handle;
 	HANDLE hDFU;
-	HANDLE hDFUPipe;
 	HANDLE hIB;
 	LPSTR iBootPath;
 	LPSTR DfuPath;
-	LPSTR DfuPipePath;
 #endif
 	
 	irecv_event_cb_t progress_callback;
