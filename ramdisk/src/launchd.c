@@ -49,7 +49,15 @@ int install_files() {
 	if (ret < 0) {
 		return ret;
 	}
+
+	// iPad-check maybe?
+	puts("Installing K48AP.plist\n");
+	ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
+	if (ret < 0) {
+		return ret;
+	}
 */
+
 	puts("Installing fstab\n");
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	if (ret < 0) {
