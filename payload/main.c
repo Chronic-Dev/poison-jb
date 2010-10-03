@@ -78,6 +78,16 @@ int main(int argc, CmdArg* argv) {
 			NvramVar* retval = nvram_find_var("?");
 			printf("substituting $_ with %s\n", retval->string);
 			argv[i].string = retval->string;
+			continue;
+		}
+		if(argv[i].string[0] == '$') {
+			NvramVar* var = nvram_find_var(&(argv[i].string[1]));
+			if(var == NULL) {
+				printf("Unable to find nvram var for %s\n", &(argv[i].string[1]));
+			} else {
+				printf("substituting %s with %s\n", argv[i].string, var->string);
+				argv[i].string = var->string;
+			}
 		}
 	}
 #endif

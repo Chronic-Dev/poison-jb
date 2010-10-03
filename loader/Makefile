@@ -1,3 +1,6 @@
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME),Darwin)
 GO_EASY_ON_ME=1
 SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
 include theos/makefiles/common.mk
@@ -21,3 +24,16 @@ after-Bootstrap-stage::
 real-clean:
 	rm -rf _
 	rm -rf .obj
+else
+all:
+	@echo "Skipping loader on windows"
+	
+stage:
+	@echo "Nothing to do"
+	
+clean:
+	@echo "Skipping loader on windows"
+	
+real-clean:
+	@echo "Nothing to do"
+endif

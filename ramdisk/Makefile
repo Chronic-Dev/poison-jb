@@ -51,5 +51,5 @@ encrypt:
 
 clean:
 	rm -rf src/*.o
-	rm -rf ramdisk.img3 ramdisk.dmg
+	rm -rf ramdisk.img3
 	rm -rf stage/sbin/launchd

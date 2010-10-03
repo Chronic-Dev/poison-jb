@@ -522,11 +522,11 @@ int boot_tethered() {
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
 
-	irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
-	irecv_saveenv(client);
+	//irecv_setenv(client, "boot-args", "0");
+	//irecv_setenv(client, "auto-boot", "true");
+	//irecv_saveenv(client);
 
-	irecv_send_command(client, "go kernel load 0x41000000 0xF00000");
+	irecv_send_command(client, "go fsboot");
 
 	return 0;
 }
