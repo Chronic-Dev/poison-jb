@@ -150,8 +150,6 @@ int check_context(irecv_client_t client) {
 void irecv_init() {
 #ifndef WIN32
 	libusb_init(&libirecovery_context);
-#else
-
 #endif
 }
 
@@ -356,11 +354,8 @@ irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_
 	if (check_context(client) != IRECV_E_SUCCESS) return IRECV_E_NO_DEVICE;
 	
 #ifndef WIN32
-/*
-	if (client->interface == interface) {
-		return IRECV_E_SUCCESS;
-	}
-*/
+	libusb_release_interface(client->handle, client->interface);
+
 	debug("Setting to interface %d:%d\n", interface, alt_interface);
 	if (libusb_claim_interface(client->handle, interface) < 0) {
 		return IRECV_E_USB_INTERFACE;
@@ -520,7 +515,7 @@ void irecv_set_debug_level(int level) {
 #endif
 }
 
-irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command) {
+static irecv_error_t irecv_send_command_raw(irecv_client_t client, char* command) {
 	unsigned int length = strlen(command);
 	if (length >= 0x100) {
 		length = 0xFF;
@@ -726,6 +721,7 @@ irecv_error_t irecv_receive(irecv_client_t client) {
 }
 
 irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** value) {
+	int ret = 0;
 	char command[256];
 	if (check_context(client) != IRECV_E_SUCCESS) return IRECV_E_NO_DEVICE;
 	*value = NULL;
@@ -737,10 +733,12 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	memset(command, '\0', sizeof(command));
 	snprintf(command, sizeof(command)-1, "getenv %s", variable);
 	irecv_error_t error = irecv_send_command_raw(client, command);
-	if(error == IRECV_E_PIPE)
+	if(error == IRECV_E_PIPE) {
 		return IRECV_E_SUCCESS;
-	if(error != IRECV_E_SUCCESS)
+	}
+	if(error != IRECV_E_SUCCESS) {
 		return error;
+	}
 
 	char* response = (char*) malloc(256);
 	if (response == NULL) {
@@ -748,10 +746,7 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	}
 
 	memset(response, '\0', 256);
-	int ret = irecv_control_transfer(client, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 500);
-
-	if (ret < 0)
-		return IRECV_E_UNKNOWN_ERROR;
+	ret = irecv_control_transfer(client, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 1000);
 
 	*value = response;
 	return IRECV_E_SUCCESS;

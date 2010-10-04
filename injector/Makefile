@@ -8,11 +8,12 @@ ifeq ($(UNAME),Darwin)
 	CFLAGS = -I./include -I./resources -I/usr/local/include -I/opt/local/include
 	LDFLAGS = -L/opt/local/lib -L/usr/local/lib -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit
 else
-	CFLAGS = -g -I./include -I./resources -DCURL_STATICLIB
 	ifeq ($(UNAME),MINGW32_NT-5.1)
+		CFLAGS = -g -I./include -I./resources -DCURL_STATICLIB
 		LDFLAGS = -lcurl -lz
 		ADDOBJ = /mingw/lib/libcurl.a /mingw/lib/libwsock32.a /mingw/lib/libwldap32.a /mingw/lib/libpenwin32.a /mingw/lib/libz.a /mingw/lib/libsetupapi.a
 	else
+		CFLAGS = -g -I./include -I./resources
 		LDFLAGS = -lusb-1.0 -lcurl -lz
 	endif
 endif
