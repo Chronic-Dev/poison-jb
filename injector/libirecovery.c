@@ -60,6 +60,7 @@ irecv_error_t mobiledevice_connect(irecv_client_t* client) {
 	SP_DEVICE_INTERFACE_DATA currentInterface;
 	HDEVINFO usbDevices;
 	DWORD i;
+	LPSTR path;
 	irecv_client_t _client = (irecv_client_t) malloc(sizeof(struct irecv_client));
 	memset(_client, 0, sizeof(struct irecv_client));
 	
@@ -84,6 +85,10 @@ irecv_error_t mobiledevice_connect(irecv_client_t* client) {
 			LPSTR result = (LPSTR) malloc(requiredSize - sizeof(DWORD));
 			memcpy((void*) result, details->DevicePath, requiredSize - sizeof(DWORD));
 			free(details);
+			path = (LPSTR) malloc(requiredSize - sizeof(DWORD));
+			memcpy((void*) path, (void*) result, requiredSize - sizeof(DWORD));
+			TCHAR* pathEnd = strstr(path, "#{");
+			*pathEnd = '\0';
 			_client->DfuPath = result;
 			break;
 		}
@@ -111,11 +116,18 @@ irecv_error_t mobiledevice_connect(irecv_client_t* client) {
 			LPSTR result = (LPSTR) malloc(requiredSize - sizeof(DWORD));
 			memcpy((void*) result, details->DevicePath, requiredSize - sizeof(DWORD));
 			free(details);
+
+			if(strstr(result, path) == NULL) {
+				free(result);
+				continue;
+			}
+			
 			_client->iBootPath = result;
 			break;
 		}
 	}
 	SetupDiDestroyDeviceInfoList(usbDevices);
+	free(path);
 	
 	if(_client->iBootPath && !(_client->hIB = CreateFile(_client->iBootPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
 		irecv_close(_client);
@@ -183,7 +195,7 @@ int irecv_control_transfer( irecv_client_t client,
 	packet->wLength = wLength;
 	
 	DWORD count = 0;
-	if (bmRequestType < 0x80) {
+	if (bmRequestType < 0x80 && wLength > 0) {
 		memcpy(packet->data, data, wLength);
 	}
 	if (DeviceIoControl(client->handle, 0x2200A0, packet, sizeof(usb_control_request) + wLength, packet, sizeof(usb_control_request) + wLength, &count, NULL) == 0) {
@@ -211,7 +223,7 @@ int irecv_bulk_transfer(irecv_client_t client,
 #else
 	int ret;
 	if (endpoint==0x4) {
-		ret = DeviceIoControl(client->handle, 0x2201B6, data, length, data, length, (PDWORD) transferred, NULL);
+		ret = DeviceIoControl(client->handle, 0x220195, data, length, data, length, (PDWORD) transferred, NULL);
 	} else {
 		ret = 0;
 	}
@@ -631,7 +643,6 @@ irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, un
 	/* initiate transfer */
 	if (recovery_mode) {
 		error = irecv_control_transfer(client, 0x41, 0, 0, 0, NULL, 0, 1000);
-
 		if (error != IRECV_E_SUCCESS) {
 			return error;
 		}
@@ -961,7 +972,9 @@ int irecv_read_file(const char* filename, char** data, uint32_t* size) {
 
 irecv_error_t irecv_reset_counters(irecv_client_t client) {
 	if (check_context(client) != IRECV_E_SUCCESS) return IRECV_E_NO_DEVICE;
-	irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
+	if (client->mode == kDfuMode) {
+		irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
+	}
 	return IRECV_E_SUCCESS;
 }
 
@@ -1120,8 +1133,12 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 		irecv_close(client);
 	}
 
-	sleep(2); // let the time for the device to come up
-
+	#ifndef WIN32
+		sleep(2); // let the time for the device to come up
+	#else
+		sleep(10); // let the time for the device to come up
+	#endif
+	
 	error = irecv_open_attempts(&new_client, 10);
 	if(error != IRECV_E_SUCCESS) {
 		return NULL;
