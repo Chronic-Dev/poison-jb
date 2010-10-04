@@ -10,7 +10,7 @@
 
 char endianness = IS_LITTLE_ENDIAN;
 
-int download_file_from_zip(const char* url, const char* path, const char* output) {
+int download_file_from_zip(const char* url, const char* path, const char* output, PartialZipProgressCallback progressCallback) {
 	FILE* fd;
 	CDFile* file;
 	ZipInfo* info;
@@ -27,6 +27,10 @@ int download_file_from_zip(const char* url, const char* path, const char* output
 	if (!file) {
 		printf("Cannot find %s in %s\n", path, url);
 		return -1;
+	}
+
+	if(progressCallback != NULL) {
+		PartialZipSetProgressCallback(info, progressCallback);
 	}
 
 	data = PartialZipGetFile(info, file);

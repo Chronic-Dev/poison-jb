@@ -20,15 +20,22 @@
 int libpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
+static pois0n_callback progress_callback = NULL;
+static void* user_object = NULL;
 
-void print_progress(double progress) {
+int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
+	progress_callback(event->progress, user_object);
+	return 0;
+}
 
+void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
+	double value = ((double) progress / (double) info->length) * 100.0;
+	progress_callback(value, user_object);
 }
 
 int receive_data(int bytes) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
-
 
 	buffer = (char*) malloc(bytes);
 	if(buffer == NULL) {
@@ -49,7 +56,7 @@ int receive_data(int bytes) {
 
 int fetch_image(const char* path, const char* output) {
 	debug("Fetching %s...\n", path);
-	if(download_file_from_zip(device->url, path, output) != 0) {
+	if(download_file_from_zip(device->url, path, output, &download_callback) != 0) {
 		error("Unable to fetch %s\n", path);
 		return -1;
 	}
@@ -652,8 +659,14 @@ int execute_ibss_payload() {
 
 void pois0n_init() {
 	irecv_init();
-	irecv_set_debug_level(1);
+	//irecv_set_debug_level(libpois0n_debug);
 	debug("Initializing libpois0n\n");
+	system("killall -9 iTunesHelper");
+}
+
+void pois0n_set_callback(pois0n_callback callback, void* object) {
+	progress_callback = callback;
+	user_object = object;
 }
 
 int pois0n_is_ready() {
@@ -667,6 +680,7 @@ int pois0n_is_ready() {
 		debug("Device must be in DFU mode to continue\n");
 		return -1;
 	}
+	irecv_event_subscribe(client, IRECV_PROGRESS, &recovery_callback, NULL);
 
 	//////////////////////////////////////
 	// Check device

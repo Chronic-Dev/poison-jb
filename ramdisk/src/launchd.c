@@ -11,6 +11,7 @@
 // comment this out if you are posixninja ;)
 */
 #define INSTALL_LOADER
+#define INSTALL_UNTETHERED
 
 int install_files() {
 	int ret = 0;
@@ -35,55 +36,49 @@ int install_files() {
 	ret = install("/files/Loader.app/Bootstrap", "/mnt/Applications/Loader.app/Bootstrap", 0, 80, 0755);
 	if (ret < 0) return ret;
 	
-	puts("Installing Loader Resource: cydia.png...\n");
+	puts("Installing Loader binary\n");
+	ret = install("/files/Loader.app/Loader", "/mnt/Applications/Loader.app/Loader", 0, 80, 06755);
+	if (ret < 0) return ret;
+
+	puts("Installing Loader Resource: cydia.png\n");
 	ret = install("/files/Loader.app/cydia.png", "/mnt/Applications/Loader.app/cydia.png", 0, 80, 0755);
 	if (ret < 0) return ret;
 	
-	puts("Installing Loader Resource: cydia@2x.png...\n");
+	puts("Installing Loader Resource: cydia@2x.png\n");
 	ret = install("/files/Loader.app/cydia@2x.png", "/mnt/Applications/Loader.app/cydia@2x.png", 0, 80, 0755);
 	if (ret < 0) return ret;
 
-	puts("Installing Loader Resource: Info.plist...\n");
+	puts("Installing Loader Resource: Info.plist\n");
 	ret = install("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist", 0, 80, 0755);
 	if (ret < 0) return ret;
 	
 	puts("Installing Loader Resource: PkgInfo\n");
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) return ret;
-
-	puts("Installing Loader binary...\n");
-	ret = install("/files/Loader.app/Loader", "/mnt/Applications/Loader.app/Loader", 0, 80, 06755);
-	if (ret < 0) return ret;
 #endif
 	
 	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
-	   puts("Installing patched K48AP.plist...\n");
+	   puts("Installing patched K48AP.plist\n");
 	   ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
 	   if (ret < 0) return ret;
 	}
 
-	/*
+#ifdef INSTALL_UNTETHERED
+	puts("Installing pf2\n");
+	unlink("/mnt/usr/lib/pf2");
+	ret = install("/files/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
+	if (ret < 0) return -1;
+
 	puts("Installing libgmalloc.dylib\n");
 	unlink("/mnt/usr/lib/libgmalloc.dylib");
 	ret = install("/files/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
-	if (ret < 0) {
-		return -1;
-	}
-
-	puts("Installing libpf2.dylib\n");
-	unlink("/mnt/usr/lib/libpf2.dylib");
-	ret = install("/files/libpf2.dylib", "/mnt/usr/lib/libpf2.dylib", 0, 80, 0755);
-	if (ret < 0) {
-		return -1;
-	}
+	if (ret < 0) return -1;
 
 	puts("Installing .launchd_use_gmalloc\n");
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0644);
-	if (ret < 0) {
-		return -1;
-	}
-	*/
+	//ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
+	if (ret < 0) return -1;
+#endif
 
 	return 0;
 }
