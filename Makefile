@@ -8,7 +8,7 @@ all:
 	make stage -C loader
 	make -C ramdisk
 	make -C injector
-	#make -C interface
+	make -C interface
 
 clean:	
 	make clean -C tools
@@ -18,4 +18,4 @@ clean:
 	make real-clean -C loader
 	make clean -C ramdisk
 	make clean -C injector
-	#make clean -C interface
+	make clean -C interface
