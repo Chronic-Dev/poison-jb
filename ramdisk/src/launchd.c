@@ -11,7 +11,7 @@
 // comment this out if you are posixninja ;)
 */
 #define INSTALL_LOADER
-#define INSTALL_UNTETHERED
+//#define INSTALL_UNTETHERED
 
 int install_files() {
 	int ret = 0;
