@@ -1,5 +1,5 @@
 PLATFORM=/Developer/Platforms/iPhoneOS.platform
-SDKVER=4.0
+SDKVER=4.1
 SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
 LD=$(PLATFORM)/Developer/usr/bin/ld
