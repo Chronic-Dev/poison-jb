@@ -982,7 +982,7 @@ irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned lo
 
 	int i = 0;
 	int bytes = 0;
-	//double progress = 0;
+	double progress = 0;
 	unsigned long count = 0;
 	unsigned int status = 0;
 	for (i = 0; i < packets; i++) {
@@ -1114,6 +1114,7 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 irecv_client_t irecv_reconnect(irecv_client_t client) {
 	irecv_error_t error = 0;
 	irecv_client_t new_client = NULL;
+	irecv_event_cb_t progress_callback = client->progress_callback;
 
 	if (check_context(client) == IRECV_E_SUCCESS) {
 		irecv_close(client);
@@ -1126,5 +1127,6 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 		return NULL;
 	}
 
+	new_client->progress_callback = progress_callback;
 	return new_client;
 }
