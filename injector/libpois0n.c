@@ -560,7 +560,7 @@ int execute_ibss_payload() {
 	}
 
 	// If boot-args hasn't been set then we've never been jailbroken
-	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0") || 1) {
+	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0")) {
 		debug("Booting jailbreak ramdisk\n");
 		error = irecv_setenv(client, "boot-args", "1");
 		if(error != IRECV_E_SUCCESS) {
