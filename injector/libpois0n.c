@@ -53,8 +53,8 @@ int fetch_image(const char* path, const char* output) {
 		error("Unable to fetch %s\n", path);
 		return -1;
 	}
+	
 	return 0;
-
 }
 
 int fetch_dfu_image(const char* type, const char* output) {
@@ -553,7 +553,7 @@ int execute_ibss_payload() {
 	}
 
 	// If boot-args hasn't been set then we've never been jailbroken
-	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0")) {
+	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0") || 1) {
 		debug("Booting jailbreak ramdisk\n");
 		error = irecv_setenv(client, "boot-args", "1");
 		if(error != IRECV_E_SUCCESS) {
