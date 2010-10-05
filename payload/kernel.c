@@ -59,7 +59,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 #if TARGET_KERNEL_BOOTARGS && TARGET_NVRAM_LIST
 		NvramVar* bootargs = nvram_find_var("boot-args");
 		printf("boot-args set to %s\n", bootargs->string);
-		strcpy(gBootArgs, "rd=md0 -v serial=1 debug=10");//bootargs->string);
+		strcpy(gBootArgs, "rd=md0 -v");//bootargs->string);
 #endif
 
 		kernel_load((void*) address, size, &gKernelAddr);

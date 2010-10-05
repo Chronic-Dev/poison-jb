@@ -11,6 +11,7 @@ extern "C" {
 #define off_t off64_t
 #define mkdir(x, y) mkdir(x)
 #define PATH_SEPARATOR "\\"
+#define sleep(n) Sleep(1000 * n)
 #else
 #define PATH_SEPARATOR "/"
 #endif
@@ -158,7 +159,7 @@ struct ZipInfo {
 	PartialZipProgressCallback progressCallback;
 };
 
-int download_file_from_zip(const char* url, const char* path, const char* output);
+int download_file_from_zip(const char* url, const char* path, const char* output, PartialZipProgressCallback progressCallback);
 ZipInfo* PartialZipInit(const char* url);
 CDFile* PartialZipFindFile(ZipInfo* info, const char* fileName);
 CDFile* PartialZipListFiles(ZipInfo* info);

@@ -12,7 +12,7 @@
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n90ap.h"
 #include "payloads/iBSS.n81ap.h"
-//#include "payloads/iBoot.k66ap.h"
+#include "payloads/iBoot.k66ap.h"
 //#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n90ap.h"
 #include "payloads/iBoot.n81ap.h"
@@ -20,15 +20,22 @@
 int libpois0n_debug = 1;
 static irecv_client_t client = NULL;
 static irecv_device_t device = NULL;
+static pois0n_callback progress_callback = NULL;
+static void* user_object = NULL;
 
-void print_progress(double progress) {
+int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
+	progress_callback(event->progress, user_object);
+	return 0;
+}
 
+void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
+	double value = ((double) progress / (double) info->length) * 100.0;
+	progress_callback(value, user_object);
 }
 
 int receive_data(int bytes) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
-
 
 	buffer = (char*) malloc(bytes);
 	if(buffer == NULL) {
@@ -49,7 +56,7 @@ int receive_data(int bytes) {
 
 int fetch_image(const char* path, const char* output) {
 	debug("Fetching %s...\n", path);
-	if(download_file_from_zip(device->url, path, output) != 0) {
+	if(download_file_from_zip(device->url, path, output, &download_callback) != 0) {
 		error("Unable to fetch %s\n", path);
 		return -1;
 	}
@@ -176,8 +183,8 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on k66ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_k66ap;
-			//size = sizeof(iBoot_k66ap);
+			payload = iBoot_k66ap;
+			size = sizeof(iBoot_k66ap);
 			debug("Loaded payload for iBoot on k66ap\n");
 		}
 		break;
@@ -287,7 +294,7 @@ int overwrite_sha1_registers() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -300,7 +307,7 @@ int overwrite_sha1_registers() {
 	}
 	
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -336,7 +343,7 @@ int upload_exploit() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -356,7 +363,7 @@ int upload_exploit() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		debug("%s\n", irecv_strerror(error));
 		error("Unable to reconnect\n");
@@ -505,7 +512,7 @@ int boot_tethered() {
 	irecv_send_command(client, "go jump 0x41000040");
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 10);
 	if (client == NULL) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -652,8 +659,19 @@ int execute_ibss_payload() {
 
 void pois0n_init() {
 	irecv_init();
-	irecv_set_debug_level(1);
+	//irecv_set_debug_level(libpois0n_debug);
 	debug("Initializing libpois0n\n");
+	#ifndef WIN32
+		system("killall -9 iTunesHelper");
+	#else
+		system("TASKKILL /F /IM iTunes.exe > NUL");
+		system("TASKKILL /F /IM iTunesHelper.exe > NUL");
+	#endif
+}
+
+void pois0n_set_callback(pois0n_callback callback, void* object) {
+	progress_callback = callback;
+	user_object = object;
 }
 
 int pois0n_is_ready() {
@@ -667,6 +685,7 @@ int pois0n_is_ready() {
 		debug("Device must be in DFU mode to continue\n");
 		return -1;
 	}
+	irecv_event_subscribe(client, IRECV_PROGRESS, &recovery_callback, NULL);
 
 	//////////////////////////////////////
 	// Check device
@@ -687,13 +706,13 @@ int pois0n_is_compatible() {
 	debug("Checking the device type\n");
 	error = irecv_get_device(client, &device);
 	if (device == NULL || device->index == DEVICE_UNKNOWN) {
-		error("Sorry device is not compatible with this jailbreak");
+		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
 	info("Identified device as %s\n", device->product);
 
 	if (device->chip_id != 8930) {
-		error("Sorry device is not compatible with this jailbreak");
+		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
 
@@ -730,7 +749,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;
