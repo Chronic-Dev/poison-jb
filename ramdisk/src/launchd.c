@@ -101,9 +101,21 @@ int main(int argc, char* argv[]) {
 	puts("Disk found\n");
 
 	puts("Mounting disk...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS/*| MNT_FORCE*/) != 0) {
+	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
 		puts("Unable to mount filesystem!\n");
-		return -1;
+		puts("Attempting to force mount disk...\n");
+		if(force_mount()) {
+			puts("Failed to force mounting disk\n");
+			puts("Learn how to properly shutdown your device!!\n");
+			return -1;
+		}
+
+		puts("Retrying mount...\n");
+		if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
+			puts("Failed second mounting attempt!\n");
+			puts("Learn how to properly shutdown your device!!\n");
+			return -1;
+		}
 	}
 	puts("Disk mounted\n");
 
