@@ -49,3 +49,11 @@ int _access(const char *path, int mode) {
 	return access(path, mode);
 }
 
+int _symlink(const char *path1, const char *path2) {
+	return symlink(path1, path2);
+}
+
+/* int chmod(const char *path, int mode) */
+int _chmod(const char *path, int mode) {
+	return chmod(path, mode);
+}

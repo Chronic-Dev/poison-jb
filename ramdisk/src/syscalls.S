@@ -46,6 +46,8 @@
 
 .globl _access
 
+.globl _symlink	
+
 /* void exit(int status) */
 _exit:
     stmfd  sp!, {r12,lr}

@@ -29,4 +29,8 @@ int mount(const char* filesystemtype, const char* target, int mountflags, void *
 int unmount(const char* dir, int flags);
 int access(const char *path, int mode);
 
+/* needed for tar */
+int symlink(const char *path1, const char *path2);
+/* needed for tar */
+
 #endif

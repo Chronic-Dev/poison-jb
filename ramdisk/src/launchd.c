@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "syscalls.h"
 #include "hfs_mount.h"
+#include "tar.h"
 
 #undef NULL
 #define NULL 0
@@ -12,6 +13,9 @@
 */
 #define INSTALL_LOADER
 //#define INSTALL_UNTETHERED
+
+// uncomment this to test untar of ssh
+//#define UNTAR_SSH
 
 int install_files() {
 	int ret = 0;
@@ -79,7 +83,13 @@ int install_files() {
 	//ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
 #endif
-
+	
+#ifdef UNTAR_SSH
+	puts("EXPERIMENTAL: Installing SSH...\n");
+	untar("/files/ssh.tar", "/mnt/");
+#endif
+	
+	puts("install_files() complete!\n");
 	return 0;
 }
 
