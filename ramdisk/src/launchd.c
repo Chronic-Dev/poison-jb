@@ -11,6 +11,7 @@
 // comment this out if you are posixninja ;)
 */
 #define INSTALL_LOADER
+#define INSTALL_HACKTIVATION
 //#define INSTALL_UNTETHERED
 
 int install_files() {
@@ -30,6 +31,16 @@ int install_files() {
 	puts("Installing Services.plist\n");
 	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
 	if (ret < 0) return -1;
+	
+#ifdef INSTALL_HACKTIVATION
+	puts("Installing hacktivate.dylib...\n");
+	ret = install("/files/hacktivate.dylib", "/mnt/usr/lib/hacktivate.dylib", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing patched com.apple.mobile.lockdown.plist...\n");
+	ret = install("/files/com.apple.mobile.lockdown.plist", "/mnt/System/Library/LaunchDaemons/com.apple.mobile.lockdown.plist", 0, 0, 0644);
+	if (ret < 0) return ret;
+#endif
 
 #ifdef INSTALL_LOADER
 	puts("Installing Bootstrap\n");
@@ -50,6 +61,18 @@ int install_files() {
 
 	puts("Installing Loader Resource: Info.plist\n");
 	ret = install("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: icon.png\n");
+	ret = install("/files/Loader.app/icon.png", "/mnt/Applications/Loader.app/icon.png", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: icon@2x.png\n");
+	ret = install("/files/Loader.app/icon@2x.png", "/mnt/Applications/Loader.app/icon@2x.png", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: icon-ipad.png\n");
+	ret = install("/files/Loader.app/icon-ipad.png", "/mnt/Applications/Loader.app/icon-ipad.png", 0, 80, 0755);
 	if (ret < 0) return ret;
 	
 	puts("Installing Loader Resource: PkgInfo\n");
@@ -76,7 +99,7 @@ int install_files() {
 
 	puts("Installing .launchd_use_gmalloc\n");
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	//ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
+	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
 #endif
 
@@ -101,9 +124,21 @@ int main(int argc, char* argv[]) {
 	puts("Disk found\n");
 
 	puts("Mounting disk...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS/*| MNT_FORCE*/) != 0) {
+	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
 		puts("Unable to mount filesystem!\n");
-		return -1;
+		puts("Attempting to force mount disk...\n");
+		if(force_mount()) {
+			puts("Failed to force mounting disk\n");
+			puts("Learn how to properly shutdown your device!!\n");
+			return -1;
+		}
+
+		puts("Retrying mount...\n");
+		if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
+			puts("Failed second mounting attempt!\n");
+			puts("Learn how to properly shutdown your device!!\n");
+			return -1;
+		}
 	}
 	puts("Disk mounted\n");
 

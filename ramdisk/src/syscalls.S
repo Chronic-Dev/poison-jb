@@ -39,6 +39,8 @@
 .globl _dup2
 .globl _mount
 .globl _stat
+.globl _pread
+.globl _pwrite
 
 /*
 .global _mmap: 0xC5  void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) 6
@@ -228,6 +230,32 @@ _mount:
     add    sp, sp, #0x10
     ldmfd  sp!, {r12,pc}
     
+/* ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset) */
+_pread:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x10
+    str    r0, [sp,#0xC]
+    str    r1, [sp,#0x8]
+    str    r2, [sp,#0x4]
+    str    r3, [sp,#0x0]
+    mov    r12, #0x99
+    swi    #0x80
+    add    sp, sp, #0x10
+    ldmfd  sp!, {r12,pc}
+
+/* ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset) */
+_pwrite:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x10
+    str    r0, [sp,#0xC]
+    str    r1, [sp,#0x8]
+    str    r2, [sp,#0x4]
+    str    r3, [sp,#0x0]
+    mov    r12, #0x9A
+    swi    #0x80
+    add    sp, sp, #0x10
+    ldmfd  sp!, {r12,pc}
+
 /* int kill(pid_t pid, int sig) */
 _kill:
     stmfd  sp!, {r12,lr}

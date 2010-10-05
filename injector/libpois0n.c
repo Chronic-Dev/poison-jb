@@ -518,6 +518,9 @@ int boot_tethered() {
 		return -1;
 	}
 
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
+
 	// Warning this payload will be broken since we can assume
 	//   we have the correct offset, only use commands that don't
 	//   need specific offsets!!!!
@@ -562,7 +565,7 @@ int execute_ibss_payload() {
 	// If boot-args hasn't been set then we've never been jailbroken
 	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0")) {
 		debug("Booting jailbreak ramdisk\n");
-		error = irecv_setenv(client, "boot-args", "1");
+		//error = irecv_setenv(client, "boot-args", "1");
 		if(error != IRECV_E_SUCCESS) {
 			error("Unable to execute iBSS payload\n");
 			return -1;
@@ -749,7 +752,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
+	client = irecv_reconnect(client, 10);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;

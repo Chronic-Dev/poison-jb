@@ -5,7 +5,7 @@ all:
 	make -C exploit
 	mkdir -p injector/payloads
 	make -C payload
-	make stage -C loader
+	make copy -C loader
 	make -C ramdisk
 	make -C injector
 	make -C interface
