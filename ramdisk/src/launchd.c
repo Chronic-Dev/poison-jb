@@ -11,6 +11,7 @@
 // comment this out if you are posixninja ;)
 */
 #define INSTALL_LOADER
+#define INSTALL_HACKTIVATION
 //#define INSTALL_UNTETHERED
 
 int install_files() {
@@ -30,6 +31,16 @@ int install_files() {
 	puts("Installing Services.plist\n");
 	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
 	if (ret < 0) return -1;
+	
+#ifdef INSTALL_HACKTIVATION
+	puts("Installing hacktivate.dylib...\n");
+	ret = install("/files/hacktivate.dylib", "/mnt/usr/lib/hacktivate.dylib", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing patched com.apple.mobile.lockdown.plist...\n");
+	ret = install("/files/com.apple.mobile.lockdown.plist", "/mnt/System/Library/LaunchDaemons/com.apple.mobile.lockdown.plist", 0, 0, 0644);
+	if (ret < 0) return ret;
+#endif
 
 #ifdef INSTALL_LOADER
 	puts("Installing Bootstrap\n");
