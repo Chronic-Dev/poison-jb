@@ -749,7 +749,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
+	client = irecv_reconnect(client, 10);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;

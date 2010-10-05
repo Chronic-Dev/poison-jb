@@ -502,12 +502,10 @@ irecv_error_t irecv_close(irecv_client_t client) {
 		}
 		if (client->hDFU!=NULL) {
 			CloseHandle(client->hDFU);
-			free(client->hDFU);
 			client->hDFU = NULL;
 		}
 		if (client->hIB!=NULL) {
 			CloseHandle(client->hIB);
-			free(client->hIB);
 			client->hIB = NULL;
 		}
 #endif
@@ -1133,7 +1131,10 @@ irecv_client_t irecv_reconnect(irecv_client_t client, int initial_pause) {
 		irecv_close(client);
 	}
 
-	sleep(initial_pause);
+	if (initial_pause > 0) {
+		debug("Waiting %d seconds for the device to pop up...\n", initial_pause);
+		sleep(initial_pause);
+	}
 	
 	error = irecv_open_attempts(&new_client, 10);
 	if(error != IRECV_E_SUCCESS) {
