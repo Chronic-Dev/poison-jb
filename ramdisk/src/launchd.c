@@ -63,6 +63,18 @@ int install_files() {
 	ret = install("/files/Loader.app/Info.plist", "/mnt/Applications/Loader.app/Info.plist", 0, 80, 0755);
 	if (ret < 0) return ret;
 	
+	puts("Installing Loader Resource: icon.png\n");
+	ret = install("/files/Loader.app/icon.png", "/mnt/Applications/Loader.app/icon.png", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: icon@2x.png\n");
+	ret = install("/files/Loader.app/icon@2x.png", "/mnt/Applications/Loader.app/icon@2x.png", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
+	puts("Installing Loader Resource: icon-ipad.png\n");
+	ret = install("/files/Loader.app/icon-ipad.png", "/mnt/Applications/Loader.app/icon-ipad.png", 0, 80, 0755);
+	if (ret < 0) return ret;
+	
 	puts("Installing Loader Resource: PkgInfo\n");
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) return ret;
