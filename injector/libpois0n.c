@@ -661,7 +661,12 @@ void pois0n_init() {
 	irecv_init();
 	//irecv_set_debug_level(libpois0n_debug);
 	debug("Initializing libpois0n\n");
-	system("killall -9 iTunesHelper");
+	#ifndef WIN32
+		system("killall -9 iTunesHelper");
+	#else
+		system("TASKKILL /F /IM iTunes.exe > NUL");
+		system("TASKKILL /F /IM iTunesHelper.exe > NUL");
+	#endif
 }
 
 void pois0n_set_callback(pois0n_callback callback, void* object) {
