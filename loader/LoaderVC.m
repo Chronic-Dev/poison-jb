@@ -149,6 +149,7 @@
 					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"%@ has already been installed.", [item objectForKey:@"Name"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 					[alert show];
 					[alert release];
+					return;
 				}
 			}
 			
