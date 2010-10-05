@@ -294,7 +294,7 @@ int overwrite_sha1_registers() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -307,7 +307,7 @@ int overwrite_sha1_registers() {
 	}
 	
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -343,7 +343,7 @@ int upload_exploit() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect to device\n");
 		return -1;
@@ -363,7 +363,7 @@ int upload_exploit() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		debug("%s\n", irecv_strerror(error));
 		error("Unable to reconnect\n");
@@ -512,7 +512,7 @@ int boot_tethered() {
 	irecv_send_command(client, "go jump 0x41000040");
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 10);
 	if (client == NULL) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -701,13 +701,13 @@ int pois0n_is_compatible() {
 	debug("Checking the device type\n");
 	error = irecv_get_device(client, &device);
 	if (device == NULL || device->index == DEVICE_UNKNOWN) {
-		error("Sorry device is not compatible with this jailbreak");
+		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
 	info("Identified device as %s\n", device->product);
 
 	if (device->chip_id != 8930) {
-		error("Sorry device is not compatible with this jailbreak");
+		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
 
@@ -744,7 +744,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client);
+	client = irecv_reconnect(client, 2);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;

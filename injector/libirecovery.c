@@ -1124,7 +1124,7 @@ irecv_error_t irecv_get_device(irecv_client_t client, irecv_device_t* device) {
 	return IRECV_E_SUCCESS;
 }
 
-irecv_client_t irecv_reconnect(irecv_client_t client) {
+irecv_client_t irecv_reconnect(irecv_client_t client, int initial_pause) {
 	irecv_error_t error = 0;
 	irecv_client_t new_client = NULL;
 	irecv_event_cb_t progress_callback = client->progress_callback;
@@ -1133,11 +1133,7 @@ irecv_client_t irecv_reconnect(irecv_client_t client) {
 		irecv_close(client);
 	}
 
-	#ifndef WIN32
-		sleep(2); // let the time for the device to come up
-	#else
-		sleep(10); // let the time for the device to come up
-	#endif
+	sleep(initial_pause);
 	
 	error = irecv_open_attempts(&new_client, 10);
 	if(error != IRECV_E_SUCCESS) {
