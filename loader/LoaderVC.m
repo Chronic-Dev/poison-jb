@@ -51,7 +51,9 @@
 - (void)updatedSources:(id)obj {
 	if(obj == nil) {
 		[self removeHUD];
-		// TODO: UIAlertView "error"
+		UIAlertView *_ = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Please make sure that you're connected to the internet before launching Loader." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+		[_ show];
+		[_ release];
 	} else {
 		NSDictionary *ref = (NSDictionary *)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, (CFDataRef)obj, kCFPropertyListImmutable, NULL);
 		if(ref != nil && [ref isKindOfClass:[NSDictionary class]]) {
