@@ -51,7 +51,7 @@
 - (void)updatedSources:(id)obj {
 	if(obj == nil) {
 		[self removeHUD];
-		UIAlertView *_ = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Please make sure that you're connected to the internet before launching Loader." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+		UIAlertView *_ = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Please make sure that you're connected to the internet before launching Loader." delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
 		[_ show];
 		[_ release];
 	} else {
