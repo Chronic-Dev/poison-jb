@@ -31,6 +31,14 @@ void labelIfy(NSTextField *textField);
 BOOL reset = false;
 BOOL stop = false;
 
+void update_progress(double progress) {
+	if(progressIndicator) {
+		[progressIndicator setIndeterminate:NO];
+        
+		[progressIndicator setDoubleValue:progress];
+	}
+}
+
 @interface Callback : NSObject {}
 @end
 @implementation Callback
@@ -117,6 +125,7 @@ BOOL stop = false;
         return;
     }
     pois0n_init();
+	pois0n_set_callback(&update_progress, NULL);
     while (stop == false) {
         if (pois0n_is_ready() != -1 && pois0n_is_compatible() != -1) {
             stop = true;
