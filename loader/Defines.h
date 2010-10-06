@@ -1,4 +1,3 @@
 
-
-#define kLoaderURL @"http://dl.dropbox.com/u/31156/Sample.plist"
+#define kLoaderURL @"http://cache.saurik.com/greenpois0n/loader.plist"
 #define kTitle @"Loader"
