@@ -46,17 +46,6 @@ void sleep(unsigned int seconds) {
 	for(i = seconds * 10000000; i > 0; i--) {}
 }
 
-int strlen(const char *s) {
-	int i = 0;
-	while(i >= 0) {
-		if(s[i] == '\0') {
-			return i;
-		}
-		i++;
-	}
-	return -1;
-}
-
 void _puts(const char* msg) {
 	while((*msg) != '\0') {
 		write(1, msg, 1);
@@ -120,100 +109,28 @@ int hfs_mount(const char* device, const char* mountdir, int options) {
 	return mount("hfs", mountdir, options, &args);
 }
 
-int flipenddian32(int word) {
-	int flip = 0;
-	flip |= (word & 0xFF) << 12;
-	flip |= (word & 0xFF00) << 4;
-	flip |= (word & 0xFF0000) >> 4;
-	flip |= (word & 0xFF000000) >> 12;
-	return flip;
+void system(char* argv[], char *env[]) {
+	if(vfork() != 0) {
+		while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
+			sleep(1);
+		}
+	} else {
+		execve(argv[0], argv, env);
+	}
 }
 
-int force_mount() {
-	int disk = 0;
-	int bytes = 0;
-	int attribs = 0;
-	hfs_header header;
-	unsigned short value = 0;
 
-	disk = open("/dev/rdisk0s1", O_RDONLY, 0);
-	if(disk < 0) return -1;
-
-	int i;
-	for(i = 0; i < 0x1000000; i += 2) {
-		bytes = read(disk, &value, 2);
-		if(value == (unsigned short) 0x482B ||
-				value == (unsigned short) 0x2B48 ||
-				value == (unsigned short) 0x4858 ||
-				value == (unsigned short) 0x5848) {
-			while(1) {
-				puts("Found HFS signature at offset: ");
-				puti(i);
-				puts("\n");
-			}
-			break;
-		}
+int strlen(const char* s) {
+	int i = 0;
+	for(i = 0; i >= 0; i++) {
+		if(s[i] == '\0') return i;
 	}
-
-	bytes = pread(disk, &header, sizeof(hfs_header), 0x400);
-	//if(bytes != sizeof(hfs_header)) return -1;
-	puti(header.signature);puts("\n");
-	FLIPENDIAN(header.signature);
-	puti(header.signature);puts("\n");
-
-	puti(header.attributes);puts("\n");
-	FLIPENDIAN(header.attributes);
-	puti(header.attributes);puts("\n");
-
-	if(!(header.attributes & kHFSVolumeUnmountedBit)) {
-		dirty = 1;
-
-		puts("\n");
-		puti(header.attributes);puts("\n");
-		header.attributes &= kHFSVolumeUnmountedBit;
-		puti(header.attributes);puts("\n");
-		puts("Volume umounted bit is now set\n");
-	}
-
-	if((header.attributes & kHFSBootVolumeInconsistentBit)) {
-		dirty = 1;
-
-		puts("\n");
-		puti(header.attributes);puts("\n");
-		header.attributes &= ~kHFSBootVolumeInconsistentBit;
-		puti(header.attributes);puts("\n");
-		puts("Volume inconsistent bit is now unset\n");
-	}
-	puts("\n");
-	FLIPENDIAN(header.attributes);
-	puti(header.attributes);puts("\n");
-
-	if(dirty) {
-		puts("Filesystem wasn't properly shutdown, force mounting disk\n");
-	}
-
-	//bytes = pwrite(disk, &header, sizeof(hfs_header), 0x400);
-	close(disk);
-	return 0;
+	return -1;
 }
 
-int force_unmount() {
-	int disk = 0;
-	int bytes = 0;
-	hfs_header header;
-
-	if(dirty) {
-		disk = open("/dev/disk0s1", O_RDWR, 0);
-		bytes = pread(disk, &header, sizeof(hfs_header), 0x400);
-		if((header.attributes & kHFSVolumeUnmountedBit)) {
-			header.attributes &= ~kHFSVolumeUnmountedBit;
-		}
-
-		if(!(header.attributes & kHFSBootVolumeInconsistentBit)) {
-			header.attributes &= kHFSBootVolumeInconsistentBit;
-		}
-		puts("Reseting dirty filesystem bits\n");
-		bytes = pwrite(disk, &header, sizeof(hfs_header), 0x400);
-		close(disk);
+void memset(char* buffer, char value, int size) {
+	int i = 0;
+	for(i = 0; i < size; i++) {
+		buffer[i] = value;
 	}
 }

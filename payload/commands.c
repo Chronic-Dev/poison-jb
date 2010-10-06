@@ -250,22 +250,21 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 
 	// search for jump_to function               80  B5  00  AF  04  46  15  46
 	jump_to = patch_find(0x5ff00000, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
-	printf("Found jump_to function at %p\n", jump_to);
+	//printf("Found jump_to function at %p\n", jump_to);
 
 	memcpy(jump_to, "\x00\x4b\x98\x47", 4);
 	memcpy(jump_to+4, &hooker, 4);
-	printf("Hooked jump_to function to call 0x%08x\n", hooker);
-    //                                          F0  B5  03  AF  81  B0
+	//printf("Hooked jump_to function to call 0x%08x\n", hooker);
 	if(strstr((char*) 0x5ff00200, "k66ap")) {
 		fsboot = patch_find(0x5ff00000, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
 	} else {
 		fsboot = patch_find(0x5ff00000, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
 	}
-	printf("Found fsboot function at %p\n", fsboot);
+	//printf("Found fsboot function at %p\n", fsboot);
 
 	//call address
 	fsboot++;
-	printf("Calling %p\n", fsboot);
+	//printf("Calling %p\n", fsboot);
 	fsboot();
 
 	return 0;
@@ -283,15 +282,15 @@ void clear_icache() {
 
 void hooked(int flags, void* addr, int phymem) {
 	// patch kernel
-	printf("Entered hooked jump_to function!!!\n");
-	printf("Patching kernel\n");
+	//printf("Entered hooked jump_to function!!!\n");
+	//printf("Patching kernel\n");
 	patch_kernel((void*) 0x40000000, 0xA00000);
 
-	printf("Replace hooking code with original\n");
+	//printf("Replace hooking code with original\n");
 	memcpy(jump_to, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
 	clear_icache();
 
 	jump_to++;
-	printf("Calling %p\n", jump_to);
+	//printf("Calling %p\n", jump_to);
 	jump_to(flags, addr, phymem);
 }

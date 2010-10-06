@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	dup2(stdout, 1);
 	dup2(stdout, 2);
 
-	puts("Pois0nDisk - by Chronic-Dev\n");
+	puts("Pois0nDisk - by Chronic-Dev Team\n");
 	puts("Searching for disk...\n");
 	while (stat("/dev/disk0s1", &status) != 0) {
 		sleep(1);
@@ -124,21 +124,9 @@ int main(int argc, char* argv[]) {
 	puts("Disk found\n");
 
 	puts("Mounting disk...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
+	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_UPDATE) != 0) {
 		puts("Unable to mount filesystem!\n");
-		puts("Attempting to force mount disk...\n");
-		if(force_mount()) {
-			puts("Failed to force mounting disk\n");
-			puts("Learn how to properly shutdown your device!!\n");
-			return -1;
-		}
-
-		puts("Retrying mount...\n");
-		if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS) != 0) {
-			puts("Failed second mounting attempt!\n");
-			puts("Learn how to properly shutdown your device!!\n");
-			return -1;
-		}
+		return -1;
 	}
 	puts("Disk mounted\n");
 
