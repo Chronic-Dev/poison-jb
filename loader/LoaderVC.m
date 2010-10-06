@@ -144,7 +144,7 @@
 		if(buttonIndex != [actionSheet cancelButtonIndex]) {
 			NSDictionary *item = [[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:_currentIndex.row];
 			
-			if(![item objectForKey:@"AllowReinstall"] && [item objectForKey:@"ReinstallCheckPattern"]) {
+			if([[item objectForKey:@"AllowReinstall"] boolValue] == FALSE) {
 				if([[NSFileManager defaultManager] fileExistsAtPath:[item objectForKey:@"ReinstallCheckPattern"]]) {
 					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"%@ has already been installed.", [item objectForKey:@"Name"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 					[alert show];
