@@ -1,5 +1,6 @@
 all:
 	@echo "Building Linux Interface"
+	cp ../../injector/libpois0n.a PoisonJB/
 	make -C PoisonJB
 
 	

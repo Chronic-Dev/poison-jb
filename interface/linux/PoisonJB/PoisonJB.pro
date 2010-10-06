@@ -9,7 +9,8 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        poisonmain.cpp
+        poisonmain.cpp \
+        libpois0n.a
 
 HEADERS  += poisonmain.h
 
