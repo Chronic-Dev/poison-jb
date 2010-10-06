@@ -5,7 +5,7 @@
 #include "../../../injector/libpois0n.h"
 
 Ui::PoisonMain *gui;
-void update_progress(double progress);
+void update_progress(double progress, void *gui);
 
 PoisonMain::PoisonMain(QWidget *parent) :
     QMainWindow(parent),
@@ -117,13 +117,14 @@ void PoisonMain::Jailbreak() {
         return;
     }
     pois0n_init();
-    pois0n_set_callback(&update_progress, NULL);
+    pois0n_set_callback(&update_progress, ui);
     ui->cmdJailbreak->setText("Exploiting...");
     pois0n_inject();
     pois0n_exit();
     ui->cmdJailbreak->setText("Done! Please wait.");
 }
 
-void update_progress(double progress) {
+void update_progress(double progress, void *ui) {
     gui->progressBar->setValue(progress);
+    ui = ui;
 }
