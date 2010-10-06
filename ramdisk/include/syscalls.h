@@ -28,6 +28,9 @@ int mkdir(const char* path, mode_t mode);
 int mount(const char* filesystemtype, const char* target, int mountflags, void *source);
 int unmount(const char* dir, int flags);
 int access(const char *path, int mode);
+int pread(int fildes, void *buf, int nbyte, int offset);
+int pwrite(int fildes, const void *buf, int nbyte, int offset);
+
 
 /* needed for tar */
 int symlink(const char *path1, const char *path2);
