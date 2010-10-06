@@ -65,7 +65,6 @@ struct hfs_mount_args {
 #define HFSFSMNT_NOXONFILES	0x1	/* disable execute permissions for files */
 #define HFSFSMNT_WRAPPER	0x2	/* mount HFS wrapper (if it exists) */
 #define HFSFSMNT_EXTENDED_ARGS  0x4     /* indicates new fields after "flags" are valid */
-//#define MNT_ROOTFS			0x4000      /* identifies the root filesystem */
 
 /*
  * Sysctl values for HFS

@@ -52,7 +52,7 @@ int patch_cmd(int argc, CmdArg* argv) {
 int patch_kernel(unsigned char* address, unsigned int size) {
 	unsigned int target = 0;
 	/*
-	CSED: 00 00 00 00 01 00 00 00  80 00 00 00 00 00 00 00 => 01 00 00 00 01 00 00 00  80 00 00 00 00 00 00 00
+	CSED: 00 00 00 00 01 00 00 00 80 00 00 00 00 00 00 00 => 01 00 00 00 01 00 00 00  80 00 00 00 00 00 00 00
 	AMFI: 00 B1 00 24 20 46 90 BD => 00 B1 01 24 20 46 90 BD
 	PROD: 00 23 00 94 01 95 02 95 + 10 => 00 20 00 20
 	ECID: 02 90 03 90 1D 49 50 46 + 12 => 00 20 00 20
@@ -62,6 +62,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	      28 B9 00 98 FF F7 03 FF + 8 => 00 20 00 20
 	????: 1F 4C 1E E0 28 46 51 46 + 8 => 01 20 01 20
 	SHA1: A0 47 08 B1 28 46 30 E0 + 8 => 00 20 00 20
+	TFP0: 85 68 00 23 02 93 01 93 + 8 => 0B E0 C0 46
 	*/
 	unsigned int i = 0;
 	enter_critical_section();
@@ -116,6 +117,13 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 			memcpy(&address[target], "\x00\x20\x00\x20", 4);
 			continue;
 		}
+		if(!memcmp(&address[i], "\x85\x68\x00\x23\x02\x93\x01\x93", 8)) {
+			target = i + 8;
+			printf("Found kernel patch 9 at %p\n", &address[target]);
+			memcpy(&address[target], "\x0B\xE0\xC0\x46", 4);
+			continue;
+		}
+
 		//task_yield();
 	}
 	exit_critical_section();

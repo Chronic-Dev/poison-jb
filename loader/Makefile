@@ -2,7 +2,7 @@ UNAME := $(shell uname -s)
 
 ifeq ($(UNAME),Darwin)
 GO_EASY_ON_ME=1
-SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
+#SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
 include theos/makefiles/common.mk
 
 APPLICATION_NAME = Loader
@@ -17,23 +17,17 @@ include $(FW_MAKEDIR)/tool.mk
 after-Loader-stage::
 	$(FAKEROOT) chmod 6755 $(FW_SHARED_BUNDLE_RESOURCE_PATH)/Loader
 
-after-Bootstrap-stage::
+copy:: stage
 	rm -rf ../ramdisk/files/Loader.app
-	cp -R _/Applications/Loader.app ../ramdisk/files/Loader.app
+	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
 	
 real-clean:
 	rm -rf _
 	rm -rf .obj
 else
-all:
+all clean:
 	@echo "Skipping loader on windows"
 	
-stage:
-	@echo "Nothing to do"
-	
-clean:
-	@echo "Skipping loader on windows"
-	
-real-clean:
+stage copy real-clean:
 	@echo "Nothing to do"
 endif

@@ -1,0 +1,3 @@
+id ICON "icon.ico"
+// back BITMAP "background.bmp"
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "wingui.exe.manifest"

@@ -12,5 +12,5 @@
 }
 
 - (void)setDownloadResponse:(NSURLResponse *)aDownloadResponse;
-
+- (void)suicide;
 @end
