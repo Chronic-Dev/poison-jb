@@ -1,18 +1,15 @@
+CC = gcc
 UNAME := $(shell uname -s)
 
-ifeq ($(UNAME),Darwin)
-	OS := macosx
-else
-	OS := linux
-endif
+CFLAGS = -O3 -DCURL_STATICLIB -DWINVER=0x0501 -std=gnu99 -m32 -mwindows
+LDFLAGS =
+ADDOBJ = ../../injector/libpois0n.a /mingw/lib/libcurl.a /mingw/lib/libwsock32.a /mingw/lib/libwldap32.a /mingw/lib/libz.a /mingw/lib/libsetupapi.a /mingw/lib/libcomctl32.a
 
 all: wingui.c wingui.rc
 	echo "Building Win32 Interface"
-	/opt/local/bin/i386-mingw32-windres wingui.rc -O coff -o wingui.res
-	/opt/local/bin/i386-mingw32-gcc -m32 "-DWINVER=0x0501" -I./include -std=gnu99 -o wingui.exe wingui.res wingui.c  -L./lib -I/opt/local/i386-mingw32/include -L/opt/local/i386-mingw32/lib -lwininet -lgdi32 -mwindows -lcomctl32 -lpois0n /mingw/lib/libcurl.a /mingw/lib/libwsock32.a /mingw/lib/libwldap32.a /mingw/lib/libpenwin32.a /mingw/lib/libz.a /mingw/lib/libsetupapi.a /mingw/lib/libssl32.a /mingw/lib/libcrypto.a /mingw/lib/libssh2.a /mingw/lib/libzdll.a /mingw/lib/libidn.a
+	windres wingui.rc -O coff -o wingui.res
+	$(CC) $(CFLAGS) $(LDFLAGS) -o wingui.exe wingui.c wingui.res $(ADDOBJ)
 	
-
-
 clean:
 	echo "Cleaning Win32 Interface"
-
+	rm -rf *.o wingui.exe
