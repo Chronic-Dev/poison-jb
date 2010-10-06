@@ -76,7 +76,7 @@ int install_files() {
 
 	puts("Installing .launchd_use_gmalloc\n");
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	//ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
+	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
 #endif
 

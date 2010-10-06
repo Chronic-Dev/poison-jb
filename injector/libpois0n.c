@@ -530,8 +530,8 @@ int boot_tethered() {
 	irecv_send_command(client, "go");
 
 	//irecv_setenv(client, "boot-args", "0");
-	//irecv_setenv(client, "auto-boot", "true");
-	//irecv_saveenv(client);
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
 
 	irecv_send_command(client, "go fsboot");
 

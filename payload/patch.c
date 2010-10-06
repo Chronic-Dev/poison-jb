@@ -23,7 +23,9 @@ const unsigned char* patch_cert = "\x00\x20\x00\x20";
 const unsigned char patch_ecid_seq[] = "\x02\x94\x03\x94\x01\x90\x28\x46";
 const unsigned char patch_ecid[] = "\x00\x20\x00\x20";
 
-const unsigned char patch_command_seq[] = "\x80\xb5\x00\xaf\x82\xb0\x4f\xf0";
+const unsigned char patch_command_seq1[] = "\x80\xb5\x00\xaf\x82\xb0\x4f\xf0";
+const unsigned char patch_command_seq2[] = "\x90\xB5\x01\xAF\x84\xB0";
+
 const unsigned char patch_command[] = "\x00\x4b\x18\x47\x00\x00\x00\x41";
 
 int patch_init() {
@@ -138,10 +140,13 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found ECID patch offset at %p\n", ecid_offset);
 	memcpy(ecid_offset, patch_ecid, 4);
 
-	unsigned char* command_offset = patch_find(address, size, patch_command_seq, 8);
+	unsigned char* command_offset = patch_find(address, size, patch_command_seq1, 8);
 	if(command_offset == NULL) {
-		printf("Unable to find command patch offset\n");
-		return -1;
+		command_offset = patch_find(address, size, patch_command_seq2, 6);
+		if(command_offset == NULL) {
+			printf("Unable to find command patch offset\n");
+			return -1;
+		}
 	}
 	printf("Found command patch offset at %p\n", command_offset);
 	memcpy(command_offset, patch_command, 8);
