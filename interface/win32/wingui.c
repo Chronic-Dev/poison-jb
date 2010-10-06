@@ -58,6 +58,21 @@ LPCSTR dfutext[] = {
 
 #define DFU_TIMER_ID 1337
 
+BOOL CenterWindow(HWND hwnd) {
+    RECT rect;
+    int width, height;      
+    int screenwidth, screenheight;
+    int x, y;
+    GetWindowRect(hwnd, &rect);
+    width  = rect.right  - rect.left;
+    height = rect.bottom - rect.top;
+    screenwidth  = GetSystemMetrics(SM_CXSCREEN);
+    screenheight = GetSystemMetrics(SM_CYSCREEN);
+	x = (screenwidth - width) >> 1;
+	y = (screenheight - height) >> 1;
+    MoveWindow(hwnd, x, y, width, height, FALSE);
+    return TRUE;
+}
 
 void BoldifyLabel(HWND label, BOOL bold) {
 	SendMessage(label, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
@@ -270,6 +285,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 
 
     // Show the window
+	CenterWindow(window);
     ShowWindow(window, nFunsterStil);
 
 	UpdateJailbreakStatus();
