@@ -9,11 +9,11 @@ ifeq ($(UNAME),Darwin)
 	LDFLAGS = -L/opt/local/lib -L/usr/local/lib -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit
 else
 	ifeq ($(UNAME),MINGW32_NT-5.1)
-		CFLAGS = -g -I./include -I./resources -DCURL_STATICLIB
+		CFLAGS = -O3 -I./resources -DCURL_STATICLIB
 		LDFLAGS = -lcurl -lz
 		ADDOBJ = /mingw/lib/libcurl.a /mingw/lib/libwsock32.a /mingw/lib/libwldap32.a /mingw/lib/libpenwin32.a /mingw/lib/libz.a /mingw/lib/libsetupapi.a
 	else
-		CFLAGS = -g -I./include -I./resources
+		CFLAGS = -O3 -I./resources
 		LDFLAGS = -lusb-1.0 -lcurl -lz
 	endif
 endif
