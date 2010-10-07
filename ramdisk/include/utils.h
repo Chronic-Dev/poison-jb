@@ -8,6 +8,7 @@ extern int stderr;
 
 #define puts _puts
 #define putc _putc
+#define memset _memset
 
 static inline void flipEndian(unsigned char* x, int length) {
 	int i;
@@ -22,8 +23,8 @@ static inline void flipEndian(unsigned char* x, int length) {
 
 int strlen(const char* s);
 void puti(unsigned int integer);
-void _putc(const char c);
-void _puts(const char* msg);
+void putc(const char c);
+void puts(const char* msg);
 void sleep(unsigned int seconds);
 int cp(const char* src, const char* dest);
 int hfs_mount(const char* device, const char* mountdir, int options);

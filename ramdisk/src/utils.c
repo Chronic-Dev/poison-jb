@@ -46,7 +46,7 @@ void sleep(unsigned int seconds) {
 	for(i = seconds * 10000000; i > 0; i--) {}
 }
 
-void _puts(const char* msg) {
+void puts(const char* msg) {
 	while((*msg) != '\0') {
 		write(1, msg, 1);
 		msg++;
@@ -54,7 +54,7 @@ void _puts(const char* msg) {
 	sync();
 }
 
-void _putc(const char c) {
+void putc(const char c) {
 	char byte[2];
 	byte[0] = c;
 	byte[1] = '\0';
@@ -111,11 +111,11 @@ int hfs_mount(const char* device, const char* mountdir, int options) {
 
 void system(char* argv[], char *env[]) {
 	if(vfork() != 0) {
-		while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
+		//while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
 			sleep(1);
-		}
+		//}
 	} else {
-		execve(argv[0], argv, env);
+		//execve(argv[0], argv, env);
 	}
 }
 
