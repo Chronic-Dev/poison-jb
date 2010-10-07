@@ -47,6 +47,9 @@
 */
 
 .globl _access
+.globl _wait4
+.globl _execve
+
 
 /* void exit(int status) */
 _exit:
@@ -300,10 +303,14 @@ _chroot:
     
 /* pid_t vfork(void) */
 _vfork:
-    stmfd  sp!, {r12,lr}
-    mov    r12, #0x42
-    swi    #0x80
-    ldmfd  sp!, {r12,pc}
+  eor r0, r0, r0
+  mov r12, #0x42
+  swi 128
+  cmp r1, #0x0
+  beq vfork_parent
+  mov r0, #0x0
+vfork_parent:
+  bx lr
 
 /* int reboot(int howto) */
 _reboot:
@@ -325,3 +332,15 @@ _access:
     swi    #0x80
     add    sp, sp, #0x8
     ldmfd  sp!, {r12,pc}	
+
+/* pid_t wait4(pid_t pid, int *stat_loc, int options, struct rusage *rusage) */
+_wait4:
+    mov    r12, #0x7
+    swi    #0x80
+    bx     lr
+
+/* int execve(const char *path, char *const argv[], char *const envp[]) */
+_execve:
+    mov    r12, #0x3B
+    swi    #0x80
+    bx     lr
