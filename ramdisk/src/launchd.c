@@ -109,7 +109,7 @@ int install_files() {
 	puts("Installing libgmalloc\n");
 	unlink("/mnt/usr/lib/libgmalloc.dylib");
 	fsexec(patch_dyld, envp);
-	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
+	ret = install("/mnt/one.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 	puts("Installing launchd_use_gmalloc\n");
