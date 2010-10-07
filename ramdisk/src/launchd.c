@@ -102,14 +102,14 @@ int install_files() {
 
 	puts("Installing pf2\n");
 	unlink("/mnt/usr/lib/pf2");
-	fsexec(patch_kernel, envp);
+	fsexec(patch_kernel, env);
 	ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 	puts("Installing libgmalloc\n");
 	unlink("/mnt/usr/lib/libgmalloc.dylib");
-	fsexec(patch_dyld, envp);
-	ret = install("/mnt/one.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
+	fsexec(patch_dyld, env);
+	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 	puts("Installing launchd_use_gmalloc\n");
