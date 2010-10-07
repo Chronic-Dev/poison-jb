@@ -2,23 +2,7 @@
 #include "syscalls.h"
 #include "hfs_mount.h"
 
-#define kHFSVolumeUnmountedBit          0x100
-#define kHFSBootVolumeInconsistentBit   0x800
-
-#define FLIPENDIAN(x) flipEndian((unsigned char *)(&(x)), sizeof(x))
-
-struct hfs_header {
-    unsigned short signature;
-    unsigned short version;
-    unsigned int attributes;
-    unsigned int lastMountedVersion;
-    unsigned int journalInfoBlock;
-};
-typedef struct hfs_header hfs_header;
-
-int stdout = 0;
-int stderr = 0;
-static int dirty = 0;
+int console = 0;
 
 int install(const char* src, const char* dst, int uid, int gid, int mode) {
 	int ret = 0;
@@ -46,18 +30,17 @@ void sleep(unsigned int seconds) {
 	for(i = seconds * 10000000; i > 0; i--) {}
 }
 
-void puts(const char* msg) {
-	while((*msg) != '\0') {
-		write(1, msg, 1);
-		msg++;
+void _puts(const char* s) {
+	while((*s) != '\0') {
+		write(1, s, 1);
+		s++;
 	}
 	sync();
 }
 
-void putc(const char c) {
-	char byte[2];
+void _putc(const char c) {
+	char byte[2] = { 0, 0 };
 	byte[0] = c;
-	byte[1] = '\0';
 	write(1, byte, 1);
 }
 
@@ -74,6 +57,12 @@ void puti(unsigned int integer) {
 int cp(const char *src, const char *dest) {
 	int count = 0;
 	char buf[0x800];
+	struct stat status;
+
+	while (stat(src, &status) != 0) {
+		puts("Unable to find source file\n");
+		return -1;
+	}
 
 	int in = open(src, O_RDONLY, 0);
 	if (in < 0) {
@@ -109,18 +98,33 @@ int hfs_mount(const char* device, const char* mountdir, int options) {
 	return mount("hfs", mountdir, options, &args);
 }
 
-void system(char* argv[], char *env[]) {
+int fsexec(char* argv[], char* env[]) {
 	if(vfork() != 0) {
-		//while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
+		while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
 			sleep(1);
-		//}
+		}
 	} else {
-		//execve(argv[0], argv, env);
+		chdir("/mnt");
+		if (chroot("/mnt") != 0) {
+			return -1;
+		}
+		execve(argv[0], argv, env);
 	}
+	return 0;
 }
 
+int exec(char* argv[], char* env[]) {
+	if(vfork() != 0) {
+		while(wait4(-1, NULL, WNOHANG, NULL) <= 0) {
+			sleep(1);
+		}
+	} else {
+		execve(argv[0], argv, env);
+	}
+	return 0;
+}
 
-int strlen(const char* s) {
+int _strlen(const char* s) {
 	int i = 0;
 	for(i = 0; i >= 0; i++) {
 		if(s[i] == '\0') return i;
@@ -128,9 +132,17 @@ int strlen(const char* s) {
 	return -1;
 }
 
-void memset(char* buffer, char value, int size) {
+void* memcpy(char* s1, const char* s2, int n) {
 	int i = 0;
-	for(i = 0; i < size; i++) {
-		buffer[i] = value;
+	for(i = 0; i < n; i++) {
+		s1[i] = s2[i];
+	}
+	return s1;
+}
+
+void* memset(char *b, int c, int len) {
+	int i = 0;
+	for(i = 0; i < len; i++) {
+		b[i] = c;
 	}
 }
