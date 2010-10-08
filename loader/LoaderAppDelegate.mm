@@ -1,6 +1,6 @@
 #import "LoaderAppDelegate.h"
 
-//#include <notify.h>
+#include <notify.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -29,16 +29,20 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
 	system("su mobile -c uicache");
+	notify_post("com.apple.mobile.application_installed");
 	sleep(2);
 	system("killall SpringBoard");
+	exit(1);
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 	if([[[UIDevice currentDevice] systemVersion] intValue] >= 4) {
 		// no backgrounding for you!
 		system("su mobile -c uicache");
+		notify_post("com.apple.mobile.application_installed");
 		sleep(2);
 		system("killall SpringBoard");
+		exit(1);
 	}
 }
 
