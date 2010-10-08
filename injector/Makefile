@@ -15,6 +15,7 @@ else
 	else
 		CFLAGS = -O3 -I./resources
 		LDFLAGS = -lusb-1.0 -lcurl -lz
+		ADDOBJ = 
 	endif
 endif
 

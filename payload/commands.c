@@ -25,6 +25,7 @@
 #include "patch.h"
 #include "common.h"
 #include "commands.h"
+#include "functions.h"
 #include "coprocessor.h"
 
 int gCmdCount = 0;
@@ -36,7 +37,7 @@ void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
 int(*fsboot)(void) = NULL;
 int(*jump_to)(int flags, void* addr, int phymem) = SELF_JUMP_TO;
-int(*cmd_ramdisk)(int argc, CmdArg* argv) = SELF_CMD_RAMDISK;
+int(*load_ramdisk)(void) = SELF_CMD_RAMDISK;
 
 void hooked(int flags, void* addr, int phymem);
 
@@ -66,10 +67,15 @@ int cmd_init() {
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
 	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
+	cmd_add("test", &cmd_test, "test finding functions offsets");
 
-#ifdef TARGET_CMD_RAMDISK
-	cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+#ifndef TARGET_CMD_RAMDISK
+	load_ramdisk = find_function("cmd_ramdisk");
 #endif
+
+	if(load_ramdisk) {
+		cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+	}
 
 	return 0;
 }
@@ -270,6 +276,19 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 	return 0;
 }
 
+int cmd_test(int argc, CmdArg* argv) {
+	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd"));
+	printf("free: 0x%08x\n", find_function("free"));
+	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk"));
+	printf("fs_mount: 0x%08x\n", find_function("fs_mount"));
+	return 0;
+}
+
+int cmd_ramdisk(int argc, CmdArg* argv) {
+	load_ramdisk();
+	return 0;
+}
+
 void clear_icache() {
     __asm__("mov r0, #0");
     __asm__("mcr p15, 0, r0, c7, c5, 0");
@@ -278,7 +297,7 @@ void clear_icache() {
     __asm__("nop");
     __asm__("nop");
     __asm__("nop");
-}
+};
 
 void hooked(int flags, void* addr, int phymem) {
 	// patch kernel

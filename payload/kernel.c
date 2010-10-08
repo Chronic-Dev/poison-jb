@@ -40,6 +40,7 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		puts("usage: kernel <load/patch/boot> [options]\n");
 		puts("  load <address> <size>         \t\tload filesystem kernel to address\n");
 		puts("  patch <address> <size>        \t\tpatches kernel at address in memory\n");
+		puts("  bootargs <string>             \t\treplace current bootargs with another\n");
 		puts("  boot                          \t\tboot a loaded kernel\n");
 		return 0;
 	}
@@ -73,10 +74,31 @@ int kernel_cmd(int argc, CmdArg* argv) {
 		printf("patching kernel...\n");
 		patch_kernel(address, size);
 	}
+	else if(!strcmp(action, "bootargs")) {
+		kernel_bootargs(argc, argv);
+	}
 	else if(!strcmp(action, "boot")) {
 		if(gKernelAddr) {
 			printf("booting kernel...\n");
 			jump_to(3, gKernelAddr, *gKernelPhyMem);
+		}
+	}
+	return 0;
+}
+
+int kernel_bootargs(int argc, CmdArg* argv) {
+	int i = 0;
+	gBootArgs = find_string("rd=md0");
+	if(gBootArgs != 0) {
+		int size = 0x20; //strlen(gBootArgs);
+		for(i = 2; i < argc; i++) {
+			if(i == 2) {
+				strncpy(gBootArgs, "", size);
+			}
+			if(i > 2) {
+				strncat(gBootArgs, " ", size);
+			}
+			strncat(gBootArgs, argv[i].string, size);
 		}
 	}
 	return 0;
