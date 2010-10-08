@@ -539,7 +539,7 @@ int boot_ramdisk() {
 	}
 */
 
-	//irecv_send_command(client, "go fsboot");
+	irecv_send_command(client, "go fsboot");
 	return 0;
 }
 
