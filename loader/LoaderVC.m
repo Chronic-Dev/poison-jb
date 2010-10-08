@@ -221,6 +221,8 @@
 			[self suicide];
 		}
 	}
+	
+	[[[UIApplication sharedApplication] delegate] setReboot:YES];
 }
 
 - (void)extractPackage {
