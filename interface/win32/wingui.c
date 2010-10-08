@@ -12,31 +12,18 @@
 #define PBS_MARQUEE  0x08 
 #define PBM_SETMARQUEE WM_USER + 10 
 
+#define DFU_PHASE_NONE 0
+#define DFU_PHASE_READY 1
+#define DFU_PHASE_POWER 2
+#define DFU_PHASE_BOTH 3
+#define DFU_PHASE_HOME 4
 
-LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
-char *szClassName = TEXT("WindowsApp");
+#define DFU_TIMER_ID 1337
 
-BOOL MessageLoop(BOOL blocking) {
-    MSG messages;
-
-    if (!(blocking ? 
-        GetMessage(&messages, NULL, 0, 0) :
-        PeekMessage(&messages, NULL, 0, 0, PM_REMOVE)
-    ))
-        return FALSE;
-
-    TranslateMessage(&messages);
-    DispatchMessage(&messages);
-
-    return TRUE;
-}
-
-
-			
+HANDLE hJailbreakThread = NULL;			
 HWND window = NULL;
 HWND nButton = NULL, title = NULL, group = NULL, copyright = NULL, progress = NULL, subtitle = NULL;
 HWND reset = NULL, seconds = NULL, counter = NULL, first = NULL, second = NULL, third = NULL, fourth = NULL, enter = NULL;
-
 
 BOOL jbcomplete = FALSE;
 int dfutimer = 0;
@@ -50,14 +37,71 @@ LPCSTR dfutext[] = {
 	"Release sleep button; continue holding home."
 };
 
-#define DFU_PHASE_NONE 0
-#define DFU_PHASE_READY 1
-#define DFU_PHASE_POWER 2
-#define DFU_PHASE_BOTH 3
-#define DFU_PHASE_HOME 4
+LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
+char *szClassName = TEXT("WindowsApp");
 
-#define DFU_TIMER_ID 1337
+// Checks whether given thread is alive.
+BOOL IsThreadAlive(const HANDLE hThread) {
+	// Read thread's exit code.
+	DWORD dwExitCode = 0;
+	if (GetExitCodeThread(hThread, &dwExitCode)) {
+		// if return code is STILL_ACTIVE,
+		// then thread is live.
+		return (dwExitCode == STILL_ACTIVE);
+	}
 
+	// Check failed.
+	return FALSE;
+}
+
+BOOL MessageLoop(BOOL blocking) {
+    MSG messages;
+
+    if (!(blocking ? 
+        GetMessage(&messages, NULL, 0, 0) :
+        PeekMessage(&messages, NULL, 0, 0, PM_REMOVE)
+    )) return FALSE;
+
+	if (hJailbreakThread != NULL && !IsThreadAlive(hJailbreakThread)) {
+	    DWORD dwExitCode = 0;
+    	if (GetExitCodeThread(hThread, &dwExitCode) && dwExitCode == 0) {
+		    SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Complete!"));
+		    SendMessage(progress, PBM_SETPOS, 100, 0);
+		    EnableWindow(progress, FALSE);
+		    jbcomplete = TRUE;
+		    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit"));
+		    EnableWindow(enter, TRUE);
+	    } else {
+	        SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Failed :("));
+    	    SendMessage(progress, PBM_SETPOS, 100, 0);
+            EnableWindow(progress, FALSE);
+            jbcomplete = TRUE;
+    	    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit (Restart to Retry)"));
+    	    EnableWindow(enter, TRUE);
+        }
+	}
+	
+    TranslateMessage(&messages);
+    DispatchMessage(&messages);
+
+    return TRUE;
+}
+
+BOOL CenterWindow(HWND hwnd) {
+    RECT rect;
+    int width, height;      
+    int screenwidth, screenheight;
+    int x, y;
+    GetWindowRect(hwnd, &rect);
+    width  = rect.right  - rect.left;
+    height = rect.bottom - rect.top;
+    screenwidth  = GetSystemMetrics(SM_CXSCREEN);
+    screenheight = GetSystemMetrics(SM_CYSCREEN);
+	x = (screenwidth - width) >> 1;
+	y = (screenheight - height) >> 1;
+    MoveWindow(hwnd, x, y, width, height, FALSE);
+    return TRUE;
+}
 
 void BoldifyLabel(HWND label, BOOL bold) {
 	SendMessage(label, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
@@ -145,52 +189,18 @@ BOOL UpdateJailbreakStatus() {
 }
 
 void PerformJailbreak() {
+	DWORD dwGenericThread;
 	EnableWindow(progress, TRUE);
 	EnableWindow(nButton, FALSE);
 	
 	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 	SendMessage(enter, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
-	
-	int success = pois0n_inject();
-	
-	/*SendMessage(nButton, WM_SETTEXT, 0, TEXT("Performing exploit..."));
-	
-	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Uploading data..."));
-	SendMessage(progress, PBM_SETPOS, 20, 0);
 
-	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Waiting for reboot..."));
-	SendMessage(progress, PBM_SETPOS, 40, 0);
-
-	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Uploading ramdisk..."));
-	SendMessage(progress, PBM_SETPOS, 60, 0);
-
-	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
-	SendMessage(progress, PBM_SETPOS, 80, 0);*/
-	
-	if (success == 0) {
-	    SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Complete!"));
-	    SendMessage(progress, PBM_SETPOS, 100, 0);
-	
-	    EnableWindow(progress, FALSE);
-	    jbcomplete = TRUE;
-	    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit"));
-	    EnableWindow(enter, TRUE);
-    } else {
-        SendMessage(nButton, WM_SETTEXT, 0, TEXT("Unable to Jailbreak"));
-	    SendMessage(progress, PBM_SETPOS, 100, 0);
-        
-        EnableWindow(progress, FALSE);
-        jbcomplete = TRUE;
-	    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit (Restart to Retry)"));
-	    EnableWindow(enter, TRUE);
-    }
+	hJailbreakThread = CreateThread(NULL, 0, pois0n_inject, NULL, 0, &dwGenericThread);
 }
 
 void ProgressCallback(double percent) {
     SendMessage(progress, PBM_SETPOS, (int) percent, 0);
-    
-    // Actually, like, show the update.
-    MessageLoop(TRUE);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nFunsterStil)
@@ -228,8 +238,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 	
 	// Progress bar
 	progress = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE | PBS_SMOOTH, 165, 206, 295, 23, window, NULL, NULL, NULL);
+	SendMessage(progress, PBM_SETPOS, 0, 0);
 	EnableWindow(progress, FALSE);
-
+	
 	// Title
 	title = CreateWindowEx(0, TEXT("STATIC"), TEXT("greenpoison"), WS_VISIBLE | WS_CHILD | SS_CENTER, 111, 2, 257, 44, window, NULL, NULL, NULL);
     SendMessage(title, WM_SETFONT, (WPARAM) CreateFont(/*the*/42/*answer*/, 0, 0, 0, FW_EXTRALIGHT, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
@@ -280,6 +291,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 
 
     // Show the window
+	CenterWindow(window);
     ShowWindow(window, nFunsterStil);
 
 	UpdateJailbreakStatus();

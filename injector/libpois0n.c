@@ -157,7 +157,7 @@ int upload_firmware_image(const char* type) {
 	}
 
 	debug("Uploading %s to device\n", image);
-	error = irecv_send_file(client, image, 0);
+	error = irecv_send_file(client, image, 1);
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to upload firmware image\n");
 		debug("%s\n", irecv_strerror(error));
@@ -458,18 +458,38 @@ int upload_ibec_payload() {
 int boot_ramdisk() {
 	irecv_error_t error = 0;
 
-	debug("Preparing to upload DeviceTree\n");
-	if(upload_devicetree() < 0) {
-		error("Unable to execute iBSS payload\n");
+	irecv_setenv(client, "auto-boot", "false");
+	irecv_saveenv(client);
+
+	debug("Loading and patching iBoot\n");
+	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	irecv_send_command(client, "go patch 0x41000000 0x38000");
+	irecv_send_command(client, "go jump 0x41000040");
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 10);
+	if (client == NULL) {
+		error("Unable to boot the device tethered\n");
 		return -1;
 	}
 
-	debug("Executing DeviceTree\n");
-	error = irecv_send_command(client, "devicetree");
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
+
+	// Warning this payload will be broken since we can assume
+	//   we have the correct offset, only use commands that don't
+	//   need specific offsets!!!!
+	if(upload_firmware_payload("iBoot") < 0) {
+		error("Unable to boot the device tethered\n");
 		return -1;
 	}
+
+	debug("Initializing greenpois0n in iBoot\n");
+	irecv_send_command(client, "go");
+
+	//irecv_setenv(client, "boot-args", "0");
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
 
 	debug("Preparing to upload ramdisk\n");
 	if(upload_ramdisk() < 0) {
@@ -478,25 +498,34 @@ int boot_ramdisk() {
 	}
 
 	debug("Executing ramdisk\n");
-	error = irecv_send_command(client, "ramdisk");
+	error = irecv_send_command(client, "go ramdisk");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
-	debug("Preparing to upload kernelcache\n");
-	if(upload_kernelcache() < 0) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-
-	debug("Preping and patching kernelcache\n");
-	error = irecv_send_command(client, "go kernel load 0x41000000 0xF00000");
+	debug("Decrypting ramdisk\n");
+	error = irecv_send_command(client, "go image decrypt 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
+	debug("Moving ramdisk\n");
+	error = irecv_send_command(client, "go memory copy 0x41000040 0x44000000 0x100000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Setting kernel bootargs\n");
+	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	irecv_send_command(client, "go fsboot");
 	return 0;
 }
 
@@ -533,8 +562,8 @@ int boot_tethered() {
 	irecv_send_command(client, "go");
 
 	//irecv_setenv(client, "boot-args", "0");
-	//irecv_setenv(client, "auto-boot", "true");
-	//irecv_saveenv(client);
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
 
 	irecv_send_command(client, "go fsboot");
 
@@ -662,11 +691,13 @@ int execute_ibss_payload() {
 
 void pois0n_init() {
 	irecv_init();
-	//irecv_set_debug_level(libpois0n_debug);
+	irecv_set_debug_level(libpois0n_debug);
 	debug("Initializing libpois0n\n");
-	#ifndef WIN32
+	#ifdef __APPLE__
 		system("killall -9 iTunesHelper");
-	#else
+	#endif
+
+	#ifdef WIN32
 		system("TASKKILL /F /IM iTunes.exe > NUL");
 		system("TASKKILL /F /IM iTunesHelper.exe > NUL");
 	#endif
@@ -747,8 +778,8 @@ int pois0n_inject() {
 	// Send iBSS
 	debug("Preparing to upload iBSS\n");
 	if(upload_ibss() < 0) {
-		error("Unable to upload iBSS\n");
-		return -1;
+		//error("Unable to upload iBSS\n");
+		//return -1;
 	}
 
 	debug("Reconnecting to device\n");
@@ -769,45 +800,6 @@ int pois0n_inject() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-
-	//////////////////////////////////////
-	// Send iBEC
-	/*debug("Disconnecting from device\n");
-	debug("Preparing to upload iBEC payload\n");
-	if(upload_ibec_payload() < 0) {
-		error("Unable to upload iBEC payload\n");
-		quit();
-		return -1;
-	}
-
-	debug("Executing iBEC payload\n");
-	if(execute_ibec_payload() < 0) {
-		error("Unable to exiBSiBSSSecute iBEC payload\n");
-		quit();
-		return -1;
-	}
-	*/
-
-	//////////////////////////////////////
-	// Send ramdisk
-	/*
-	debug("Preparing to upload ramdisk\n");
-	if(upload_ramdisk() < 0) {
-		error("Unable to upload ramdisk\n");
-		quit();
-		return -1;
-	}
-
-	debug("Executing ramdisk\n");
-	if(execute_ramdisk() < 0) {
-		error("Unable to execute ramdisk\n");
-		quit();
-		return -1;
-	}
-	*/
-
-	//////////////////////////////////////
-	// End
 
 	return 0;
 }

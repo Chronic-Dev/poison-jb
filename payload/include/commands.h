@@ -85,7 +85,7 @@ extern Bool gCmdHasInit;
 extern CmdInfo** gCmdCommands;
 
 extern int(*jump_to)(int flags, void* addr, int phymem);
-extern int(*cmd_ramdisk)(int argc, CmdArg* argv);
+extern int(*load_ramdisk)(void);
 
 int cmd_init();
 void cmd_add(char* name, CmdFunction handler, char* description);
@@ -98,5 +98,7 @@ int cmd_mw(int argc, CmdArg* argv);
 int cmd_md(int argc, CmdArg* argv);
 int cmd_call(int argc, CmdArg* argv);
 int cmd_fsboot(int argc, CmdArg* argv);
+int cmd_ramdisk(int argc, CmdArg* argv);
+int cmd_test(int argc, CmdArg* argv);
 
 #endif

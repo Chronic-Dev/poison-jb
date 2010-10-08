@@ -2,7 +2,6 @@ UNAME := $(shell uname -s)
 
 ifeq ($(UNAME),Darwin)
 GO_EASY_ON_ME=1
-#SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
 include theos/makefiles/common.mk
 
 APPLICATION_NAME = Loader

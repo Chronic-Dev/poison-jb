@@ -162,6 +162,10 @@ void update_progress(double progress) {
         [[greenpois0nLogo animator] setAlphaValue:1.0];
         [[secondsLabel animator] setAlphaValue:0.0];
         [[secondsTextLabel animator] setAlphaValue:0.0];
+        [[firstLabel animator] setEnabled:NO];
+        [[secondLabel animator] setEnabled:NO];
+        [[thirdLabel animator] setEnabled:NO];
+        [[fourthLabel animator] setEnabled:NO];
         [resetButton setEnabled:NO];
         [progressIndicator setIndeterminate:YES];
         [progressIndicator startAnimation:nil];
@@ -207,13 +211,13 @@ int main(int argc, char *argv[]) {
 	labelIfy(copyrightLabel);
 	[poisonJBLabel setStringValue:appName];
 	[poisonJBLabel setFont:[NSFont fontWithName:@"Helvetica Neue Light" size:32.0]];
-	[instructionLabel setStringValue:@"Please turn off your device and connect it to begin."];
+	[instructionLabel setStringValue:@"Press Jailbreak and follow the directions below."];
 	[instructionLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:13.0]];
 	[secondsLabel setStringValue:@"0"];
 	[secondsLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:48.0]];
 	[secondsTextLabel setStringValue:@"Seconds"];
 	[secondsTextLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[firstLabel setStringValue:@"Get ready for DFU."];
+	[firstLabel setStringValue:@"Get ready to start!"];
 	[firstLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 	[secondLabel setStringValue:@"Press and hold sleep button."];
 	[secondLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];

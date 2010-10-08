@@ -25,6 +25,7 @@
 #include "patch.h"
 #include "common.h"
 #include "commands.h"
+#include "functions.h"
 #include "coprocessor.h"
 
 int gCmdCount = 0;
@@ -36,7 +37,7 @@ void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
 int(*fsboot)(void) = NULL;
 int(*jump_to)(int flags, void* addr, int phymem) = SELF_JUMP_TO;
-int(*cmd_ramdisk)(int argc, CmdArg* argv) = SELF_CMD_RAMDISK;
+int(*load_ramdisk)(void) = SELF_CMD_RAMDISK;
 
 void hooked(int flags, void* addr, int phymem);
 
@@ -66,10 +67,15 @@ int cmd_init() {
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
 	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
+	cmd_add("test", &cmd_test, "test finding functions offsets");
 
-#ifdef TARGET_CMD_RAMDISK
-	cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+#ifndef TARGET_CMD_RAMDISK
+	load_ramdisk = find_function("cmd_ramdisk");
 #endif
+
+	if(load_ramdisk) {
+		cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+	}
 
 	return 0;
 }
@@ -250,24 +256,36 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 
 	// search for jump_to function               80  B5  00  AF  04  46  15  46
 	jump_to = patch_find(0x5ff00000, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
-	printf("Found jump_to function at %p\n", jump_to);
+	//printf("Found jump_to function at %p\n", jump_to);
 
 	memcpy(jump_to, "\x00\x4b\x98\x47", 4);
 	memcpy(jump_to+4, &hooker, 4);
-	printf("Hooked jump_to function to call 0x%08x\n", hooker);
-    //                                          F0  B5  03  AF  81  B0
+	//printf("Hooked jump_to function to call 0x%08x\n", hooker);
 	if(strstr((char*) 0x5ff00200, "k66ap")) {
 		fsboot = patch_find(0x5ff00000, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
 	} else {
 		fsboot = patch_find(0x5ff00000, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
 	}
-	printf("Found fsboot function at %p\n", fsboot);
+	//printf("Found fsboot function at %p\n", fsboot);
 
 	//call address
 	fsboot++;
-	printf("Calling %p\n", fsboot);
+	//printf("Calling %p\n", fsboot);
 	fsboot();
 
+	return 0;
+}
+
+int cmd_test(int argc, CmdArg* argv) {
+	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd"));
+	printf("free: 0x%08x\n", find_function("free"));
+	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk"));
+	printf("fs_mount: 0x%08x\n", find_function("fs_mount"));
+	return 0;
+}
+
+int cmd_ramdisk(int argc, CmdArg* argv) {
+	load_ramdisk();
 	return 0;
 }
 
@@ -279,19 +297,19 @@ void clear_icache() {
     __asm__("nop");
     __asm__("nop");
     __asm__("nop");
-}
+};
 
 void hooked(int flags, void* addr, int phymem) {
 	// patch kernel
-	printf("Entered hooked jump_to function!!!\n");
-	printf("Patching kernel\n");
+	//printf("Entered hooked jump_to function!!!\n");
+	//printf("Patching kernel\n");
 	patch_kernel((void*) 0x40000000, 0xA00000);
 
-	printf("Replace hooking code with original\n");
+	//printf("Replace hooking code with original\n");
 	memcpy(jump_to, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
 	clear_icache();
 
 	jump_to++;
-	printf("Calling %p\n", jump_to);
+	//printf("Calling %p\n", jump_to);
 	jump_to(flags, addr, phymem);
 }

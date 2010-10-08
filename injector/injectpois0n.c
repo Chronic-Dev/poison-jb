@@ -1,6 +1,6 @@
 #include "libpois0n.h"
 
-void print_progress(double progress) {
+void print_progress(double progress, void* data) {
 	int i = 0;
 	if(progress < 0) {
 		return;
