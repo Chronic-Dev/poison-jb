@@ -491,20 +491,6 @@ int boot_ramdisk() {
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
-/*
-	debug("Preparing to upload DeviceTree\n");
-	if(upload_devicetree() < 0) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-
-	debug("Executing DeviceTree\n");
-	error = irecv_send_command(client, "devicetree");
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-*/
 	debug("Preparing to upload ramdisk\n");
 	if(upload_ramdisk() < 0) {
 		error("Unable to execute iBSS payload\n");
@@ -518,26 +504,26 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	debug("Setting kernel bootargs\n");
-	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v");
+	debug("Decrypting ramdisk\n");
+	error = irecv_send_command(client, "go image decrypt 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
-		return -1;
-	}
-/*
-	debug("Preparing to upload kernelcache\n");
-	if(upload_kernelcache() < 0) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
-	debug("Preping and patching kernelcache\n");
-	error = irecv_send_command(client, "go kernel load 0x41000000 0xF00000");
+	debug("Moving ramdisk\n");
+	error = irecv_send_command(client, "go memory copy 0x41000040 0x44000000 0x100000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-*/
+
+	debug("Setting kernel bootargs\n");
+	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
 
 	irecv_send_command(client, "go fsboot");
 	return 0;
@@ -814,45 +800,6 @@ int pois0n_inject() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-
-	//////////////////////////////////////
-	// Send iBEC
-	/*debug("Disconnecting from device\n");
-	debug("Preparing to upload iBEC payload\n");
-	if(upload_ibec_payload() < 0) {
-		error("Unable to upload iBEC payload\n");
-		quit();
-		return -1;
-	}
-
-	debug("Executing iBEC payload\n");
-	if(execute_ibec_payload() < 0) {
-		error("Unable to exiBSiBSSSecute iBEC payload\n");
-		quit();
-		return -1;
-	}
-	*/
-
-	//////////////////////////////////////
-	// Send ramdisk
-	/*
-	debug("Preparing to upload ramdisk\n");
-	if(upload_ramdisk() < 0) {
-		error("Unable to upload ramdisk\n");
-		quit();
-		return -1;
-	}
-
-	debug("Executing ramdisk\n");
-	if(execute_ramdisk() < 0) {
-		error("Unable to execute ramdisk\n");
-		quit();
-		return -1;
-	}
-	*/
-
-	//////////////////////////////////////
-	// End
 
 	return 0;
 }
