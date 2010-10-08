@@ -8,7 +8,7 @@
 #include <objc/runtime.h>
 
 @implementation LoaderAppDelegate
-@synthesize window;
+@synthesize window, reboot = _reboot;
 
 
 #pragma mark -
@@ -31,7 +31,11 @@
 	system("su mobile -c uicache");
 	notify_post("com.apple.mobile.application_installed");
 	sleep(2);
-	system("killall SpringBoard");
+	if(self.reboot) {
+		system("reboot");
+	} else {
+		system("killall SpringBoard");
+	}
 	exit(1);
 }
 
@@ -41,7 +45,11 @@
 		system("su mobile -c uicache");
 		notify_post("com.apple.mobile.application_installed");
 		sleep(2);
-		system("killall SpringBoard");
+		if(self.reboot) {
+			system("reboot");
+		} else {
+			system("killall SpringBoard");
+		}
 		exit(1);
 	}
 }
