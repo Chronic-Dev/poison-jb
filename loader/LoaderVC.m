@@ -243,6 +243,8 @@
 }
 
 - (void)cleanUp {
+	notify_post("com.apple.mobile.application_installed");
+	
 	[_myHud done];
 	[_myHud setText:@"Success!"];
 
