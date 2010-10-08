@@ -151,7 +151,7 @@ void PerformJailbreak() {
 	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 	SendMessage(enter, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 	
-	pois0n_inject();
+	int success = pois0n_inject();
 	
 	/*SendMessage(nButton, WM_SETTEXT, 0, TEXT("Performing exploit..."));
 	
@@ -167,13 +167,23 @@ void PerformJailbreak() {
 	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 	SendMessage(progress, PBM_SETPOS, 80, 0);*/
 	
-	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Complete!"));
-	SendMessage(progress, PBM_SETPOS, 100, 0);
+	if (success == 0) {
+	    SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Complete!"));
+	    SendMessage(progress, PBM_SETPOS, 100, 0);
 	
-	EnableWindow(progress, FALSE);
-	jbcomplete = TRUE;
-	SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit"));
-	EnableWindow(enter, TRUE);
+	    EnableWindow(progress, FALSE);
+	    jbcomplete = TRUE;
+	    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit"));
+	    EnableWindow(enter, TRUE);
+    } else {
+        SendMessage(nButton, WM_SETTEXT, 0, TEXT("Unable to Jailbreak"));
+	    SendMessage(progress, PBM_SETPOS, 100, 0);
+        
+        EnableWindow(progress, FALSE);
+        jbcomplete = TRUE;
+	    SendMessage(enter, WM_SETTEXT, 0, TEXT("Quit (Restart to Retry)"));
+	    EnableWindow(enter, TRUE);
+    }
 }
 
 void ProgressCallback(double percent) {
