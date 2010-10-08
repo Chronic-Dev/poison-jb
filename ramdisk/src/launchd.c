@@ -6,7 +6,7 @@
 #include "hfs_mount.h"
 
 #define INSTALL_LOADER
-//#define INSTALL_HACKTIVATION
+#define INSTALL_HACKTIVATION
 #define INSTALL_UNTETHERED
 
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
