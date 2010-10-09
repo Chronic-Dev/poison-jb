@@ -6,7 +6,10 @@
 #include <commctrl.h>
 #include <direct.h>
 #include <stdio.h>
+
+#ifdef USE_POIS0N
 #include "../../injector/libpois0n.h"
+#endif
 
 // Header fixes?
 #define PBS_MARQUEE  0x08 
@@ -31,7 +34,7 @@ int dfuphase = 0;
 int dfucountdown = 0;
 
 LPCSTR dfutext[] = {
-	"Get ready to enter DFU.",
+	"Get ready to start.",
 	"Press and hold the sleep button.",
 	"Continue holding sleep; press and hold home button.",
 	"Release sleep button; continue holding home."
@@ -64,7 +67,7 @@ BOOL MessageLoop(BOOL blocking) {
 
 	if (hJailbreakThread != NULL && !IsThreadAlive(hJailbreakThread)) {
 	    DWORD dwExitCode = 0;
-    	if (GetExitCodeThread(hThread, &dwExitCode) && dwExitCode == 0) {
+    	if (GetExitCodeThread(hJailbreakThread, &dwExitCode) && dwExitCode == 0) {
 		    SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreak Complete!"));
 		    SendMessage(progress, PBM_SETPOS, 100, 0);
 		    EnableWindow(progress, FALSE);
@@ -167,7 +170,11 @@ void ToggleDFUTimers(BOOL show) {
 }
 
 BOOL DeviceInDFU() {
+#ifdef USE_POIS0N
     return pois0n_is_ready() == 0 && pois0n_is_compatible() == 0;
+#else
+    return FALSE;
+#endif
 }
 
 BOOL UpdateJailbreakStatus() {
@@ -196,7 +203,9 @@ void PerformJailbreak() {
 	SendMessage(nButton, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 	SendMessage(enter, WM_SETTEXT, 0, TEXT("Jailbreaking..."));
 
+#ifdef USE_POIS0N
 	hJailbreakThread = CreateThread(NULL, 0, pois0n_inject, NULL, 0, &dwGenericThread);
+#endif
 }
 
 void ProgressCallback(double percent) {
@@ -220,9 +229,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
     wc.lpszClassName = szClassName;
     wc.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), TEXT("ID"), IMAGE_ICON, 16, 16, 0);
     if(!RegisterClassEx(&wc)) return 0;
-    
+
+#ifdef USE_POIS0N
     pois0n_init();
     pois0n_set_callback(&ProgressCallback, NULL);
+#endif
 
 	INITCOMMONCONTROLSEX icex;
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
@@ -250,7 +261,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 	SendMessage(subtitle, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	// Copyright warning
-	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic dev team (http://chronic-dev.org). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 236, 440, 13, window, NULL, NULL, NULL);
+	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic-dev team (http://chronic-dev.org). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_NOTIFY | SS_CENTER, 20, 236, 440, 13, window, (HMENU) 4, NULL, NULL);
 	SendMessage(copyright, WM_SETFONT, (WPARAM) CreateFont(12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	
@@ -300,7 +311,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
     // Run the main runloop.
     while(MessageLoop(TRUE));
     
+#ifdef USE_POIS0N
     pois0n_exit();
+#endif
 
     return 0;
 }
@@ -318,7 +331,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		} else if (LOWORD(wParam) == 3) {
 			if (jbcomplete) PostQuitMessage(0);
 			else ToggleDFUTimers(TRUE);
-		}
+		} else if (LOWORD(wParam) == 4) {
+            MessageBox(hwnd, "By posixninja, pod2g, comex, AriX, DHowett, chpwn, chronic, Jaywalker, OPK, semaphore, westbaer, etc.\n\ngreenpoison is (c) 2010 chronic dev team. All rights reserved.", "Credits", 64);
+	    }
         
         break;
     } case WM_DESTROY: {
