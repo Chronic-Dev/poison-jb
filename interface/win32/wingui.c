@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <windowsx.h>
 #include <wininet.h>
 #if defined __MINGW_H
 #define _WIN32_IE 0x0400
@@ -27,6 +28,7 @@ HANDLE hJailbreakThread = NULL;
 HWND window = NULL;
 HWND nButton = NULL, title = NULL, group = NULL, copyright = NULL, progress = NULL, subtitle = NULL;
 HWND reset = NULL, seconds = NULL, counter = NULL, first = NULL, second = NULL, third = NULL, fourth = NULL, enter = NULL;
+HBITMAP hImage = NULL;
 
 BOOL jbcomplete = FALSE;
 int dfutimer = 0;
@@ -300,7 +302,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 	enter = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Prepare to Jailbreak (DFU)"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20 + 176, 70 + 50, 160, 25, window, (HMENU) 3, NULL, NULL);
 	SendMessage(enter, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), FALSE);
 
-
+	// donate button
+	hImage = (HBITMAP)LoadImage(GetModuleHandle(NULL), TEXT("donate"), IMAGE_BITMAP, 0, 0, 0);
+	
     // Show the window
 	CenterWindow(window);
     ShowWindow(window, nFunsterStil);
@@ -318,12 +322,53 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
     return 0;
 }
 
+HDC hdcMem = NULL;
 
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
-    {
-    case WM_COMMAND: {	
+    switch (message) {
+	case WM_CREATE: {
+		HDC hDC = GetDC(window);
+		hdcMem = CreateCompatibleDC(hDC); // hDC is a DC structure supplied by Win32API
+		return 0;
+	}
+	case WM_LBUTTONDOWN: {
+		int xPos = GET_X_LPARAM(lParam); 
+		int yPos = GET_Y_LPARAM(lParam); 
+
+		if (xPos>=20 && xPos<=20+62 && yPos>=20 && yPos<=20+31) {
+			HINSTANCE hInstance = ShellExecute(
+										NULL,
+										"open",
+										"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=47YQHZZVLHZME",
+										NULL,
+										NULL,
+										SW_SHOWMAXIMIZED);
+			return 0;
+		} else {
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+	}
+	case WM_PAINT: {
+		PAINTSTRUCT ps;
+		HDC hDC = BeginPaint(hwnd, &ps); 
+		SelectObject(hdcMem, hImage);
+		StretchBlt(
+			hDC,         // destination DC
+			20,        // x upper left
+			20,         // y upper left
+			62,       // destination width
+			31,      // destination height
+			hdcMem,      // you just created this above
+			0,
+			0,                      // x and y upper left
+			62,                      // source bitmap width
+			31,                      // source bitmap height
+			SRCCOPY);       // raster operation
+		EndPaint(hwnd, &ps);
+		return 0;
+	}
+    case WM_COMMAND:
 	    if (LOWORD(wParam) == 1) {
 			PerformJailbreak();
 		} else if (LOWORD(wParam) == 2) {
@@ -336,11 +381,11 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 	    }
         
         break;
-    } case WM_DESTROY: {
+    case WM_DESTROY:
         PostQuitMessage(0);
             
         break;
-	} case WM_TIMER: {
+	case WM_TIMER:
 		ShowWindow(counter, SW_SHOW);
 		ShowWindow(seconds, SW_SHOW);
 		ShowWindow(reset, SW_SHOW);
@@ -368,8 +413,8 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			UpdateDFUStatusText();
 			UpdateJailbreakStatus();
 		}
-	} default: 
+	default: 
         return DefWindowProc(hwnd, message, wParam, lParam);
-    }
+	}
     return 0;
 }
