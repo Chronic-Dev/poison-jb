@@ -30,10 +30,17 @@ void buildMenus(NSString *appName);
 void labelIfy(NSTextField *textField);
 BOOL reset = false;
 BOOL stop = false;
+BOOL jailbreaking = false;
 
 void update_progress(double progress) {
 	if(progressIndicator) {
-		[progressIndicator setIndeterminate:NO];
+		if (progress < 99.0f) {
+		    [progressIndicator setIndeterminate:NO];
+		    [progressIndicator startAnimation:nil];
+        } else {
+            [progressIndicator setIndeterminate:YES];
+            [progressIndicator startAnimation:nil];
+        }
         
 		[progressIndicator setDoubleValue:progress];
 	}
@@ -121,6 +128,8 @@ void update_progress(double progress) {
 
 + (void)check {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    jailbreaking = true;
+	
     if (stop) return;
     
     int result;
@@ -142,6 +151,7 @@ void update_progress(double progress) {
     if (result) [jailbreakButton setTitle:@"Jailbreak Complete!"];
     else [jailbreakButton setTitle:@"Jailbreak failed :(."];
     pois0n_exit();
+    jailbreaking = false;
     [pool release];
 }
 - (void)stage5 {
@@ -170,9 +180,11 @@ void update_progress(double progress) {
         [[fourthLabel animator] setEnabled:NO];
         [resetButton setEnabled:NO];
         
-        [jailbreakButton setEnabled:YES];
-        [jailbreakButton setTitle:@"Try Again?"];
-        [progressIndicator stopAnimation:nil];
+        if (!jailbreaking) {
+            [jailbreakButton setEnabled:YES];
+            [jailbreakButton setTitle:@"Try Again?"];
+            [progressIndicator stopAnimation:nil];
+        }
     }
 }
 
