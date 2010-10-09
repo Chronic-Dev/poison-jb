@@ -745,7 +745,7 @@ int pois0n_is_compatible() {
 	}
 	info("Identified device as %s\n", device->product);
 
-	if (device->chip_id != 8930) {
+	if (device->chip_id != 8930 || device->index == DEVICE_APPLETV2) {
 		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
