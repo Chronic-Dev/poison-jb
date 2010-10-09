@@ -277,15 +277,15 @@ int main(int argc, char *argv[]) {
 	[secondsLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:48.0]];
 	[secondsTextLabel setStringValue:@"Seconds"];
 	[secondsTextLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[firstLabel setStringValue:@"Get ready to start!"];
+	[firstLabel setStringValue:@"Get ready to start."];
 	[firstLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[secondLabel setStringValue:@"Press and hold sleep button."];
+	[secondLabel setStringValue:@"Press and hold the sleep button."];
 	[secondLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 	[thirdLabel setStringValue:@"Continue holding sleep; press and hold home."];
 	[thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[fourthLabel setStringValue:@"Release sleep; continue holding home button."];
+	[fourthLabel setStringValue:@"Release sleep button; continue holding home."];
 	[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[copyrightLabel setStringValue:@"© 2009-2010 Chronic Dev Team (http://chronic-dev.org). Beware the copyright monster!"];
+	[copyrightLabel setStringValue:@"© 2009-2010 chronic dev team (http://chronic-dev.org). Beware the copyright monster!"];
 	[copyrightLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:10.0]];
 	
 	[secondsLabel setAlphaValue:0.0];
