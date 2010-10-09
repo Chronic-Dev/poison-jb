@@ -150,6 +150,7 @@ void update_progress(double progress) {
         if (pois0n_is_ready() != -1 && pois0n_is_compatible() != -1) {
             jailbreaking = true;
             stop = true;
+            
             [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
             [secondsLabel setStringValue:@"0"];
             
@@ -162,11 +163,20 @@ void update_progress(double progress) {
             int result = pois0n_inject();
             [progressIndicator setIndeterminate:YES];
             [progressIndicator stopAnimation:nil];
-            if (result == 0) [jailbreakButton setTitle:@"Complete!"];
-            else [jailbreakButton setTitle:@"Failed :("];
-            [jailbreakButton setEnabled:YES];
-            complete = true;
+            
+            if (result == 0) {
+                [jailbreakButton setTitle:@"Complete!"];
+                complete = true;
+                jailbreaking = false;
+                stop = true;
+            } else {
+                complete = false;
+                stop = false;
+                [jailbreakButton setTitle:@"Failed :("];
+            }
+                
             jailbreaking = false;
+            [jailbreakButton setEnabled:YES];
         }
     }
     
