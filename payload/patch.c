@@ -117,7 +117,8 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 			memcpy(&address[target], "\x00\x20\x00\x20", 4);
 			continue;
 		}
-		if(!memcmp(&address[i], "\x85\x68\x00\x23\x02\x93\x01\x93", 8)) {
+		if(!memcmp(&address[i], "\x85\x68\x00\x23\x02\x93\x01\x93", 8) ||
+				!memcmp(&address[i], "\x85\x68\x00\x23\x04\x93\x03\x93", 8)) {
 			target = i + 8;
 			//printf("Found kernel patch 9 at %p\n", &address[target]);
 			memcpy(&address[target], "\x0B\xE0\xC0\x46", 4);
