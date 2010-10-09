@@ -31,6 +31,7 @@ void labelIfy(NSTextField *textField);
 BOOL reset = false;
 BOOL stop = false;
 BOOL jailbreaking = false;
+BOOL complete = false;
 
 void update_progress(double progress) {
 	if(progressIndicator) {
@@ -59,6 +60,8 @@ void update_progress(double progress) {
 	[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 }
 - (void)start {
+    if (complete) [[NSApplication sharedApplication] terminate:nil];
+    
 	[resetButton setEnabled:YES];
 	[jailbreakButton setEnabled:NO];
 	[jailbreakButton setTitle:@"Waiting for DFU"];
@@ -72,6 +75,7 @@ void update_progress(double progress) {
 	[secondsLabel setStringValue:@"5"];
 	[firstLabel setFont:[NSFont fontWithName:@"Lucida Grande Bold" size:12.0]];
 	[self performSelector:@selector(stage2) withObject:nil afterDelay:1.0];
+	[NSThread detachNewThreadSelector:@selector(check) toTarget:self withObject:nil];
 }
 - (void)stage2 {
 	if (reset) {
@@ -79,6 +83,9 @@ void update_progress(double progress) {
 		[self start];
 		return;
 	}
+	
+	if (jailbreaking) return;
+	
 	int current = [[secondsLabel stringValue] intValue];
 	if (current != 1) {
 		[secondsLabel setStringValue:[NSString stringWithFormat:@"%d", current-1]];
@@ -96,6 +103,9 @@ void update_progress(double progress) {
 		[self start];
 		return;
 	}
+	
+	if (jailbreaking) return;
+	
 	int current = [[secondsLabel stringValue] intValue];
 	if (current != 1) {
 		[secondsLabel setStringValue:[NSString stringWithFormat:@"%d", current-1]];
@@ -113,6 +123,9 @@ void update_progress(double progress) {
 		[self start];
 		return;
 	}
+	
+	if (jailbreaking) return;
+	
 	int current = [[secondsLabel stringValue] intValue];
 	if (current != 1) {
 		[secondsLabel setStringValue:[NSString stringWithFormat:@"%d", current-1]];
@@ -121,45 +134,68 @@ void update_progress(double progress) {
 		[secondsLabel setStringValue:@"10"];
 		[thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 		[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande Bold" size:12.0]];
-        [NSThread detachNewThreadSelector:@selector(check) toTarget:[Callback class] withObject:nil];
 		[self performSelector:@selector(stage5) withObject:nil afterDelay:1.0];
 	}
 }
 
-+ (void)check {
+- (void)check {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    jailbreaking = true;
-	
+    
     if (stop) return;
     
-    int result;
     pois0n_init();
 	pois0n_set_callback(&update_progress, NULL);
 	
     while (stop == false) {
         if (pois0n_is_ready() != -1 && pois0n_is_compatible() != -1) {
+            jailbreaking = true;
             stop = true;
             [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
             [secondsLabel setStringValue:@"0"];
+            
             [progressIndicator setIndeterminate:YES];
             [progressIndicator startAnimation:nil];
             [jailbreakButton setTitle:@"Jailbreaking..."];
-            result = pois0n_inject();
+            
+            [self performSelectorOnMainThread:@selector(cancel) withObject:nil waitUntilDone:NO];
+            
+            int result = pois0n_inject();
+            [progressIndicator setIndeterminate:YES];
+            [progressIndicator stopAnimation:nil];
+            if (result == 0) [jailbreakButton setTitle:@"Complete!"];
+            else [jailbreakButton setTitle:@"Failed :("];
+            [jailbreakButton setEnabled:YES];
+            complete = true;
+            jailbreaking = false;
         }
     }
-    [progressIndicator stopAnimation:nil];
-    if (result) [jailbreakButton setTitle:@"Jailbreak Complete!"];
-    else [jailbreakButton setTitle:@"Jailbreak failed :(."];
+    
     pois0n_exit();
-    jailbreaking = false;
     [pool release];
 }
+- (void)cancel {
+    [resetButton setEnabled:NO];
+    [[greenpois0nLogo animator] setAlphaValue:1.0];
+    [[secondsLabel animator] setAlphaValue:0.0];
+    [[secondsTextLabel animator] setAlphaValue:0.0];
+    [[firstLabel animator] setEnabled:NO];
+    [[secondLabel animator] setEnabled:NO];
+    [[thirdLabel animator] setEnabled:NO];
+    [[fourthLabel animator] setEnabled:NO];
+    [firstLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+    [secondLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+    [thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+    [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
+}
+
 - (void)stage5 {
 	if (reset) {
 		reset = false;
 		[self start];
 		return;
 	}
+	
+	if (jailbreaking) return;
     
     // I know... system() isn't great programming practice... But when I tried to get the code that loops through the list of running processes to work, I ended up killing every running process on my computer, and I just don't have time to test that right now, since it takes like 10 minutes to reboot.
     system("killall iTunes\ Helper");
@@ -171,20 +207,11 @@ void update_progress(double progress) {
         [self performSelector:@selector(stage5) withObject:nil afterDelay:1.0];
     } else {
         [fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-        [[greenpois0nLogo animator] setAlphaValue:1.0];
-        [[secondsLabel animator] setAlphaValue:0.0];
-        [[secondsTextLabel animator] setAlphaValue:0.0];
-        [[firstLabel animator] setEnabled:NO];
-        [[secondLabel animator] setEnabled:NO];
-        [[thirdLabel animator] setEnabled:NO];
-        [[fourthLabel animator] setEnabled:NO];
-        [resetButton setEnabled:NO];
         
-        if (!jailbreaking) {
-            [jailbreakButton setEnabled:YES];
-            [jailbreakButton setTitle:@"Try Again?"];
-            [progressIndicator stopAnimation:nil];
-        }
+        [self cancel];
+        [jailbreakButton setEnabled:YES];
+        [jailbreakButton setTitle:@"Try Again?"];
+        [progressIndicator stopAnimation:nil];
     }
 }
 
@@ -213,7 +240,7 @@ int main(int argc, char *argv[]) {
 	secondLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 61, 317, 16)];
 	thirdLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 37, 317, 16)];
 	fourthLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 13, 317, 16)];
-	NSTextField *copyrightLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(17, 11, 453, 13)];
+	NSTextField *copyrightLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(18, 11, 453, 13)];
 	mainBox = [[NSBox alloc] initWithFrame:NSMakeRect(29, 67, 434, 138)];
 	NSBox *dividerBox = [[NSBox alloc] initWithFrame:NSMakeRect(319, 7, 5, 98)];
 	resetButton = [[NSButton alloc] initWithFrame:NSMakeRect(347, 12, 61, 17)];
@@ -248,7 +275,7 @@ int main(int argc, char *argv[]) {
 	[thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 	[fourthLabel setStringValue:@"Release sleep; continue holding home button."];
 	[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
-	[copyrightLabel setStringValue:@"© 2009-2010 Chronic Dev Team (http://chronic-dev.org). Beware copyright monster!"];
+	[copyrightLabel setStringValue:@"© 2009-2010 Chronic Dev Team (http://chronic-dev.org). Beware the copyright monster!"];
 	[copyrightLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:10.0]];
 	
 	[secondsLabel setAlphaValue:0.0];
