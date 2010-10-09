@@ -34,10 +34,10 @@ int dfuphase = 0;
 int dfucountdown = 0;
 
 LPCSTR dfutext[] = {
-	"Get ready to start.",
-	"Press and hold the sleep button.",
-	"Continue holding sleep; press and hold home button.",
-	"Release sleep button; continue holding home."
+	"Get ready to start",
+	"Press and hold the sleep button (2 sec)",
+	"Continue holding sleep; press and hold home (10 sec)",
+	"Release sleep button; continue holding home (15 sec)"
 };
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -241,63 +241,63 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 	InitCommonControlsEx(&icex);
 
     // Main window
-    window = CreateWindowEx(0, szClassName, TEXT("greenpoison"), WS_OVERLAPPED | WS_SYSMENU | SS_OWNERDRAW, CW_USEDEFAULT, CW_USEDEFAULT, 480 + GetSystemMetrics(SM_CXFIXEDFRAME), 260 + GetSystemMetrics(SM_CYFIXEDFRAME) + GetSystemMetrics(SM_CYCAPTION), HWND_DESKTOP, NULL, hInstance, NULL);
+    window = CreateWindowEx(0, szClassName, TEXT("greenpois0n"), WS_OVERLAPPED | WS_SYSMENU | SS_OWNERDRAW, CW_USEDEFAULT, CW_USEDEFAULT, 520 + GetSystemMetrics(SM_CXFIXEDFRAME), 260 + GetSystemMetrics(SM_CYFIXEDFRAME) + GetSystemMetrics(SM_CYCAPTION), HWND_DESKTOP, NULL, hInstance, NULL);
 
 	// Jailbreak button
 	nButton = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Jailbreak"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20, 205, 138, 25, window, (HMENU) 1, NULL, NULL);
 	SendMessage(nButton, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), FALSE);    
 	
 	// Progress bar
-	progress = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE | PBS_SMOOTH, 165, 206, 295, 23, window, NULL, NULL, NULL);
+	progress = CreateWindowEx(0, PROGRESS_CLASS, NULL, WS_CHILD | WS_VISIBLE | PBS_SMOOTH, 165, 206, 335, 23, window, NULL, NULL, NULL);
 	SendMessage(progress, PBM_SETPOS, 0, 0);
 	EnableWindow(progress, FALSE);
 	
 	// Title
-	title = CreateWindowEx(0, TEXT("STATIC"), TEXT("greenpoison"), WS_VISIBLE | WS_CHILD | SS_CENTER, 111, 2, 257, 44, window, NULL, NULL, NULL);
+	title = CreateWindowEx(0, TEXT("STATIC"), TEXT("greenpois0n"), WS_VISIBLE | WS_CHILD | SS_CENTER, 141, 2, 257, 44, window, NULL, NULL, NULL);
     SendMessage(title, WM_SETFONT, (WPARAM) CreateFont(/*the*/42/*answer*/, 0, 0, 0, FW_EXTRALIGHT, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Subtitle
-	subtitle = CreateWindowEx(0, TEXT("STATIC"), TEXT("Please power off your device and connect it to begin."), WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 52, 440, 17, window, NULL, NULL, NULL);
+	subtitle = CreateWindowEx(0, TEXT("STATIC"), TEXT("Please power off your device and connect it to begin."), WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 52, 480, 17, window, NULL, NULL, NULL);
 	SendMessage(subtitle, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	// Copyright warning
-	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic-dev team (http://chronic-dev.org). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_NOTIFY | SS_CENTER, 20, 236, 440, 13, window, (HMENU) 4, NULL, NULL);
-	SendMessage(copyright, WM_SETFONT, (WPARAM) CreateFont(12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
+	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic-dev team (http://chronic-dev.org). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_NOTIFY | SS_CENTER, 20, 236, 480, 13, window, (HMENU) 4, NULL, NULL);
+	SendMessage(copyright, WM_SETFONT, (WPARAM) CreateFont(12, 0, 0, 0, FW_DONTCARE, FALSE, TRUE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	
 	// DFU group box
-	group = CreateWindowEx(0, TEXT("BUTTON"), TEXT(""), BS_GROUPBOX | WS_VISIBLE | WS_CHILD, 20, 70, 440, 125, window, NULL, NULL, NULL);
+	group = CreateWindowEx(0, TEXT("BUTTON"), TEXT(""), BS_GROUPBOX | WS_VISIBLE | WS_CHILD, 20, 70, 480, 125, window, NULL, NULL, NULL);
 
 	// Label #1
-	first = CreateWindowEx(0, TEXT("STATIC"), dfutext[0], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 20, 330, 17, group, NULL, NULL, NULL);
+	first = CreateWindowEx(0, TEXT("STATIC"), dfutext[0], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 20, 370, 17, group, NULL, NULL, NULL);
 	SendMessage(first, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Label #2
-	second = CreateWindowEx(0, TEXT("STATIC"), dfutext[1], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 45, 330, 17, group, NULL, NULL, NULL);
+	second = CreateWindowEx(0, TEXT("STATIC"), dfutext[1], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 45, 370, 17, group, NULL, NULL, NULL);
 	SendMessage(second, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Label #3
-	third = CreateWindowEx(0, TEXT("STATIC"), dfutext[2], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 70, 330, 17, group, NULL, NULL, NULL);
+	third = CreateWindowEx(0, TEXT("STATIC"), dfutext[2], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 70, 370, 17, group, NULL, NULL, NULL);
 	SendMessage(third, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Label #4
-	fourth = CreateWindowEx(0, TEXT("STATIC"), dfutext[3], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 95, 330, 17, group, NULL, NULL, NULL);
+	fourth = CreateWindowEx(0, TEXT("STATIC"), dfutext[3], WS_VISIBLE | WS_CHILD | SS_CENTER, 5, 95, 370, 17, group, NULL, NULL, NULL);
 	SendMessage(fourth, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Countdown timer
-	counter = CreateWindowEx(0, TEXT("STATIC"), TEXT(""), WS_VISIBLE | WS_CHILD | SS_CENTER, 350, 15, 60, 60, group, NULL, NULL, NULL);
+	counter = CreateWindowEx(0, TEXT("STATIC"), TEXT(""), WS_VISIBLE | WS_CHILD | SS_CENTER, 390, 15, 60, 60, group, NULL, NULL, NULL);
     SendMessage(counter, WM_SETFONT, (WPARAM) CreateFont(64, 0, 0, 0, FW_EXTRALIGHT, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Seconds label
-	seconds = CreateWindowEx(0, TEXT("STATIC"), TEXT("Seconds"), WS_VISIBLE | WS_CHILD | SS_CENTER, 350, 75, 60, 15, group, NULL, NULL, NULL);
+	seconds = CreateWindowEx(0, TEXT("STATIC"), TEXT("Seconds"), WS_VISIBLE | WS_CHILD | SS_CENTER, 390, 75, 60, 15, group, NULL, NULL, NULL);
 	SendMessage(seconds, WM_SETFONT, (WPARAM) CreateFont(12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 
 	// Reset button
-	reset = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Reset"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20 + 350, 70 + 95, 60, 20, window, (HMENU) 2, NULL, NULL);
+	reset = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Reset"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20 + 390, 70 + 95, 60, 20, window, (HMENU) 2, NULL, NULL);
 	SendMessage(reset, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), FALSE);
 	
 	// Enter button
-	enter = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Prepare to Jailbreak (DFU)"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20 + 136, 70 + 50, 160, 25, window, (HMENU) 3, NULL, NULL);
+	enter = CreateWindowEx(0, TEXT("BUTTON"), TEXT("Prepare to Jailbreak (DFU)"), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD, 20 + 176, 70 + 50, 160, 25, window, (HMENU) 3, NULL, NULL);
 	SendMessage(enter, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), FALSE);
 
 
@@ -332,7 +332,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			if (jbcomplete) PostQuitMessage(0);
 			else ToggleDFUTimers(TRUE);
 		} else if (LOWORD(wParam) == 4) {
-            MessageBox(hwnd, "By posixninja, pod2g, comex, AriX, DHowett, chpwn, chronic, Jaywalker, OPK, semaphore, westbaer, etc.\n\ngreenpoison is (c) 2010 chronic dev team. All rights reserved.", "Credits", 64);
+            MessageBox(hwnd, "By posixninja, pod2g, comex, AriX, DHowett, chpwn, chronic, Jaywalker, OPK, semaphore, westbaer, etc.\n\ngreenpois0n is (c) 2010 chronic dev team. All rights reserved.", "Credits", 64);
 	    }
         
         break;
