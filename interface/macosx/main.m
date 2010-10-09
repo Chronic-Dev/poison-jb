@@ -51,10 +51,10 @@ void update_progress(double progress) {
 	[thirdLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 	[fourthLabel setFont:[NSFont fontWithName:@"Lucida Grande" size:12.0]];
 }
-- (void)callback {
-	[resetButton setEnabled:TRUE];
+- (void)start {
+	[resetButton setEnabled:YES];
 	[jailbreakButton setEnabled:NO];
-	[jailbreakButton setTitle:@"Waiting for DFU..."];
+	[jailbreakButton setTitle:@"Waiting for DFU"];
 
 	[mainBox addSubview:secondsLabel];
 	[mainBox addSubview:secondsTextLabel];
@@ -69,7 +69,7 @@ void update_progress(double progress) {
 - (void)stage2 {
 	if (reset) {
 		reset = false;
-		[self callback];
+		[self start];
 		return;
 	}
 	int current = [[secondsLabel stringValue] intValue];
@@ -86,7 +86,7 @@ void update_progress(double progress) {
 - (void)stage3 {
 	if (reset) {
 		reset = false;
-		[self callback];
+		[self start];
 		return;
 	}
 	int current = [[secondsLabel stringValue] intValue];
@@ -103,7 +103,7 @@ void update_progress(double progress) {
 - (void)stage4 {
 	if (reset) {
 		reset = false;
-		[self callback];
+		[self start];
 		return;
 	}
 	int current = [[secondsLabel stringValue] intValue];
@@ -121,11 +121,12 @@ void update_progress(double progress) {
 
 + (void)check {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    if (stop) {
-        return;
-    }
+    if (stop) return;
+    
+    int result;
     pois0n_init();
 	pois0n_set_callback(&update_progress, NULL);
+	
     while (stop == false) {
         if (pois0n_is_ready() != -1 && pois0n_is_compatible() != -1) {
             stop = true;
@@ -133,19 +134,20 @@ void update_progress(double progress) {
             [secondsLabel setStringValue:@"0"];
             [progressIndicator setIndeterminate:YES];
             [progressIndicator startAnimation:nil];
-            [jailbreakButton setTitle:@"Exploiting..."];
-            pois0n_inject();
+            [jailbreakButton setTitle:@"Jailbreaking..."];
+            result = pois0n_inject();
         }
     }
     [progressIndicator stopAnimation:nil];
-    [jailbreakButton setTitle:@"Done! Please wait."];
+    if (result) [jailbreakButton setTitle:@"Jailbreak Complete!"];
+    else [jailbreakButton setTitle:@"Jailbreak failed :(."];
     pois0n_exit();
     [pool release];
 }
 - (void)stage5 {
 	if (reset) {
 		reset = false;
-		[self callback];
+		[self start];
 		return;
 	}
     
@@ -167,19 +169,28 @@ void update_progress(double progress) {
         [[thirdLabel animator] setEnabled:NO];
         [[fourthLabel animator] setEnabled:NO];
         [resetButton setEnabled:NO];
-        [progressIndicator setIndeterminate:YES];
-        [progressIndicator startAnimation:nil];
+        
+        [jailbreakButton setEnabled:YES];
+        [jailbreakButton setTitle:@"Try Again?"];
+        [progressIndicator stopAnimation:nil];
     }
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
+{
+	return YES;
 }
 @end
 
 int main(int argc, char *argv[]) {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	[NSApplication sharedApplication];
+    
 	NSString *appName = @"greenpois0n";
 	buildMenus(appName);
 	
 	Callback *callback = [[Callback alloc] init];
+    [[NSApplication sharedApplication] setDelegate:callback];
 	NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(250, 312, 480, 270) styleMask:NSClosableWindowMask|NSTitledWindowMask|NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:NO];
 	NSView *greenView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 420, 270)];
 	NSTextField *poisonJBLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(111, 217, 257, 44)];
@@ -259,7 +270,7 @@ int main(int argc, char *argv[]) {
 	[jailbreakButton setFont:[NSFont fontWithName:@"Lucida Grande" size:13.0]];
 	[jailbreakButton setFocusRingType:NSFocusRingTypeNone];
 	[jailbreakButton setTarget:callback];
-	[jailbreakButton setAction:@selector(callback)];
+	[jailbreakButton setAction:@selector(start)];
 	[greenView addSubview:jailbreakButton];
 	[greenView addSubview:progressIndicator];
 	[greenView addSubview:mainBox];
