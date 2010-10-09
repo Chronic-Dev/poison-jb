@@ -144,7 +144,7 @@
 		if(buttonIndex != [actionSheet cancelButtonIndex]) {
 			NSDictionary *item = [[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:_currentIndex.row];
 			
-			if(![item objectForKey:@"AllowReinstall"] && [item objectForKey:@"ReinstallCheckPattern"]) {
+			if([[item objectForKey:@"AllowReinstall"] boolValue] == FALSE) {
 				if([[NSFileManager defaultManager] fileExistsAtPath:[item objectForKey:@"ReinstallCheckPattern"]]) {
 					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"%@ has already been installed.", [item objectForKey:@"Name"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 					[alert show];
@@ -221,6 +221,8 @@
 			[self suicide];
 		}
 	}
+	
+	[[[UIApplication sharedApplication] delegate] setReboot:YES];
 }
 
 - (void)extractPackage {
@@ -243,6 +245,8 @@
 }
 
 - (void)cleanUp {
+	notify_post("com.apple.mobile.application_installed");
+	
 	[_myHud done];
 	[_myHud setText:@"Success!"];
 

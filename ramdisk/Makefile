@@ -17,39 +17,37 @@ LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
 RAMDISK_LABEL=pois0ndisk
 RAMDISK_VOLUME=/Volumes/$(RAMDISK_LABEL)
 
-CFLAGS=-arch armv6 -isysroot=$(SDK) -static -nostartfiles -nodefaultlibs -nostdlib -I./include -I$(SDK)/usr/include -Wl,-e,_main
-LDFLAGS=
+LAUNCHD_CFLAGS=-arch armv6 -isysroot=$(SDK) -I./include -I$(SDK)/usr/include -static -nostartfiles -nodefaultlibs -nostdlib -Wl,-e,_main
+LAUNCHD_LDFLAGS=
 
 UNAME := $(shell uname -s)
 PWD = $(shell pwd)
 
 ifeq ($(UNAME),Darwin)
 all: launchd ramdisk encrypt
+
+clean:
+	rm -rf ramdisk.img3 ramdisk.dmg
+	rm -rf src/*.o src/launchd
+	
 else
 all: encrypt
+clean:
 endif
 
 launchd:
-	$(CC) $(CFLAGS) $(LDFLAGS) -o src/launchd $(LAUNCHD_SOURCES)
+	$(CC) -o src/launchd $(LAUNCHD_SOURCES) $(LAUNCHD_CFLAGS) $(LAUNCHD_LDFLAGS)
 	#strip src/launchd
 	ldid -S src/launchd
 
-ramdisk:
+ramdisk: launchd
 	cp template.dmg ramdisk.dmg
 	hdiutil attach ramdisk.dmg
-	rm -rf $(RAMDISK_VOLUME)/sbin/launchd
-	cp src/launchd $(RAMDISK_VOLUME)/sbin/launchd
+	cp src/launchd $(RAMDISK_VOLUME)/sbin/
 	cp -R files/* $(RAMDISK_VOLUME)/files/
-	#chown 0:0 $(RAMDISK_VOLUME)/sbin/launchd
-	#chmod 755 $(RAMDISK_VOLUME)/sbin/launchd
 	sync
 	hdiutil detach $(RAMDISK_VOLUME)
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 	$(BIN2C) ramdisk.img3 ../injector/resources/ramdisk.h ramdisk
-
-clean:
-	rm -rf src/*.o
-	rm -rf ramdisk.img3
-	rm -rf stage/sbin/launchd

@@ -34,7 +34,7 @@
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x37890)
 #define TARGET_CMD_LIST_END               (0x378A8)
-#define TARGET_CMD_RAMDISK                (0x1058+1)
+//#define TARGET_CMD_RAMDISK                (0x1058+1)
 
 // Task functions
 #define TARGET_TASK_YIELD                 (0x15D10+1)
