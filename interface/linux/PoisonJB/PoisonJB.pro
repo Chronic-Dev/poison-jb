@@ -11,7 +11,7 @@ TEMPLATE = app
 SOURCES += main.cpp\
         poisonmain.cpp
 
-LIBS += libpois0n.a
+LIBS += libpois0n.a -lusb-1.0 -lcurl -lz
 
 HEADERS  += poisonmain.h
 
