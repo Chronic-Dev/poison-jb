@@ -132,7 +132,6 @@ int install_files() {
 	unlink("/mnt/sachet");
 #endif
 
-	while(1);
 
 	return 0;
 }
