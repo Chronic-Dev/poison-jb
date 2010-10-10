@@ -15,8 +15,8 @@
 #include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
-//#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n88ap.h"
+#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n90ap.h"
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
@@ -205,8 +205,8 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_k48ap;
-			//size = sizeof(iBoot_k48ap);
+			payload = iBoot_k48ap;
+			size = sizeof(iBoot_k48ap);
 			debug("Loaded payload for iBoot on k48ap\n");
 		}
 		break;
@@ -459,8 +459,9 @@ int boot_ramdisk() {
 
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	irecv_send_command(client, "go memory copy 0x41000040 0x41000000 0x38000");
 	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	irecv_send_command(client, "go jump 0x41000000");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 10);
@@ -482,7 +483,7 @@ int boot_ramdisk() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
+	//return 0;
 	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -493,8 +494,9 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+	//return 0;
 	debug("Executing ramdisk\n");
-	error = irecv_send_command(client, "go ramdisk");
+	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;

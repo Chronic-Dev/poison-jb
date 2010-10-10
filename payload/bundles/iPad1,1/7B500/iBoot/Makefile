@@ -20,7 +20,8 @@ LDFLAGS = -Ttext=$(LOADADDR) -mthumb-interwork -nostdlib -lc -lm -lgcc
 all: payload
 
 payload: payload.elf
-	$(BIN2C) payload $(SRC)/../injector/payloads/$(TYPE).$(MODEL).h $(TYPE)_$(MODEL) 
+	$(BIN2C) payload $(SRC)/../injector/payloads/$(TYPE).$(MODEL).h $(TYPE)_$(MODEL)
+	$(BIN2C) payload $(SRC)/../injector/payloads/$(TYPE).$(MODEL).h $(TYPE)_$(MODEL)
 	
 payload.elf: $(OBJECTS)
 	$(CC) -o $(@) $(OBJECTS) $(LDFLAGS)

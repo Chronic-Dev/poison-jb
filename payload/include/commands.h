@@ -85,7 +85,7 @@ extern Bool gCmdHasInit;
 extern CmdInfo** gCmdCommands;
 
 extern int(*jump_to)(int flags, void* addr, int phymem);
-extern int(*load_ramdisk)(void);
+extern int(*load_ramdisk)(int argc);
 
 int cmd_init();
 void cmd_add(char* name, CmdFunction handler, char* description);
