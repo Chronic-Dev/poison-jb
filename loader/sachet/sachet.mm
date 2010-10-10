@@ -17,7 +17,7 @@ int main(int argc, char **argv, char **envp) {
 		return 1;
 	}
 
-	NSString *miPath = @"/private/var/mobile/Library/Caches/com.apple.mobile.installation.plist";
+	NSString *miPath = @"/private/var2/mobile/Library/Caches/com.apple.mobile.installation.plist";
 	NSMutableDictionary *miDict = [[NSMutableDictionary alloc] initWithContentsOfFile:miPath];
 	NSMutableDictionary *system = [[miDict objectForKey:@"System"] mutableCopy];
 	if(!system) {

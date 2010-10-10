@@ -194,7 +194,8 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Filesystem updated\n");
 
 	puts("Mounting user filesystem...\n");
-	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var", 0) != 0) {
+	mkdir("/mnt/private/var2", 0755);
+	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
 		puts("Unable to mount user filesystem!\n");
 		return -1;
 	}
@@ -203,7 +204,8 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Installing files...\n");
 	if (install_files() != 0) {
 		puts("Failed to install files!\n");
-		unmount("/mnt/private/var", 0);
+		unmount("/mnt/private/var2", 0);
+		rmdir("/mnt/private/var2");
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
@@ -212,7 +214,8 @@ int main(int argc, char* argv[], char* env[]) {
 	sync();
 
 	puts("Unmounting disks...\n");
-	unmount("/mnt/private/var", 0);
+	rmdir("/mnt/private/var2");
+	unmount("/mnt/private/var2", 0);
 	unmount("/mnt/dev", 0);
 	unmount("/mnt", 0);
 
