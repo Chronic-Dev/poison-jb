@@ -10,11 +10,15 @@
 #include "ramdisk.h"
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
+#include "payloads/iBSS.n88ap.h"
 #include "payloads/iBSS.n90ap.h"
+#include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
 //#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.n88ap.h"
 #include "payloads/iBoot.n90ap.h"
+#include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
 
 int libpois0n_debug = 1;
@@ -206,6 +210,24 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBoot on k48ap\n");
 		}
 		break;
+	
+	case DEVICE_IPHONE3GS:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n88ap;
+			size = sizeof(iBSS_n88ap);
+			debug("Loaded payload for iBSS on n88ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n88ap;
+			//size = sizeof(iBEC_n88ap);
+			debug("Loaded payload for iBEC on n88ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n88ap;
+			size = sizeof(iBoot_n88ap);
+			debug("Loaded payload for iBoot on n88ap\n");
+		}
+		break;
 
 	case DEVICE_IPHONE4:
 		if(!strcmp(type, "iBSS")) {
@@ -222,6 +244,24 @@ int upload_firmware_payload(char* type) {
 			payload = iBoot_n90ap;
 			size = sizeof(iBoot_n90ap);
 			debug("Loaded payload for iBoot on n90ap\n");
+		}
+		break;
+
+	case DEVICE_IPOD3G:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n18ap;
+			size = sizeof(iBSS_n18ap);
+			debug("Loaded payload for iBSS on n18ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n18ap;
+			//size = sizeof(iBEC_n18ap);
+			debug("Loaded payload for iBEC on n18ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n18ap;
+			size = sizeof(iBoot_n18ap);
+			debug("Loaded payload for iBoot on n18ap\n");
 		}
 		break;
 
