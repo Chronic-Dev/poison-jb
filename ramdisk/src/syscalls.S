@@ -11,6 +11,7 @@
 
 .globl _mlock
 .globl _mkdir
+.globl _rmdir
 .globl _unmount
 
 /*
@@ -185,6 +186,16 @@ _mkdir:
     mov    r12, #0x88
     swi    #0x80
     add    sp, sp, #0x8
+    ldmfd  sp!, {r12,pc}
+
+/* int rmdir(const char *path) */
+_rmdir:
+    stmfd  sp!, {r12,lr}
+    sub    sp, sp, #0x4
+    str    r0, [sp,#0x0]
+    mov    r12, #0x89
+    swi    #0x80
+    add    sp, sp, #0x4
     ldmfd  sp!, {r12,pc}
 
 /* int unmount(const char *dir, int flags) */
