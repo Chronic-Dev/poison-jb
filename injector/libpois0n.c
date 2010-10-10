@@ -15,8 +15,8 @@
 #include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
-//#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n88ap.h"
+#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n90ap.h"
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
@@ -205,8 +205,8 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_k48ap;
-			//size = sizeof(iBoot_k48ap);
+			payload = iBoot_k48ap;
+			size = sizeof(iBoot_k48ap);
 			debug("Loaded payload for iBoot on k48ap\n");
 		}
 		break;
@@ -313,7 +313,16 @@ int upload_exploit() {
 	unsigned char shellcode[0x800];
 	unsigned char buf[0x800];
 	unsigned int shellcode_address = 0x84023001;
+	unsigned int load_address = 0x84000000;
 	unsigned int stack_address = 0x84033F98;
+	if (device->chip_id == 8930) {
+		stack_address = 0x8403BF9C;
+	}
+	unsigned int max_size = 0x24000;
+	if (device->chip_id == 8930) {
+		max_size = 0x2C000;
+	}
+
 	unsigned int shellcode_length = sizeof(exploit);
 	memset(shellcode, 0x0, 0x800);
 	memcpy(shellcode, exploit, sizeof(exploit));
@@ -336,8 +345,8 @@ int upload_exploit() {
 
 	printf("sent data to copy: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000));
 	memset(buf, 0xCC, 0x800);
-	for(i=0;i<0x45;i++) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
-	printf("padded to 0x84023000\n");
+	for(i=0; i<(max_size - 0x800 * 3); i+=0x800) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+	printf("padded to %X\n", (load_address + max_size));
 	printf("sent shellcode: %X has real length %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000), shellcode_length);
 	// this is the exploit part
 	memset(buf, 0xBB, 0x800);
@@ -450,8 +459,9 @@ int boot_ramdisk() {
 
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	irecv_send_command(client, "go memory copy 0x41000040 0x41000000 0x38000");
 	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	irecv_send_command(client, "go jump 0x41000000");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 10);
@@ -473,7 +483,7 @@ int boot_ramdisk() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
+	//return 0;
 	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -484,8 +494,9 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+	//return 0;
 	debug("Executing ramdisk\n");
-	error = irecv_send_command(client, "go ramdisk");
+	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;

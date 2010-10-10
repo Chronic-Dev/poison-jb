@@ -69,58 +69,58 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&address[i], "\x00\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16)) {
 			target = i + 0;
-			//printf("Found kernel patch 1 at %p\n", &address[target]);
+			printf("Found kernel patch 1 at %p\n", &address[target]);
 			memcpy(&address[target], "\x01\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x00\xB1\x00\x24\x20\x46\x90\xBD", 8)) {
 			target = i + 0;
-			//printf("Found kernel patch 2 at %p\n", &address[target]);
+			printf("Found kernel patch 2 at %p\n", &address[target]);
 			memcpy((char*) &address[target], "\x00\xB1\x01\x24\x20\x46\x90\xBD", 8);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x00\x23\x00\x94\x01\x95\x02\x95", 8)) {
 			target = i + 10;
-			//printf("Found kernel patch 3 at %p\n", &address[target]);
+			printf("Found kernel patch 3 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20\x00\xD3\x80\x04\x98\x02\x21\x7C\x4B\x20", 4);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x02\x90\x03\x90\x1D\x49\x50\x46", 8)) {
 			target = i + 12;
-			//printf("Found kernel patch 4 at %p\n", &address[target]);
+			printf("Found kernel patch 4 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20\x00\x20", 4);
 			continue;
 		}
 		if(!memcmp(&address[i], "\xD3\x80\x04\x98\x02\x21\x7C\x4B", 8)
 				|| !memcmp(&address[i], "\x98\x47\x50\xB9\x00\x98\x02\x21", 8)) {
 			target = i + 8;
-			//printf("Found kernel patch 5 at %p\n", &address[target]);
+			printf("Found kernel patch 5 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20", 2);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x00\x28\x40\xF0\xCC\x80\x04\x98", 8)
 				|| !memcmp(&address[i], "\x28\xB9\x00\x98\xFF\xF7\x03\xFF", 8)) {
 			target = i + 8;
-			//printf("Found kernel patch 6 at %p\n", &address[target]);
+			printf("Found kernel patch 6 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20\x00\x20", 4);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x1F\x4C\x1E\xE0\x28\x46\x51\x46", 8)) {
 			target = i + 8;
-			//printf("Found kernel patch 7 at %p\n", &address[target]);
+			printf("Found kernel patch 7 at %p\n", &address[target]);
 			memcpy(&address[target], "\x01\x20\x01\x20", 4);
 			continue;
 		}
 		if(!memcmp(&address[i], "\xA0\x47\x08\xB1\x28\x46\x30\xE0", 8)) {
 			target = i + 8;
-			//printf("Found kernel patch 8 at %p\n", &address[target]);
+			printf("Found kernel patch 8 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20\x00\x20", 4);
 			continue;
 		}
 		if(!memcmp(&address[i], "\x85\x68\x00\x23\x02\x93\x01\x93", 8) ||
 				!memcmp(&address[i], "\x85\x68\x00\x23\x04\x93\x03\x93", 8)) {
 			target = i + 8;
-			//printf("Found kernel patch 9 at %p\n", &address[target]);
+			printf("Found kernel patch 9 at %p\n", &address[target]);
 			memcpy(&address[target], "\x0B\xE0\xC0\x46", 4);
 			continue;
 		}
@@ -149,6 +149,7 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found RSA patch offset at %p\n", cert_offset);
 	memcpy(cert_offset, patch_cert, 4);
 
+	/*
 	unsigned char* ecid_offset = patch_find(address, size, patch_ecid_seq, 8);
 	if(ecid_offset == NULL) {
 		printf("Unable to find ECID patch offset\n");
@@ -157,7 +158,8 @@ int patch_firmware(unsigned char* address, int size) {
 	ecid_offset += 8;
 	printf("Found ECID patch offset at %p\n", ecid_offset);
 	memcpy(ecid_offset, patch_ecid, 4);
-
+	*/
+/*
 	unsigned char* permission_offset = patch_find(address, size, patch_perm_seq, 8);
 	if(permission_offset == NULL) {
 		printf("Unable to find permission patch offset\n");
@@ -166,7 +168,31 @@ int patch_firmware(unsigned char* address, int size) {
 	permission_offset += 2;
 	printf("Found PERM patch offset at %p\n", permission_offset);
 	memcpy(permission_offset, patch_perm, 4);
+	*/
+	unsigned char* image_load = find_function("image_load", 0x41000000, 0x5FF00000);
+	if(image_load == NULL) {
+		printf("Unable to find image_load function\n");
+		return -1;
+	}
+	unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
+	if(permission_offset == NULL) {
+		printf("Unable to find permission patch offset\n");
+		return -1;
+	}
+	permission_offset += 2;
+	printf("Found PERM patch offset at %p\n", permission_offset);
+	memcpy(permission_offset, patch_perm, 4);
 
+	unsigned char* command = find_function("cmd_go", 0x41000000, 0x5FF00000);
+	if(command == NULL) {
+		printf("Unable to find command patch offset\n");
+		return -1;
+	}
+	command--;
+	printf("Found command patch offset at %p\n", command);
+	memcpy(command, patch_command, 8);
+
+/*
 	unsigned char* command_offset = patch_find(address, size, patch_command_seq1, 8);
 	if(command_offset == NULL) {
 		command_offset = patch_find(address, size, patch_command_seq2, 6);
@@ -177,7 +203,7 @@ int patch_firmware(unsigned char* address, int size) {
 	}
 	printf("Found command patch offset at %p\n", command_offset);
 	memcpy(command_offset, patch_command, 8);
-
+*/
 	return 0;
 }
 

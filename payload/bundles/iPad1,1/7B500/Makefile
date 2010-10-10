@@ -1,7 +1,7 @@
 all:
 	make -C iBSS
+	make -C iBoot
 	#make -C iBEC
-	#make -C iBoot
 	
 clean:
 	make clean -C iBSS
