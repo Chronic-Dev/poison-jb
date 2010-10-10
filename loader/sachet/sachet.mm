@@ -1,3 +1,6 @@
+#include <Foundation/Foundation.h>
+#include <unistd.h>
+#include <stdio.h>
 
 int main(int argc, char **argv, char **envp) {
 	if(argc < 2) {
@@ -15,7 +18,7 @@ int main(int argc, char **argv, char **envp) {
 	}
 
 	NSString *miPath = @"/private/var/mobile/Library/Caches/com.apple.mobile.installation.plist";
-	NSMutableDictionary *miDict = [[NSDictionary alloc] initWithContentsOfFile:miPath];
+	NSMutableDictionary *miDict = [[NSMutableDictionary alloc] initWithContentsOfFile:miPath];
 	NSMutableDictionary *system = [[miDict objectForKey:@"System"] mutableCopy];
 	if(!system) {
 		fprintf(stderr, "I like my women like I like my coffee. Covered in beeeeeeeeeeeees!\n");

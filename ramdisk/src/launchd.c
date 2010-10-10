@@ -118,10 +118,11 @@ int install_files() {
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
-
+/*
 	unlink("/mnt/pf2");
-	unlink("/mnt/usr/bin/patch");
+	unlink("/mnt/patch");
 	unlink("/mnt/libgmalloc.dylib");
+*/
 #endif
 #ifdef INSTALL_LOADER
 	puts("Installing sachet\n");
@@ -130,6 +131,8 @@ int install_files() {
 	fsexec(sachet, env);
 	unlink("/mnt/sachet");
 #endif
+
+	while(1);
 
 	return 0;
 }
