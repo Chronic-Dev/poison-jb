@@ -134,6 +134,7 @@ int upload_dfu_image(const char* type) {
 		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
+	return 0;
 }
 
 int upload_firmware_image(const char* type) {
