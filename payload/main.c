@@ -59,9 +59,9 @@ int gp_init() {
 	if(fs_init()) return -1;
 #endif
 
-#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
+//#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
 	if(kernel_init()) return -1;
-#endif
+//#endif
 
 	gGpHasInit = TRUE;
 	return 0;

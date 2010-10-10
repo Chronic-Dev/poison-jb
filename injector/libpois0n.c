@@ -463,8 +463,9 @@ int boot_ramdisk() {
 
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	irecv_send_command(client, "go memory copy 0x41000040 0x41000000 0x38000");
 	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	irecv_send_command(client, "go jump 0x41000000");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 10);
@@ -486,7 +487,7 @@ int boot_ramdisk() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
+	//return 0;
 	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -497,8 +498,9 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+	//return 0;
 	debug("Executing ramdisk\n");
-	error = irecv_send_command(client, "go ramdisk");
+	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;

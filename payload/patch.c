@@ -159,8 +159,22 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found ECID patch offset at %p\n", ecid_offset);
 	memcpy(ecid_offset, patch_ecid, 4);
 	*/
-
+/*
 	unsigned char* permission_offset = patch_find(address, size, patch_perm_seq, 8);
+	if(permission_offset == NULL) {
+		printf("Unable to find permission patch offset\n");
+		return -1;
+	}
+	permission_offset += 2;
+	printf("Found PERM patch offset at %p\n", permission_offset);
+	memcpy(permission_offset, patch_perm, 4);
+	*/
+	unsigned char* image_load = find_function("image_load", 0x41000000, 0x5FF00000);
+	if(image_load == NULL) {
+		printf("Unable to find image_load function\n");
+		return -1;
+	}
+	unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
 	if(permission_offset == NULL) {
 		printf("Unable to find permission patch offset\n");
 		return -1;

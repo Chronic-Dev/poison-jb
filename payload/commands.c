@@ -37,7 +37,7 @@ void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
 int(*fsboot)(void) = NULL;
 int(*jump_to)(int flags, void* addr, int phymem) = SELF_JUMP_TO;
-int(*load_ramdisk)(void) = SELF_CMD_RAMDISK;
+int(*load_ramdisk)(int argc) = SELF_CMD_RAMDISK;
 
 void hooked(int flags, void* addr, int phymem);
 
@@ -285,7 +285,7 @@ int cmd_test(int argc, CmdArg* argv) {
 }
 
 int cmd_ramdisk(int argc, CmdArg* argv) {
-	load_ramdisk();
+	printf("%d\n", load_ramdisk(3));
 	return 0;
 }
 
