@@ -20,7 +20,7 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#define S5L8930X
+#define S5L8922X
 #define LOADADDR        0x41000000
 #define IBOOT_BASEADDR  0x5FF00000
 #define IBEC_BASEADDR   0x5FF00000
