@@ -21,7 +21,7 @@
 #define OFFSETS_H
 
 // Base address
-#define TARGET_BASEADDR                   (0x5FF00000)
+#define TARGET_BASEADDR                   (0x4FF00000)
 
 // Standard offsets
 #define TARGET_FREE                       (0xDEAD+1)

@@ -22,8 +22,8 @@
 
 #define S5L8922X
 #define LOADADDR        0x41000000
-#define IBOOT_BASEADDR  0x5FF00000
-#define IBEC_BASEADDR   0x5FF00000
+#define IBOOT_BASEADDR  0x4FF00000
+#define IBEC_BASEADDR   0x4FF00000
 #define IBSS_BASEADDR   0x84000000
 #define LLB_BASEADDR    0x84000000
 #define KERNEL_PATH     "/boot/System/Library/Caches/com.apple.kernelcaches/kernelcache"
