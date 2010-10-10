@@ -312,8 +312,11 @@ int upload_exploit() {
 	unsigned int i;
 	unsigned char shellcode[0x800];
 	unsigned char buf[0x800];
-	unsigned int shellcode_address = 0x84023001;
 	unsigned int load_address = 0x84000000;
+	unsigned int shellcode_address = 0x84023001;
+	if (device->chip_id == 8930) {
+		shellcode_address = 0x8402B001;
+	}
 	unsigned int stack_address = 0x84033F98;
 	if (device->chip_id == 8930) {
 		stack_address = 0x8403BF9C;
