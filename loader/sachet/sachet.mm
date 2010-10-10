@@ -36,6 +36,7 @@ int main(int argc, char **argv, char **envp) {
 	[miDict setObject:system forKey:@"System"];
 
 	[miDict writeToFile:miPath atomically:YES];
+	chown([miPath UTF8String], 501, 501);
 
 	[p drain];
 }
