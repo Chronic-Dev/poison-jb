@@ -169,7 +169,7 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found PERM patch offset at %p\n", permission_offset);
 	memcpy(permission_offset, patch_perm, 4);
 	*/
-	unsigned char* image_load = find_function("image_load", 0x41000000, 0x5FF00000);
+	unsigned char* image_load = find_function("image_load", LOADADDR, IBOOT_BASEADDR);
 	if(image_load == NULL) {
 		printf("Unable to find image_load function\n");
 		return -1;
@@ -183,7 +183,7 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found PERM patch offset at %p\n", permission_offset);
 	memcpy(permission_offset, patch_perm, 4);
 
-	unsigned char* command = find_function("cmd_go", 0x41000000, 0x5FF00000);
+	unsigned char* command = find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
 	if(command == NULL) {
 		printf("Unable to find command patch offset\n");
 		return -1;
