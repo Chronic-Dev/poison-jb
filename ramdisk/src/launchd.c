@@ -10,8 +10,10 @@
 #define INSTALL_UNTETHERED
 
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
+const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
+const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
 
 static char** envp = NULL;
 
@@ -121,6 +123,13 @@ int install_files() {
 	//unlink("/mnt/usr/bin/patch");
 	//unlink("/mnt/libgmalloc.dylib");
 #endif
+#ifdef INSTALL_LOADER
+	puts("Installing sachet\n");
+	ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
+	if (ret < 0) return -1;
+	fsexec(sachet, env);
+	unlink("/mnt/sachet");
+#endif
 
 	return 0;
 }
@@ -164,6 +173,15 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Filesystem checked\n");
 
+	puts("Checking user filesystem...\n");
+	if (fsexec(fsck_hfs_user, env) != 0) {
+		puts("Unable to fsck user filesystem?\n");
+		unmount("/mnt/dev", 0);
+		unmount("/mnt", 0);
+		return -1;
+	}
+	puts("User filesystem checked\n");
+
 	puts("Updating filesystem...\n");
 	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_UPDATE) != 0) {
 		puts("Unable to update filesystem!\n");
@@ -173,9 +191,17 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Filesystem updated\n");
 
+	puts("Mounting user filesystem...\n");
+	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var", 0) != 0) {
+		puts("Unable to mount user filesystem!\n");
+		return -1;
+	}
+	puts("User filesystem mounted\n");
+
 	puts("Installing files...\n");
 	if (install_files() != 0) {
 		puts("Failed to install files!\n");
+		unmount("/mnt/private/var", 0);
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
@@ -184,6 +210,7 @@ int main(int argc, char* argv[], char* env[]) {
 	sync();
 
 	puts("Unmounting disks...\n");
+	unmount("/mnt/private/var", 0);
 	unmount("/mnt/dev", 0);
 	unmount("/mnt", 0);
 
