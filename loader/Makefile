@@ -23,6 +23,7 @@ copy:: stage
 	rm -rf ../ramdisk/files/Loader.app
 	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
 	cp $(FW_STAGING_DIR)/sachet ../ramdisk/files/sachet
+	cp $(FW_STAGING_DIR)/capable ../ramdisk/files/sachet
 	
 real-clean:
 	rm -rf _
