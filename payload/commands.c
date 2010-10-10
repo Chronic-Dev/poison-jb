@@ -50,7 +50,7 @@ int cmd_init() {
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) malloc(sizeof(CmdInfo*) * MAX_COMMANDS);
+	gCmdCommands = (CmdInfo**) 0x42100000;
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;
@@ -70,7 +70,7 @@ int cmd_init() {
 	cmd_add("test", &cmd_test, "test finding functions offsets");
 
 #ifndef TARGET_CMD_RAMDISK
-	load_ramdisk = find_function("cmd_ramdisk");
+	load_ramdisk = find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR);
 #endif
 
 	if(load_ramdisk) {
@@ -277,10 +277,10 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 }
 
 int cmd_test(int argc, CmdArg* argv) {
-	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd"));
-	printf("free: 0x%08x\n", find_function("free"));
-	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk"));
-	printf("fs_mount: 0x%08x\n", find_function("fs_mount"));
+	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("free: 0x%08x\n", find_function("free", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("fs_mount: 0x%08x\n", find_function("fs_mount", TARGET_BASEADDR, TARGET_BASEADDR));
 	return 0;
 }
 

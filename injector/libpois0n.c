@@ -13,7 +13,7 @@
 #include "payloads/iBSS.n90ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
-//#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n90ap.h"
 #include "payloads/iBoot.n81ap.h"
 
@@ -201,8 +201,8 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_k48ap;
-			//size = sizeof(iBoot_k48ap);
+			payload = iBoot_k48ap;
+			size = sizeof(iBoot_k48ap);
 			debug("Loaded payload for iBoot on k48ap\n");
 		}
 		break;

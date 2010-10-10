@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
 	if (argc != 4) {
 		usage();
-		return 1;
+		return 0;
 	}
 
 	if ((fi = fopen(argv[1], "rb")) == 0)
