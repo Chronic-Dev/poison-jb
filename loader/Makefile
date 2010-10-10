@@ -10,8 +10,11 @@ Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm Loade
 Bootstrap_FILES = Bootstrap.m
 Bootstrap_INSTALL_PATH = /Applications/Loader.app/
 
+SUBPROJECTS = sachet
+
 include $(FW_MAKEDIR)/application.mk
 include $(FW_MAKEDIR)/tool.mk
+include $(FW_MAKEDIR)/aggregate.mk
 
 after-Loader-stage::
 	$(FAKEROOT) chmod 6755 $(FW_SHARED_BUNDLE_RESOURCE_PATH)/Loader
@@ -19,6 +22,7 @@ after-Loader-stage::
 copy:: stage
 	rm -rf ../ramdisk/files/Loader.app
 	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
+	cp $(FW_STAGING_DIR)/sachet ../ramdisk/files/sachet
 	
 real-clean:
 	rm -rf _
