@@ -9,11 +9,18 @@
 #define INSTALL_HACKTIVATION
 #define INSTALL_UNTETHERED
 
+char* cache_env[] = {
+		"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
+		"DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld",
+		"DYLD_SHARED_REGION=private"
+};
+
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
 const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
+const char* capable[] = { "/capable", "K48AP", "hide-non-default-apps", NULL };
 
 static char** envp = NULL;
 
@@ -84,18 +91,14 @@ int install_files() {
 #endif
 
 	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
-	   puts("Installing patched K48AP.plist\n");
-	   ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
-	   if (ret < 0) return ret;
+		puts("Patching K48AP.plist\n");
+		ret = install("/files/capable", "/mnt/capable", 0, 80, 0755);
+		if (ret < 0) return -1;
+		fsexec(capable, cache_env);
+		unlink("/mnt/capable");
 	}
 
 #ifdef INSTALL_UNTETHERED
-	char* env[] = {
-			"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
-			"DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld",
-			"DYLD_SHARED_REGION=private"
-	};
-
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 	puts("Creating untethered exploit\n");
 	unlink("/mnt/usr/bin/patch");
@@ -104,13 +107,13 @@ int install_files() {
 
 	puts("Installing pf2\n");
 	unlink("/mnt/usr/lib/pf2");
-	fsexec(patch_kernel, env);
+	fsexec(patch_kernel, cache_env);
 	ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 	puts("Installing libgmalloc\n");
 	unlink("/mnt/usr/lib/libgmalloc.dylib");
-	fsexec(patch_dyld, env);
+	fsexec(patch_dyld, cache_env);
 	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
 	if (ret < 0) return -1;
 
@@ -128,7 +131,7 @@ int install_files() {
 	puts("Installing sachet\n");
 	ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
 	if (ret < 0) return -1;
-	fsexec(sachet, env);
+	fsexec(sachet, cache_env);
 	unlink("/mnt/sachet");
 #endif
 
