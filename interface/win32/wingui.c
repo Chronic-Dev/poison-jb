@@ -263,7 +263,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszArgum
 	SendMessage(subtitle, WM_SETFONT, (WPARAM) CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	// Copyright warning
-	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic-dev team (http://chronic-dev.org). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_NOTIFY | SS_CENTER, 20, 236, 480, 13, window, (HMENU) 4, NULL, NULL);
+	copyright = CreateWindowEx(0, TEXT("STATIC"), TEXT("(c) 2009-2010 chronic-dev team (http://chronic-dev.org/blog/). Beware the copyright monster!"), WS_VISIBLE | WS_CHILD | SS_NOTIFY | SS_CENTER, 20, 236, 480, 13, window, (HMENU) 4, NULL, NULL);
 	SendMessage(copyright, WM_SETFONT, (WPARAM) CreateFont(12, 0, 0, 0, FW_DONTCARE, FALSE, TRUE, FALSE, ANSI_CHARSET, OUT_TT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, TEXT("Tahoma")), TRUE);
 	
 	
