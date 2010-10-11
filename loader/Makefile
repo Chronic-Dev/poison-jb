@@ -1,5 +1,5 @@
 UNAME := $(shell uname -s)
-
+SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
 ifeq ($(UNAME),Darwin)
 GO_EASY_ON_ME=1
 include theos/makefiles/common.mk
