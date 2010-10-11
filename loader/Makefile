@@ -10,7 +10,7 @@ Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm Loade
 Bootstrap_FILES = Bootstrap.m
 Bootstrap_INSTALL_PATH = /Applications/Loader.app/
 
-SUBPROJECTS = sachet capable
+SUBPROJECTS = sachet capable afc2add
 
 include $(FW_MAKEDIR)/application.mk
 include $(FW_MAKEDIR)/tool.mk
