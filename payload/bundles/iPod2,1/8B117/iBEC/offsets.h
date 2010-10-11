@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - iPhone2,1/8B117/iBSS/offsets.h
+  * GreenPois0n Cynanide - iPhone2,1/8B117/iBEC/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
@@ -21,33 +21,32 @@
 #define OFFSETS_H
 
 // Base address
-#define TARGET_BASEADDR                   (0x84000000)
+#define TARGET_BASEADDR                   (0x0FF00000)
 
 // Standard offsets
-#define TARGET_FREE                       (0xA5CC+1)
-#define TARGET_MALLOC                     (0xA5D8+1)
-#define TARGET_JUMP_TO                    (0xDED8+1)
-#define TARGET_PRINTF                     (0x134CC+1)
+#define TARGET_FREE                       (0x0+1)
+#define TARGET_MALLOC                     (0x0+1)
+#define TARGET_JUMP_TO                    (0x0+1)
+#define TARGET_PRINTF                     (0x0+1)
 #define TARGET_VPRINTF                    (0x0+1)
 
 // Command offsets
-#define TARGET_CMD_LIST_BEGIN             (0x19000)
-#define TARGET_CMD_LIST_END               (0x1902C)
-#define TARGET_CMD_RAMDISK                (0xDEAD+1)
+#define TARGET_CMD_LIST_BEGIN             (0x0)
+#define TARGET_CMD_LIST_END               (0x0)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0xE760+1)
-#define TARGET_TASK_RUNNING               (0x19C00)
-#define TARGET_TASK_LIST                  (0x19C98)
+#define TARGET_TASK_YIELD                 (0x0+1)
+#define TARGET_TASK_RUNNING               (0x0)
+#define TARGET_TASK_LIST                  (0x0)
 
 // AES offsets
-#define TARGET_AES_CRYPTO_CMD             (0xF9B8+1)
+#define TARGET_AES_CRYPTO_CMD             (0x0+1)
 
 // BDev offsets
-#define TARGET_BDEV_LIST                  (0x1C300)
+#define TARGET_BDEV_LIST                  (0x0)
 
 // Image offsets
-#define TARGET_IMAGE_LIST                 (0x19BD0)
+#define TARGET_IMAGE_LIST                 (0x0)
 
 // Filesystem offsets
 //#define TARGET_FS_MOUNT                   (0x0)
@@ -55,11 +54,11 @@
 //#define TARGET_FS_LOAD_FILE               (0x0)
 
 // Kernel offsets
-#define TARGET_KERNEL_LOAD                (0xB11C+1)
-#define TARGET_KERNEL_PHYMEM              (0x15DE4)
-#define TARGET_KERNEL_BOOTARGS            (0x1C3C0)
+#define TARGET_KERNEL_LOAD                (0x0+1)
+#define TARGET_KERNEL_PHYMEM              (0x0)
+#define TARGET_KERNEL_BOOTARGS            (0x0)
 
 // NVRAM offsets
-#define TARGET_NVRAM_LIST                 (0x19CD4)
+#define TARGET_NVRAM_LIST                 (0x0)
 
 #endif // OFFSETS_H

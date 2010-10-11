@@ -69,6 +69,7 @@ int gp_init() {
 
 int main(int argc, CmdArg* argv) {
 	if(!gGpHasInit) {
+		puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;

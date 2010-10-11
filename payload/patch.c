@@ -29,6 +29,7 @@ const unsigned char patch_command_seq2[] = "\x90\xB5\x01\xAF\x84\xB0";
 const unsigned char patch_command[] = "\x00\x4b\x18\x47\x00\x00\x00\x41";
 
 int patch_init() {
+	printf("Initializing patches\n");
 	cmd_add("patch", &patch_cmd, "patch firmware in memory");
 	return 0;
 }

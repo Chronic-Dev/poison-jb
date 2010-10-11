@@ -46,11 +46,12 @@ void hooked(int flags, void* addr, int phymem);
  */
 int cmd_init() {
 	if(gCmdHasInit) return 0;
+	printf("Initializing commands\n");
 
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) 0x41800000;
+	gCmdCommands = (CmdInfo**) 0x43000000;
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;
@@ -87,7 +88,8 @@ void cmd_add(char* name, CmdFunction handler, char* description) {
 		return;
 	}
 
-	command = (CmdInfo*) malloc(sizeof(CmdInfo));
+	//command = (CmdInfo*) malloc(sizeof(CmdInfo));
+	command = (CmdInfo*) 0x43000000 + (gCmdCount * sizeof(CmdInfo));
 	command->name = name;
 	command->handler = handler;
 	command->description = description;

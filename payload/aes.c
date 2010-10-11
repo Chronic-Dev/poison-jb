@@ -29,6 +29,7 @@
 int(*aes_crypto_cmd)(AesOption option, void* input, void* output, unsigned int size, AesMode mode, void* iv, void* key) = (void*) TARGET_AES_CRYPTO_CMD;
 
 int aes_init() {
+	printf("Initializing aes\n");
 	aes_crypto_cmd = find_function("aes_crypto_cmd", TARGET_BASEADDR, TARGET_BASEADDR);
 	if(aes_crypto_cmd != 0) {
 		cmd_add("aes", &aes_cmd, "encrypt/decrypt kbag aes keys using gid");
