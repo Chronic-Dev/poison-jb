@@ -1,0 +1,8 @@
+*.a
+*.o
+kernelcache.*
+iBSS.*
+DeviceTree.*
+injectpois0n
+payloads
+resources
