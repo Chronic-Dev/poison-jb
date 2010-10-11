@@ -50,7 +50,7 @@ int cmd_init() {
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) 0x42100000;
+	gCmdCommands = (CmdInfo**) 0x41800000;
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;

@@ -463,8 +463,8 @@ int boot_ramdisk() {
 
 	debug("Loading and patching iBoot\n");
 	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
-	irecv_send_command(client, "go memory copy 0x41000040 0x41000000 0x38000");
-	irecv_send_command(client, "go patch 0x41000000 0x38000");
+	irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	irecv_send_command(client, "go patch 0x41000000 0x48000");
 	irecv_send_command(client, "go jump 0x41000000");
 
 	debug("Reconnecting to device\n");

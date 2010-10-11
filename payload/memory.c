@@ -42,7 +42,8 @@ int memory_cmd(int argc, CmdArg* argv) {
 		puts("usage: memory <search/dump/copy> [options]\n");
 		puts("  search <address> <size> <bytes>\tfind address of specified byte sequence\n");
 		puts("  dump <address> <size>          \tdump memory from address over usb\n");
-		puts("  copy <from> <to> <size>        \tcopy from one address to another\n");
+		puts("  copy <from> <to> <size>        \tcopy memory from one address to another\n");
+		puts("  move <from> <to> <size>        \tmove memory from one address to another\n");
 		return 0;
 	}
 
@@ -69,6 +70,15 @@ int memory_cmd(int argc, CmdArg* argv) {
 			source = (char*) argv[2].uinteger;
 			destination = (char*) argv[3].uinteger;
 			return memcpy(destination, source, size);
+		}
+	}
+
+	if(argc == 5) {
+		if(!strcmp(action, "move")) {
+			size = argv[4].uinteger;
+			source = (char*) argv[2].uinteger;
+			destination = (char*) argv[3].uinteger;
+			return memmove(destination, source, size);
 		}
 	}
 

@@ -26,14 +26,14 @@ UNAME := $(shell uname -s)
 PWD = $(shell pwd)
 
 ifeq ($(UNAME),Darwin)
-all: launchd ramdisk encrypt
+all: launchd ramdisk encrypt stage
 
 clean:
 	rm -rf ramdisk.img3 ramdisk.dmg
 	rm -rf src/*.o src/launchd
 	
 else
-all: encrypt
+all: stage
 clean:
 endif
 
@@ -53,4 +53,6 @@ ramdisk: launchd
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
 	xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
+	
+stage:
 	$(BIN2C) ramdisk.dmg ../injector/resources/ramdisk.h ramdisk

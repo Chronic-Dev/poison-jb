@@ -22,44 +22,45 @@
 #define OFFSETS_H
 
 // Base address
-#define TARGET_BASEADDR                   (0x5FF00000)
+#define TARGET_BASEADDR                   (0x4FF00000)
 
 // Standard offsets
-#define TARGET_FREE                       (0xDEAD+1)
-#define TARGET_MALLOC                     (0xDEAD+1)
-#define TARGET_JUMP_TO                    (0xDEAD+1)
-#define TARGET_PRINTF                     (0xDEAD+1)
-#define TARGET_VPRINTF                    (0xDEAD+1)
+#define TARGET_FREE                       (0xDB24+1)
+#define TARGET_MALLOC                     (0xDB30+1)
+#define TARGET_JUMP_TO                    (0x1164C+1)
+#define TARGET_PRINTF                     (0x20538+1)
+#define TARGET_VPRINTF                    (0x204E8+1)
 
 // Command offsets
-#define TARGET_CMD_LIST_BEGIN             (0xDEAD)
-#define TARGET_CMD_LIST_END               (0xDEAD)
+#define TARGET_CMD_LIST_BEGIN             (0x29DD4)
+#define TARGET_CMD_LIST_END               (0x29DEC)
 //#define TARGET_CMD_RAMDISK                (0xDEAD+1)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0xDEAD+1)
-#define TARGET_TASK_RUNNING               (0xDEAD)
-#define TARGET_TASK_LIST                  (0xDEAD)
+#define TARGET_TASK_YIELD                 (0x11F70+1)
+#define TARGET_TASK_RUNNING               (0x29C94)
+#define TARGET_TASK_LIST                  (0x29D2C)
 
 // AES offsets
-#define TARGET_AES_CRYPTO_CMD             (0xDEAD+1)
+#define TARGET_AES_CRYPTO_CMD             (0x132E0+1)
 
 // BDev offsets
-#define TARGET_BDEV_LIST                  (0xDEAD)
+#define TARGET_BDEV_LIST                  (0x2D800)
 
 // Image offsets
-#define TARGET_IMAGE_LIST                 (0xDEAD) 
+#define TARGET_IMAGE_LIST                 (0x29C64)
 
 // Filesystem offsets
-#define TARGET_FS_MOUNT                   (0xDEAD+1)
-#define TARGET_FS_UNMOUNT                 (0xDEAD+1)
-#define TARGET_FS_LOAD_FILE               (0xDEAD+1)
+//#define TARGET_FS_MOUNT                   (0xDEAD+1)
+//#define TARGET_FS_UNMOUNT                 (0xDEAD+1)
+//#define TARGET_FS_LOAD_FILE               (0xDEAD+1)
 
 // Kernel offsets
-#define TARGET_KERNEL_LOAD                (0xDEAD+1)
-#define TARGET_KERNEL_PHYMEM              (0xDEAD)
+#define TARGET_KERNEL_LOAD                (0xE674+1)
+#define TARGET_KERNEL_PHYMEM              (0x2E240)
+#define TARGET_KERNEL_BOOTARGS            (0x2372C)
 
 // NVRAM offset
-#define TARGET_NVRAM_LIST                 (0xDEAD)
+#define TARGET_NVRAM_LIST                 (0x29D70)
 
 #endif // OFFSETS_H
