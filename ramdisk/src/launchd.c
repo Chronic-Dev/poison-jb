@@ -21,6 +21,7 @@ const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
 const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
 const char* capable[] = { "/capable", "K48AP", "hide-non-default-apps", NULL };
+const char* afc2add[] = { "/afc2add", NULL };
 
 static char** envp = NULL;
 
@@ -38,9 +39,11 @@ int install_files() {
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	if (ret < 0) return -1;
 
-	puts("Installing Services.plist\n");
-	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
+	puts("Adding AFC2...\n");
+	ret = install("/files/afc2add", "/mnt/afc2add", 0, 80, 0755);
 	if (ret < 0) return -1;
+	fsexec(afc2add, cache_env);
+	unlink("/mnt/afc2add");
 
 #ifdef INSTALL_HACKTIVATION
 	puts("Installing hacktivate.dylib...\n");

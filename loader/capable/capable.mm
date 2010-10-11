@@ -22,9 +22,9 @@ int main(int argc, char **argv, char **envp) {
 	[capabilities removeObjectForKey:remove];
 	[plist setObject:capabilities forKey:@"capabilities"];
 	[plist writeToFile:plPath atomically:YES];
-	return 0;
-
 	[p drain];
+
+	return 0;
 }
 
 // vim:ft=objc

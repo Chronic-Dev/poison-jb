@@ -10,7 +10,7 @@ Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm Loade
 Bootstrap_FILES = Bootstrap.m
 Bootstrap_INSTALL_PATH = /Applications/Loader.app/
 
-SUBPROJECTS = sachet capable
+SUBPROJECTS = sachet capable afc2add
 
 include $(FW_MAKEDIR)/application.mk
 include $(FW_MAKEDIR)/tool.mk
@@ -24,6 +24,7 @@ copy:: stage
 	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
 	cp $(FW_STAGING_DIR)/sachet ../ramdisk/files/sachet
 	cp $(FW_STAGING_DIR)/capable ../ramdisk/files/capable
+	cp $(FW_STAGING_DIR)/afc2add ../ramdisk/files/afc2add
 	
 real-clean:
 	rm -rf _
