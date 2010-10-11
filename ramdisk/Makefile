@@ -8,8 +8,10 @@ BIN2C=../tools/bin2c
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
 
-RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
-RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+#RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
+RAMDISK_IV=6800a52c8761b30b001327ea9b918653 
+#RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+RAMDISK_KEY=53e72495ea0d5dba53a1eae7529d6a95e8eb1d5d9185298c0f3323bc2c27f26f 
 RAMDISK_TEMPLATE=018-7074-092.dmg
 
 LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
@@ -24,14 +26,14 @@ UNAME := $(shell uname -s)
 PWD = $(shell pwd)
 
 ifeq ($(UNAME),Darwin)
-all: launchd ramdisk encrypt
+all: launchd ramdisk encrypt stage
 
 clean:
 	rm -rf ramdisk.img3 ramdisk.dmg
 	rm -rf src/*.o src/launchd
 	
 else
-all: encrypt
+all: stage
 clean:
 endif
 
@@ -50,4 +52,7 @@ ramdisk: launchd
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	$(BIN2C) ramdisk.img3 ../injector/resources/ramdisk.h ramdisk
+	xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
+	
+stage:
+	$(BIN2C) ramdisk.dmg ../injector/resources/ramdisk.h ramdisk

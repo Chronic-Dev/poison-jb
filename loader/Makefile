@@ -1,5 +1,5 @@
 UNAME := $(shell uname -s)
-
+SYSROOT=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.0.sdk
 ifeq ($(UNAME),Darwin)
 GO_EASY_ON_ME=1
 include theos/makefiles/common.mk
@@ -10,8 +10,11 @@ Loader_FILES = main.m Callback.m MemLoaderOperation.m LoaderAppDelegate.mm Loade
 Bootstrap_FILES = Bootstrap.m
 Bootstrap_INSTALL_PATH = /Applications/Loader.app/
 
+SUBPROJECTS = sachet capable afc2add
+
 include $(FW_MAKEDIR)/application.mk
 include $(FW_MAKEDIR)/tool.mk
+include $(FW_MAKEDIR)/aggregate.mk
 
 after-Loader-stage::
 	$(FAKEROOT) chmod 6755 $(FW_SHARED_BUNDLE_RESOURCE_PATH)/Loader
@@ -19,6 +22,9 @@ after-Loader-stage::
 copy:: stage
 	rm -rf ../ramdisk/files/Loader.app
 	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
+	cp $(FW_STAGING_DIR)/sachet ../ramdisk/files/sachet
+	cp $(FW_STAGING_DIR)/capable ../ramdisk/files/capable
+	cp $(FW_STAGING_DIR)/afc2add ../ramdisk/files/afc2add
 	
 real-clean:
 	rm -rf _

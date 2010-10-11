@@ -56,7 +56,12 @@ typedef struct usb_control_request {
 	char data[];
 } usb_control_request;
 
+irecv_error_t mobiledevice_openpipes(irecv_client_t client);
+void mobiledevice_closepipes(irecv_client_t client);
+
 irecv_error_t mobiledevice_connect(irecv_client_t* client) {
+	irecv_error_t ret;
+	
 	SP_DEVICE_INTERFACE_DATA currentInterface;
 	HDEVINFO usbDevices;
 	DWORD i;
@@ -129,25 +134,43 @@ irecv_error_t mobiledevice_connect(irecv_client_t* client) {
 	SetupDiDestroyDeviceInfoList(usbDevices);
 	free(path);
 	
-	if(_client->iBootPath && !(_client->hIB = CreateFile(_client->iBootPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
-		irecv_close(_client);
-		return IRECV_E_UNABLE_TO_CONNECT;
-	}
-	if(_client->DfuPath && !(_client->hDFU = CreateFile(_client->DfuPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL))) {
-		irecv_close(_client);
-		return IRECV_E_UNABLE_TO_CONNECT;
-	}
-
-	if (_client->iBootPath == NULL) {
-		_client->mode = kDfuMode;
-		_client->handle = _client->hDFU;
-	} else {
-		_client->mode = kRecoveryMode2;
-		_client->handle = _client->hIB;
-	}
+	ret = mobiledevice_openpipes(_client);
+	if (ret != IRECV_E_SUCCESS) return ret;
 	
 	*client = _client;
 	return IRECV_E_SUCCESS;
+}
+
+irecv_error_t mobiledevice_openpipes(irecv_client_t client) {
+	if (client->iBootPath && !(client->hIB = CreateFile(client->iBootPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL))) {
+		irecv_close(client);
+		return IRECV_E_UNABLE_TO_CONNECT;
+	}
+	if (client->DfuPath && !(client->hDFU = CreateFile(client->DfuPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL))) {
+		irecv_close(client);
+		return IRECV_E_UNABLE_TO_CONNECT;
+	}
+
+	if (client->iBootPath == NULL) {
+		client->mode = kDfuMode;
+		client->handle = client->hDFU;
+	} else {
+		client->mode = kRecoveryMode2;
+		client->handle = client->hIB;
+	}
+	
+	return IRECV_E_SUCCESS;
+}
+
+void mobiledevice_closepipes(irecv_client_t client) {
+	if (client->hDFU!=NULL) {
+		CloseHandle(client->hDFU);
+		client->hDFU = NULL;
+	}
+	if (client->hIB!=NULL) {
+		CloseHandle(client->hIB);
+		client->hIB = NULL;
+	}
 }
 #endif
 
@@ -185,6 +208,11 @@ int irecv_control_transfer( irecv_client_t client,
 #ifndef WIN32
 	return libusb_control_transfer(client->handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
 #else
+	DWORD count = 0;
+	DWORD ret;
+	BOOL bRet;
+	OVERLAPPED overlapped;
+	
 	if (data == NULL) wLength = 0;
 	
 	usb_control_request* packet = (usb_control_request*) malloc(sizeof(usb_control_request) + wLength);
@@ -194,13 +222,22 @@ int irecv_control_transfer( irecv_client_t client,
 	packet->wIndex = wIndex;
 	packet->wLength = wLength;
 	
-	DWORD count = 0;
 	if (bmRequestType < 0x80 && wLength > 0) {
 		memcpy(packet->data, data, wLength);
 	}
-	if (DeviceIoControl(client->handle, 0x2200A0, packet, sizeof(usb_control_request) + wLength, packet, sizeof(usb_control_request) + wLength, &count, NULL) == 0) {
+	
+	memset(&overlapped, 0, sizeof(overlapped));
+	overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	DeviceIoControl(client->handle, 0x2200A0, packet, sizeof(usb_control_request) + wLength, packet, sizeof(usb_control_request) + wLength, NULL, &overlapped);
+	ret = WaitForSingleObject(overlapped.hEvent, timeout);
+	bRet = GetOverlappedResult(client->handle, &overlapped, &count, FALSE);
+	CloseHandle(overlapped.hEvent);
+	if (!bRet) {
+		CancelIo(client->handle);
+		free(packet);
 		return -1;
 	}
+	
 	count -= sizeof(usb_control_request);
 	if (count > 0) {
 		if (bmRequestType >= 0x80) {
@@ -500,14 +537,7 @@ irecv_error_t irecv_close(irecv_client_t client) {
 			free(client->DfuPath);
 			client->DfuPath = NULL;
 		}
-		if (client->hDFU!=NULL) {
-			CloseHandle(client->hDFU);
-			client->hDFU = NULL;
-		}
-		if (client->hIB!=NULL) {
-			CloseHandle(client->hIB);
-			client->hIB = NULL;
-		}
+		mobiledevice_closepipes(client);
 #endif
 		free(client);
 		client = NULL;

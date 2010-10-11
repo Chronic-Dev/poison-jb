@@ -20,7 +20,7 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-void* find_function(const char* name);
+void* find_function(const char* name, unsigned char* target, unsigned char* base);
 void* find_string(const char* name);
 
 #endif /* LOCK_H */

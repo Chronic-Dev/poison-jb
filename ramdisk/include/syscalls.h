@@ -27,6 +27,7 @@ int stat(const char* path, struct stat* buf);
 int reboot(int howto);
 int mlock(const void* addr, unsigned int len);
 int mkdir(const char* path, mode_t mode);
+int rmdir(const char* path);
 int mount(const char* filesystemtype, const char* target, int mountflags, void *source);
 int unmount(const char* dir, int flags);
 int access(const char *path, int mode);

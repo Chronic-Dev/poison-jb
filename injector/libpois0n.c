@@ -10,11 +10,15 @@
 #include "ramdisk.h"
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
+#include "payloads/iBSS.n88ap.h"
 #include "payloads/iBSS.n90ap.h"
+#include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
-//#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.n88ap.h"
 #include "payloads/iBoot.n90ap.h"
+#include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
 
 int libpois0n_debug = 1;
@@ -29,7 +33,7 @@ int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
 }
 
 void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
-	double value = ((double) progress / (double) info->length) * 100.0;
+	double value = ((double) progress * 100.0);
 	progress_callback(value, user_object);
 }
 
@@ -130,6 +134,7 @@ int upload_dfu_image(const char* type) {
 		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
+	return 0;
 }
 
 int upload_firmware_image(const char* type) {
@@ -201,9 +206,27 @@ int upload_firmware_payload(char* type) {
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
 		if(!strcmp(type, "iBoot")) {
-			//payload = iBoot_k48ap;
-			//size = sizeof(iBoot_k48ap);
+			payload = iBoot_k48ap;
+			size = sizeof(iBoot_k48ap);
 			debug("Loaded payload for iBoot on k48ap\n");
+		}
+		break;
+	
+	case DEVICE_IPHONE3GS:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n88ap;
+			size = sizeof(iBSS_n88ap);
+			debug("Loaded payload for iBSS on n88ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n88ap;
+			//size = sizeof(iBEC_n88ap);
+			debug("Loaded payload for iBEC on n88ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n88ap;
+			size = sizeof(iBoot_n88ap);
+			debug("Loaded payload for iBoot on n88ap\n");
 		}
 		break;
 
@@ -222,6 +245,24 @@ int upload_firmware_payload(char* type) {
 			payload = iBoot_n90ap;
 			size = sizeof(iBoot_n90ap);
 			debug("Loaded payload for iBoot on n90ap\n");
+		}
+		break;
+
+	case DEVICE_IPOD3G:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n18ap;
+			size = sizeof(iBSS_n18ap);
+			debug("Loaded payload for iBSS on n18ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n18ap;
+			//size = sizeof(iBEC_n18ap);
+			debug("Loaded payload for iBEC on n18ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n18ap;
+			size = sizeof(iBoot_n18ap);
+			debug("Loaded payload for iBoot on n18ap\n");
 		}
 		break;
 
@@ -267,58 +308,32 @@ int upload_firmware_payload(char* type) {
 	return 0;
 }
 
-int overwrite_sha1_registers() {
-	irecv_error_t error = 0;
-
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x80)) {
-		error("Unable to shift upload counter\n");
-		return -1;
-	}
-
-	debug("Resetting device\n");
-	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Overwriting SHA1 registers\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to overwrite SHA1 registers\n");
-		return -1;
-	}
-	
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 int upload_exploit() {
 	irecv_error_t error = 0;
+	unsigned int i = 0;
+	unsigned char buf[0x800];
+	unsigned char shellcode[0x800];
+	unsigned int max_size = 0x24000;
+	unsigned int load_address = 0x84000000;
+	unsigned int stack_address = 0x84033F98;
+	unsigned int shellcode_address = 0x84023001;
+	unsigned int shellcode_length = 0;
 
+	if (device->chip_id == 8930) {
+		max_size = 0x2C000;
+		stack_address = 0x8403BF9C;
+		shellcode_address = 0x8402B001;
+	}
+	if (device->chip_id == 8920) {
+		max_size = 0x24000;
+		stack_address = 0x84033FA4;
+		shellcode_address = 0x84023001;
+	}
+
+	memset(shellcode, 0x0, 0x800);
+	shellcode_length = sizeof(exploit);
+	memcpy(shellcode, exploit, sizeof(exploit));
+	
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
 	if (error != IRECV_E_SUCCESS) {
@@ -326,41 +341,37 @@ int upload_exploit() {
 		return -1;
 	}
 
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x140)) {
-		error("Unable to shift upload counter\n");
-		return -1;
+	memset(buf, 0xCC, 0x800);
+	for(i = 0; i < 0x800; i += 0x40) {
+		unsigned int* heap = (unsigned int*)(buf+i);
+		heap[0] = 0x405;
+		heap[1] = 0x101;
+		heap[2] = shellcode_address;
+		heap[3] = stack_address;
 	}
 
-	debug("Resetting device\n");
+	debug("Sending chunk headers\n");
+	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+
+	memset(buf, 0xCC, 0x800);
+	for(i = 0; i < (max_size - (0x800 * 3)); i += 0x800) {
+		irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
+	}
+
+	debug("Sending exploit payload\n");
+	irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000);
+
+	debug("Sending fake data\n");
+	memset(buf, 0xBB, 0x800);
+	irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000);
+	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10);
+
+	debug("Executing exploit\n");
+	irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000);
+
 	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Sending exploit data\n");
-	error = irecv_send_buffer(client, (unsigned char*) exploit, sizeof(exploit), 0);
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to send exploit data\n");
-		return -1;
-	}
-
-	debug("Forcing prefetch abort exception\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to force prefetch abort exception\n");
-		return -1;
-	}
+	irecv_finish_transfer(client);
+	debug("Exploit sent\n");
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 2);
@@ -461,13 +472,36 @@ int boot_ramdisk() {
 	irecv_setenv(client, "auto-boot", "false");
 	irecv_saveenv(client);
 
-	debug("Loading and patching iBoot\n");
-	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
-	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	debug("Loading iBoot\n");
+	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Shifting iBoot\n");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Patching iBoot\n");
+	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Jumping into iBoot\n");
+	error = irecv_send_command(client, "go jump 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 10);
+	client = irecv_reconnect(client, 5);
 	if (client == NULL) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -498,7 +532,7 @@ int boot_ramdisk() {
 	}
 
 	debug("Executing ramdisk\n");
-	error = irecv_send_command(client, "go ramdisk");
+	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -512,7 +546,7 @@ int boot_ramdisk() {
 	}
 
 	debug("Moving ramdisk\n");
-	error = irecv_send_command(client, "go memory copy 0x41000040 0x44000000 0x100000");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -535,10 +569,33 @@ int boot_tethered() {
 	irecv_setenv(client, "auto-boot", "false");
 	irecv_saveenv(client);
 
-	debug("Loading and patching iBoot\n");
-	irecv_send_command(client, "go image load 0x69626F74 0x41000000");
-	irecv_send_command(client, "go patch 0x41000000 0x38000");
-	irecv_send_command(client, "go jump 0x41000040");
+	debug("Loading iBoot\n");
+	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Shifting iBoot\n");
+	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Patching iBoot\n");
+	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
+
+	debug("Jumping into iBoot\n");
+	error = irecv_send_command(client, "go jump 0x41000000");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute iBSS payload\n");
+		return -1;
+	}
 
 	debug("Reconnecting to device\n");
 	client = irecv_reconnect(client, 10);
@@ -547,6 +604,7 @@ int boot_tethered() {
 		return -1;
 	}
 
+	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
@@ -561,11 +619,7 @@ int boot_tethered() {
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
 
-	//irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
-	irecv_saveenv(client);
-
-	irecv_send_command(client, "go fsboot");
+	error = irecv_send_command(client, "go fsboot");
 
 	return 0;
 }
@@ -600,18 +654,6 @@ int execute_ibss_payload() {
 			return -1;
 		}
 
-		error = irecv_setenv(client, "auto-boot", "true");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
 		if(boot_ramdisk() < 0) {
 			error("Unable to boot device into tethered mode\n");
 			return -1;
@@ -625,63 +667,16 @@ int execute_ibss_payload() {
 			return -1;
 		}
 	}
-	// If boot-args is 2 then boot tethered in verbose (needed?)
+	// If boot-args is 2, then don't boot kernel, just load iBSS payload
 	else if(!strcmp(bootargs, "2")) {
-		debug("Booting device in verbose mode\n");
-		if(boot_verbose() < 0) {
-			error("Unable to boot device into verbose mode\n");
-			return -1;
-		}
-	}
-	// If boot-args is 3, then don't boot kernel, just execute payload
-	else if(!strcmp(bootargs, "3")) {
 		debug("Booting iBSS in payload mode\n");
 		return 0;
 	}
-	// This is for testing!
-	//   it will alternate between booting ramdisk and filesystm
-	else if(!strcmp(bootargs, "4")) {
-		debug("Booting ramdisk in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "5");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_setenv(client, "auto-boot", "false");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_ramdisk() < 0) {
-			error("Unable to boot jailbreaking ramdisk\n");
-			return -1;
-		}
-		return 0;
-	}
-	else if(!strcmp(bootargs, "5")) {
-		debug("Booting filesystem in debug mode\n");
-		error = irecv_setenv(client, "boot-args", "4");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		error = irecv_saveenv(client);
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
-			return -1;
-		}
-
-		if(boot_tethered() < 0) {
-			error("Unable to boot tethered filesystem\n");
+	// If boot-args is 3 then boot tethered in verbose (needed?)
+	else if(!strcmp(bootargs, "3")) {
+		debug("Booting device in verbose mode\n");
+		if(boot_verbose() < 0) {
+			error("Unable to boot device into verbose mode\n");
 			return -1;
 		}
 	}
@@ -745,7 +740,7 @@ int pois0n_is_compatible() {
 	}
 	info("Identified device as %s\n", device->product);
 
-	if (device->chip_id != 8930 || device->index == DEVICE_APPLETV2) {
+	if (device->chip_id != 8930 && device->chip_id != 8922 && device->chip_id != 8920) {
 		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
@@ -762,12 +757,6 @@ void pois0n_exit() {
 int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
-	debug("Preparing to overwrite SHA1 registers\n");
-	if(overwrite_sha1_registers() < 0) {
-		error("Unable to overwrite SHA1 registers\n");
-		return -1;
-	}
-	
 	debug("Preparing to upload exploit data\n");
 	if(upload_exploit() < 0) {
 		error("Unable to upload exploit data\n");

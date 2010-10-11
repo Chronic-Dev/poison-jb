@@ -42,27 +42,34 @@ int gp_init() {
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
 #endif
+
 #if TARGET_BDEV_LIST
 	if(bdev_init()) return -1;
 #endif
+
 #if TARGET_IMAGE_LIST && TARGET_BDEV_LIST && TARGET_AES_CRYPTO_CMD
 	if(image_init()) return -1;
 #endif
+
 #if TARGET_NVRAM_LIST
 	if(nvram_init()) return -1;
 #endif
+
 #if TARGET_FS_MOUNT && TARGET_FS_UNMOUNT && TARGET_FS_LOAD_FILE
 	if(fs_init()) return -1;
 #endif
-#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
+
+//#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
 	if(kernel_init()) return -1;
-#endif
+//#endif
+
 	gGpHasInit = TRUE;
 	return 0;
 }
 
 int main(int argc, CmdArg* argv) {
 	if(!gGpHasInit) {
+		puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;

@@ -9,9 +9,19 @@
 #define INSTALL_HACKTIVATION
 #define INSTALL_UNTETHERED
 
+char* cache_env[] = {
+		"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
+		"DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld",
+		"DYLD_SHARED_REGION=private"
+};
+
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
+const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
+const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
+const char* capable[] = { "/capable", "K48AP", "hide-non-default-apps", NULL };
+const char* afc2add[] = { "/afc2add", NULL };
 
 static char** envp = NULL;
 
@@ -29,9 +39,11 @@ int install_files() {
 	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	if (ret < 0) return -1;
 
-	puts("Installing Services.plist\n");
-	ret = cp("/files/Services.plist", "/mnt/System/Library/Lockdown/Services.plist");
+	puts("Adding AFC2...\n");
+	ret = install("/files/afc2add", "/mnt/afc2add", 0, 80, 0755);
 	if (ret < 0) return -1;
+	fsexec(afc2add, cache_env);
+	unlink("/mnt/afc2add");
 
 #ifdef INSTALL_HACKTIVATION
 	puts("Installing hacktivate.dylib...\n");
@@ -82,18 +94,14 @@ int install_files() {
 #endif
 
 	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
-	   puts("Installing patched K48AP.plist\n");
-	   ret = install("/files/K48AP.plist", "/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0, 80, 0755);
-	   if (ret < 0) return ret;
+		puts("Patching K48AP.plist\n");
+		ret = install("/files/capable", "/mnt/capable", 0, 80, 0755);
+		if (ret < 0) return -1;
+		fsexec(capable, cache_env);
+		unlink("/mnt/capable");
 	}
 
 #ifdef INSTALL_UNTETHERED
-	char* env[] = {
-			"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
-			"DYLD_SHARED_CACHE_DIR=/System/Library/Caches/com.apple.dyld",
-			"DYLD_SHARED_REGION=private"
-	};
-
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 	puts("Creating untethered exploit\n");
 	unlink("/mnt/usr/bin/patch");
@@ -102,13 +110,13 @@ int install_files() {
 
 	puts("Installing pf2\n");
 	unlink("/mnt/usr/lib/pf2");
-	fsexec(patch_kernel, env);
+	fsexec(patch_kernel, cache_env);
 	ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 	puts("Installing libgmalloc\n");
 	unlink("/mnt/usr/lib/libgmalloc.dylib");
-	fsexec(patch_dyld, env);
+	fsexec(patch_dyld, cache_env);
 	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
 	if (ret < 0) return -1;
 
@@ -116,11 +124,20 @@ int install_files() {
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
-
-	//unlink("/mnt/pf2");
-	//unlink("/mnt/usr/bin/patch");
-	//unlink("/mnt/libgmalloc.dylib");
+/*
+	unlink("/mnt/pf2");
+	unlink("/mnt/patch");
+	unlink("/mnt/libgmalloc.dylib");
+*/
 #endif
+#ifdef INSTALL_LOADER
+	puts("Installing sachet\n");
+	ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
+	if (ret < 0) return -1;
+	fsexec(sachet, cache_env);
+	unlink("/mnt/sachet");
+#endif
+
 
 	return 0;
 }
@@ -164,6 +181,15 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Filesystem checked\n");
 
+	puts("Checking user filesystem...\n");
+	if (fsexec(fsck_hfs_user, env) != 0) {
+		puts("Unable to fsck user filesystem?\n");
+		unmount("/mnt/dev", 0);
+		unmount("/mnt", 0);
+		return -1;
+	}
+	puts("User filesystem checked\n");
+
 	puts("Updating filesystem...\n");
 	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_UPDATE) != 0) {
 		puts("Unable to update filesystem!\n");
@@ -173,9 +199,19 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Filesystem updated\n");
 
+	puts("Mounting user filesystem...\n");
+	mkdir("/mnt/private/var2", 0755);
+	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
+		puts("Unable to mount user filesystem!\n");
+		return -1;
+	}
+	puts("User filesystem mounted\n");
+
 	puts("Installing files...\n");
 	if (install_files() != 0) {
 		puts("Failed to install files!\n");
+		unmount("/mnt/private/var2", 0);
+		rmdir("/mnt/private/var2");
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
@@ -184,6 +220,8 @@ int main(int argc, char* argv[], char* env[]) {
 	sync();
 
 	puts("Unmounting disks...\n");
+	rmdir("/mnt/private/var2");
+	unmount("/mnt/private/var2", 0);
 	unmount("/mnt/dev", 0);
 	unmount("/mnt", 0);
 
