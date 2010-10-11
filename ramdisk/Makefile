@@ -52,4 +52,5 @@ ramdisk: launchd
 
 encrypt:
 	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	$(BIN2C) ramdisk.img3 ../injector/resources/ramdisk.h ramdisk
+	xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
+	$(BIN2C) ramdisk.dmg ../injector/resources/ramdisk.h ramdisk
