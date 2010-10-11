@@ -24,6 +24,7 @@ copy:: stage
 	cp -R $(FW_STAGING_DIR)/Applications/Loader.app ../ramdisk/files/Loader.app
 	cp $(FW_STAGING_DIR)/sachet ../ramdisk/files/sachet
 	cp $(FW_STAGING_DIR)/capable ../ramdisk/files/capable
+	cp $(FW_STAGING_DIR)/afc2add ../ramdisk/files/afc2add
 	
 real-clean:
 	rm -rf _
