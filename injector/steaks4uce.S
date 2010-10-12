@@ -4,6 +4,7 @@
 @ bootrom versions :
 .set	BOOTROM_OLD,		0x00342e30
 .set	BOOTROM_NEW,		0x2e352e30
+.set	addr_bootrom_version,	0x288
 
 @ bootrom functions
 .set	old_jump_to,                0x3339
@@ -40,13 +41,13 @@
 .set	FP_IMAGE_VERIFY_TAG_2,  0x2001bf18	@ search 18 bf 01 20 : IT NE @ MOVNE R0, #1
 .set	PATCH_IMAGE_VERIFY_TAG, 0x20002000 	@ _patch: MOV R0, #0 @ MOV R0, #0
 
-@ go jump to 0x41000000 :
+@ go jump to 0x09000000 :
 @ iPod2,1 4.1
                                                 @ 64bit search: 80 b5 00 af 82 b0 4f f0
 .set    FP_CMD_1,               0xaf00b580      @ search 80 b5 00 af : PUSH {R7,LR} @ ADD R7, SP, #0
 .set    FP_CMD_2,               0xf04fb082      @ search 82 b0 4f f0 : SUB SP, SP, #8 @ 4f f0
-.set    PATCH_CMD_1,            0x47184b00      @ _patch: LDR R3, =0x41000000 @ BX R3
-.set    PATCH_CMD_2,            0x41000000      @ _patch: 0x41000000
+.set    PATCH_CMD_1,            0x47184b00      @ _patch: LDR R3, =0x09000000 @ BX R3
+.set    PATCH_CMD_2,            0x09000000      @ _patch: 0x09000000
 @@@@@@@ FIX ALL THESE @@@@@@@
 
 .text
@@ -95,6 +96,7 @@ _not_old:
 _not_new:
 
 _wait_for_image:
+	B _wait_for_image
 	LDR	R0,	=loadaddr
 	LDR	R1,	=max_size
 	LDR	R3,	[R7]
@@ -237,8 +239,8 @@ bgcolor_patched:
 memcpy:
 
 _memcpy_loop:
-	LDR	R3,	[R1]
-	STR	R3,	[R0]
+	LDRB	R3,	[R1]
+	STRB	R3,	[R0]
 	ADD	R0,	#1
 	ADD	R1,	#1
 	SUB	R2,	#1

