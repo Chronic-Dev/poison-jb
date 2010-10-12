@@ -16,6 +16,8 @@ PoisonMain::PoisonMain(QWidget *parent) :
     time = 3;
     timer = new QTimer();
     gui = ui;
+    pois0n_init();
+    pois0n_set_callback(&update_progress, ui);
 }
 
 PoisonMain::~PoisonMain()
@@ -44,7 +46,7 @@ void PoisonMain::countdownDFU() {
     t->setNum(time, 10);
     updateTimerText(*t);
 
-    if (pois0n_is_ready() != -1) {
+    /*if (pois0n_is_ready() != -1) {
         ui->lblStep3->setText("Release power; continue holding home");
         timer->stop();
         ui->cmdJailbreak->setEnabled(true);
@@ -52,8 +54,9 @@ void PoisonMain::countdownDFU() {
         timer = NULL;
         delete timer;
         delete t;
+	doJailbreak();
         return;
-    }
+    }*/
 
     if (time == 0) {
         switch (step) {
@@ -80,6 +83,7 @@ void PoisonMain::countdownDFU() {
                timer = NULL;
                delete timer;
                delete t;
+	       doJailbreak();
                return;
                break;
         }
@@ -110,14 +114,18 @@ void PoisonMain::Jailbreak() {
     ui->cmdJailbreak->setEnabled(false);
     ui->cmdReset->setEnabled(true);
     ui->cmdJailbreak->setText("Entering DFU...");
+}
 
+void PoisonMain::doJailbreak() {
     //We should be in DFU now
+    if (pois0n_is_ready() == -1) {
+        ui->cmdJailbreak->setText("Failed to enter DFU");
+        return;
+    }
     if (pois0n_is_compatible() == -1) {
         ui->cmdJailbreak->setText("Incompatible Device");
         return;
     }
-    pois0n_init();
-    pois0n_set_callback(&update_progress, ui);
     ui->cmdJailbreak->setText("Exploiting...");
     pois0n_inject();
     pois0n_exit();

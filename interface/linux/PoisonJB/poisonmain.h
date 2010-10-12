@@ -26,6 +26,7 @@ private:
     Ui::PoisonMain *ui;
     int step;
     int time;
+    void doJailbreak();
     QTimer *timer;
 };
 
