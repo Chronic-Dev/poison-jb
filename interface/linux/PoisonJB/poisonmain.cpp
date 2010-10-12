@@ -46,7 +46,7 @@ void PoisonMain::countdownDFU() {
     t->setNum(time, 10);
     updateTimerText(*t);
 
-    /*if (pois0n_is_ready() != -1) {
+    if (pois0n_is_ready() != -1) {
         ui->lblStep3->setText("Release power; continue holding home");
         timer->stop();
         ui->cmdJailbreak->setEnabled(true);
@@ -56,7 +56,7 @@ void PoisonMain::countdownDFU() {
         delete t;
 	doJailbreak();
         return;
-    }*/
+    }
 
     if (time == 0) {
         switch (step) {
