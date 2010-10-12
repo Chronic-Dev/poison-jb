@@ -1,6 +1,9 @@
 CC = gcc
 AR = ar
 CP = cp
+AS = arm-elf-as
+OBJCOPY = arm-elf-objcopy
+BIN2C = ../tools/bin2c
 UNAME := $(shell uname -s)
 ADDOBJ = ""
 
@@ -20,7 +23,15 @@ else
 endif
 
 all:
-	../tools/bin2c ../payload/bundles/iPad1,1/7B500/iBoot/payload payloads/iBoot.k48ap.h iBoot_k48ap
+	$(AS) -mthumb -o limera1n.o limera1n.S
+	$(OBJCOPY) -O binary limera1n.o limera1n.bin
+	$(BIN2C) limera1n.bin limera1n.h limera1n
+	
+	$(AS) -mthumb -o steaks4uce.o steaks4uce.S
+	$(OBJCOPY) -O binary steaks4uce.o steaks4uce.bin
+	$(BIN2C) steaks4uce.bin steaks4uce.h steaks4uce
+	
+	$(BIN2C) ../payload/bundles/iPad1,1/7B500/iBoot/payload payloads/iBoot.k48ap.h iBoot_k48ap
 	$(CC) $(CFLAGS) -c libpois0n.c libirecovery.c libpartial.c
 	$(AR) rs libpois0n.a libpois0n.o libirecovery.o libpartial.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o injectpois0n injectpois0n.c libpois0n.a $(ADDOBJ)
