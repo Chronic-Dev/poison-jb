@@ -12,8 +12,8 @@
 .set	i3gs_old_jump_to,		0x3969
 .set	i3gs_old_usb_wait_for_image,	0x349d
 .set	i3gs_old_aes_crypto_cmd,	0x925
-.set	i3gs_new_jump_to,		0x3969
-.set	i3gs_new_usb_wait_for_image,	0x349d
+.set	i3gs_new_jump_to,		0x3971
+.set	i3gs_new_usb_wait_for_image,	0x34a5
 .set	i3gs_new_aes_crypto_cmd,	0x925
 .set	ipt3g_jump_to,			0x39dd
 .set	ipt3g_usb_wait_for_image,	0x36e5
