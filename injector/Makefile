@@ -1,7 +1,8 @@
 CC = gcc
 AR = ar
 CP = cp
-AS = arm-elf-as
+ARMCC = arm-elf-gcc
+ARMAS = arm-elf-as
 OBJCOPY = arm-elf-objcopy
 BIN2C = ../tools/bin2c
 UNAME := $(shell uname -s)
@@ -23,13 +24,21 @@ else
 endif
 
 all:
-	$(AS) -mthumb -o limera1n.o limera1n.S
+	$(ARMAS) -mthumb -o limera1n.o limera1n.S
 	$(OBJCOPY) -O binary limera1n.o limera1n.bin
 	$(BIN2C) limera1n.bin limera1n.h limera1n
 	
-	$(AS) -mthumb -o steaks4uce.o steaks4uce.S
+	$(ARMAS) -mthumb -o steaks4uce.o steaks4uce.S
 	$(OBJCOPY) -O binary steaks4uce.o steaks4uce.bin
 	$(BIN2C) steaks4uce.bin steaks4uce.h steaks4uce
+	
+	$(ARMCC) -mcpu=arm10tdmi -s -Ttext=0x8402f7a0 -nostdlib -o shatter.o shatter.S
+	$(ARMAS) -mthumb -o shatter2.o shatter2.S
+	$(OBJCOPY) -O binary  shatter.o shatter.bin
+	$(OBJCOPY) -O binary  shatter2.o shatter2.bin
+	$(DD) if=shatter.bin of=shatter.dfu bs=1 seek=179200 conv=notrunc
+	$(DD) if=shatter2.bin of=shatter.dfu bs=1 seek=179328 conv=notrunc
+	$(BIN2C) shatter.dfu shatter.h shatter
 	
 	$(BIN2C) ../payload/bundles/iPad1,1/7B500/iBoot/payload payloads/iBoot.k48ap.h iBoot_k48ap
 	$(CC) $(CFLAGS) -c libpois0n.c libirecovery.c libpartial.c
@@ -39,3 +48,6 @@ all:
 		
 clean:
 	rm -rf *.o payloads resources libpois0n.a injectpois0n
+	rm -rf limera1n.h limera1n.bin 
+	rm -rf steaks4uce.h steaks4uce.bin 
+	rm -rf shatter.h shatter.bin shatter2.bin
