@@ -31,27 +31,25 @@
 @ patching related :
 .set	search_size_2,          0x200
 
-@@@@@@@ FIX ALL THESE @@@@@@@
 .set	FP_RSA_CHECK_1,         0x2aff781a	@ search 1a 78 ff 2a : LDRB R2, [R3] @ CMP R2, #0xff
-.set	FP_RSA_CHECK_2,         0x30fff04f	@ search 4f F0 ff 30 : MOV.W R0, #0xffffffff
+.set	FP_RSA_CHECK_2,         0x42402001	@ search 01 20 40 42 : MOVS R0, #1 @ NEGS R0, R0
 .set	PATCH_RSA_CHECK,        0x20002000	@ _patch: MOV R0, #0 @ MOV R0, #0
 
 .set	FP_PERMS_CHECK_1,       0xb590dff3	@ search f3 df 90 b5 : F3 DF @ PUSH {R4,R7,LR}
-.set	FP_PERMS_CHECK_2,       0x681b4b07	@ search 07 4b 1b 68 : LDR R3, =0x8402dB80 @ LDR R3, [R3]
-.set	PATCH_PERMS_CHECK,      0x33fff04f	@ _patch: MOV.W R3, #0xffffffff
+.set	FP_PERMS_CHECK_2,       0xbd901c20	@ search 20 1c 90 bd : MOVS R0, R4 @ POP {R4,R7,PC}
+.set	PATCH_PERMS_CHECK,      0xbd902000	@ _patch: MOV R0, #0 @ POP {R4,R7,PC}
 
-.set	FP_IMAGE_VERIFY_TAG_1,  0xf1d39a11	@ search 11 9a d3 f1 : LDR R2, [SP,#0x44] @ D3 F1
-.set	FP_IMAGE_VERIFY_TAG_2,  0x2001bf18	@ search 18 bf 01 20 : IT NE @ MOVNE R0, #1
-.set	PATCH_IMAGE_VERIFY_TAG, 0x20002000 	@ _patch: MOV R0, #0 @ MOV R0, #0
+.set	FP_IMAGE_VERIFY_TAG_1,  0x2b009b11	@ search 11 9b 00 2b : LDR R3, [SP,#0x44] @ CMP R3, #0
+.set	FP_IMAGE_VERIFY_TAG_2,  0xb0082001	@ search 01 20 08 b0 : MOV R0, #1 @ ADD SP, SP, #20
+.set	PATCH_IMAGE_VERIFY_TAG, 0xb0082000 	@ _patch: MOV R0, #0 @ ADD SP, SP, #20
 
 @ go jump to 0x09000000 :
 @ iPod2,1 4.1
-                                                @ 64bit search: 80 b5 00 af 82 b0 4f f0
-.set    FP_CMD_1,               0xaf00b580      @ search 80 b5 00 af : PUSH {R7,LR} @ ADD R7, SP, #0
-.set    FP_CMD_2,               0xf04fb082      @ search 82 b0 4f f0 : SUB SP, SP, #8 @ 4f f0
+                                                @ 64bit search: 90 b5 01 af 82 b0 f0 24
+.set    FP_CMD_1,               0xaf01b590      @ search 90 b5 01 af : PUSH {R4,R7,LR} @ ADD R7, SP, #4
+.set    FP_CMD_2,               0x24f0b082      @ search 82 b0 f0 24 : SUB SP, SP, #8 @ MOVS R4, #0xF0
 .set    PATCH_CMD_1,            0x47184b00      @ _patch: LDR R3, =0x09000000 @ BX R3
 .set    PATCH_CMD_2,            0x09000000      @ _patch: 0x09000000
-@@@@@@@ FIX ALL THESE @@@@@@@
 
 .text
 @main code -----------------------------------
@@ -226,13 +224,6 @@ image_verify_tag_patched:
 	LDR	R1,	=loadaddr
 	MOV	R2,	R5
 	LDR	R3,	=FP_CMD_2
-	BL	find64
-	CMP	R0,	#0
-	BNE	bgcolor_patch
-	LDR	R0,	=FP_CMD2_1
-	LDR	R1,	=loadaddr
-	MOV	R2,	R5
-	LDR	R3,	=FP_CMD2_2
 	BL	find64
 	CMP	R0,	#0
 	BEQ	bgcolor_patched
