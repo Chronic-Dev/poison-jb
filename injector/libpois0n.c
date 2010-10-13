@@ -311,6 +311,7 @@ int upload_firmware_payload(char* type) {
 }
 
 int steaks4uce_exploit() {
+	irecv_error_t error = 0;
 	int i, ret;
 	unsigned char data[0x800];
 	unsigned char payload[] = {
@@ -383,6 +384,14 @@ int steaks4uce_exploit() {
 		return -1;
 	}
 	info("steaks4uce sent & executed successfully.\n");
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 2);
+	if (client == NULL) {
+		debug("%s\n", irecv_strerror(error));
+		error("Unable to reconnect\n");
+		return -1;
+	}
 
 	return 0;
 }
