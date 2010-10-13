@@ -9,10 +9,12 @@
 @ bootrom functions
 .set	old_jump_to,                0x3339
 .set	old_usb_wait_for_image,	    0x30E9
+.set	old_usb_shutdown,	    0x1059
 .set	old_aes_crypto_cmd,         0x899
 
 .set	new_jump_to,                0x3341
 .set	new_usb_wait_for_image,	    0x30F1
+.set	new_usb_shutdown,	    0x1059
 .set	new_aes_crypto_cmd,         0x899
 
 @ general :
@@ -81,6 +83,10 @@ entry_point:
 	STR	R1,	[R7, #4]
 	LDR	R1,	=old_jump_to
 	STR	R1,	[R7, #8]
+	LDR	R1,	=old_usb_shutdown
+	MOV	R0,	R7
+	ADD	R0,	#0xC
+	STR	R1,	[R0]
 	B	_wait_for_image
 
 _not_old:
@@ -93,11 +99,19 @@ _not_old:
 	STR	R1,	[R7, #4]
 	LDR	R1,	=new_jump_to
 	STR	R1,	[R7, #8]
+	LDR	R1,	=new_usb_shutdown
+	MOV	R0,	R7
+	ADD	R0,	#0xC
+	STR	R1,	[R0]
 	B	_wait_for_image
 _not_new:
 
 _wait_for_image:
-	@B _wait_for_image
+	MOV	R0,	R7
+	ADD	R0,	#0xC
+	LDR	R3,	[R0]
+	BLX	R3
+	
 	LDR	R0,	=loadaddr
 	LDR	R1,	=max_size
 	LDR	R3,	[R7]
