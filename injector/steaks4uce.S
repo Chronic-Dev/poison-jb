@@ -226,13 +226,6 @@ image_verify_tag_patched:
 	LDR	R3,	=FP_CMD_2
 	BL	find64
 	CMP	R0,	#0
-	BNE	bgcolor_patch
-	LDR	R0,	=FP_CMD2_1
-	LDR	R1,	=loadaddr
-	MOV	R2,	R5
-	LDR	R3,	=FP_CMD2_2
-	BL	find64
-	CMP	R0,	#0
 	BEQ	bgcolor_patched
 bgcolor_patch:
 	LDR	R1,	=PATCH_CMD_1
