@@ -14,7 +14,7 @@
 
 .set	new_jump_to,                0x3341
 .set	new_usb_wait_for_image,	    0x30F1
-.set	new_usb_shutdown,	    0xDEAD
+.set	new_usb_shutdown,	    0x1059
 .set	new_aes_crypto_cmd,         0x899
 
 @ general :
