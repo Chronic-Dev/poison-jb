@@ -25,7 +25,8 @@
 .set	TAG_DATA,               0x44415441
 .set	TAG_KBAG,               0x4b424147
 .set	AES_TYPE_GID,           0x200
-.set	AES_MODE_128,           0x10000000
+.set	AES_MODE_128,           0x0
+@.set	AES_MODE_128,           0x10000000
 
 @ patching related :
 .set	search_size_2,          0x200
@@ -110,7 +111,7 @@ _wait_for_image:
 	ADD	R0,	#0xC
 	LDR	R3,	[R0]
 	BLX	R3
-
+	
 	LDR	R0,	=loadaddr
 	LDR	R1,	=max_size
 	LDR	R3,	[R7]
@@ -137,12 +138,12 @@ _wait_for_image:
 	MOV	R4,	#0x14
 	ADD	R1,	R5,	R4
 	ADD	R2,	R5,	R4
-	MOV	R3,	#0x30		@ KBAG_KEY_IV_SIZE
+	@MOV R2, #0			@ this is what they pass in bootrom? weird
+	MOV	R3,	#0x20		@ KBAG_KEY_IV_SIZE AES128
 	LDR	R4,	=AES_TYPE_GID
 	STR	R4,	[SP]
 	MOV	R4,	#0
 	STR	R4,	[SP, #4]
-	MOV	R4,	#0
 	STR	R4,	[SP, #8]
 	LDR	R4,	[R7, #4]
 	BLX	R4
@@ -151,8 +152,9 @@ _wait_for_image:
 	MOV	R4,	#0xc
 	ADD	R1,	R6,	R4
 	ADD	R2,	R6,	R4
+	@MOV	R2, #0			@ this is what they pass in bootrom? weird
 	LDR	R3,	[R6, #0x8]
-	LDR	R4,	=AES_MODE_256
+	LDR	R4,	=AES_MODE_128 @ for some reason this is 0 in bootrom as well
 	STR	R4,	[SP]
 	MOV	R4,	#0x24
 	ADD	R4,	R5
