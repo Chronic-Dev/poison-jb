@@ -25,29 +25,29 @@
 #define TARGET_BASEADDR                   (0x0FF00000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x0+1)
-#define TARGET_MALLOC                     (0x0+1)
-#define TARGET_JUMP_TO                    (0x0+1)
-#define TARGET_PRINTF                     (0x0+1)
-#define TARGET_VPRINTF                    (0x0+1)
+#define TARGET_FREE                       (0x9428+1)
+#define TARGET_MALLOC                     (0x9432+1)
+#define TARGET_JUMP_TO                    (0xDDE8+1)
+#define TARGET_PRINTF                     (0x1C734+1)
+#define TARGET_VPRINTF                    (0x1C6EC+1)
 
 // Command offsets
-#define TARGET_CMD_LIST_BEGIN             (0x0)
-#define TARGET_CMD_LIST_END               (0x0)
+#define TARGET_CMD_LIST_BEGIN             (0x26E3C)
+#define TARGET_CMD_LIST_END               (0x26E54)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0x0+1)
-#define TARGET_TASK_RUNNING               (0x0)
-#define TARGET_TASK_LIST                  (0x0)
+#define TARGET_TASK_YIELD                 (0xE69E+1)
+#define TARGET_TASK_RUNNING               (0x26D20)
+#define TARGET_TASK_LIST                  (0x26DB8)
 
 // AES offsets
-#define TARGET_AES_CRYPTO_CMD             (0x0+1)
+#define TARGET_AES_CRYPTO_CMD             (0xF4C0+1)
 
 // BDev offsets
-#define TARGET_BDEV_LIST                  (0x0)
+#define TARGET_BDEV_LIST                  (0x29600)
 
 // Image offsets
-#define TARGET_IMAGE_LIST                 (0x0)
+#define TARGET_IMAGE_LIST                 (0x25968)
 
 // Filesystem offsets
 //#define TARGET_FS_MOUNT                   (0x0)
@@ -55,11 +55,11 @@
 //#define TARGET_FS_LOAD_FILE               (0x0)
 
 // Kernel offsets
-#define TARGET_KERNEL_LOAD                (0x0+1)
-#define TARGET_KERNEL_PHYMEM              (0x0)
-#define TARGET_KERNEL_BOOTARGS            (0x0)
+#define TARGET_KERNEL_LOAD                (0x9F28+1)
+#define TARGET_KERNEL_PHYMEM              (0x2A000)
+#define TARGET_KERNEL_BOOTARGS            (0x1EBC4)
 
 // NVRAM offsets
-#define TARGET_NVRAM_LIST                 (0x0)
+#define TARGET_NVRAM_LIST                 (0x26E08)
 
 #endif // OFFSETS_H
