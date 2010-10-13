@@ -6,10 +6,23 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
-#include "ramdisk.h"
+//#define SHATTER
+#define LIMERA1N
+#define STEAKS4UCE
+
+#ifdef SHATTER
 #include "shatter.h"
+#endif
+
+#ifdef LIMERA1N
 #include "limera1n.h"
+#endif
+
+#ifdef STEAKS4UCE
 #include "steaks4uce.h"
+#endif
+
+#include "ramdisk.h"
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n88ap.h"
@@ -310,6 +323,7 @@ int upload_firmware_payload(char* type) {
 	return 0;
 }
 
+#ifdef STEAKS4UCE
 int steaks4uce_exploit() {
 	int i, ret;
 	unsigned char data[0x800];
@@ -386,7 +400,9 @@ int steaks4uce_exploit() {
 
 	return 0;
 }
+#endif
 
+#ifdef LIMERA1N
 int limera1n_exploit() {
 	irecv_error_t error = 0;
 	unsigned int i = 0;
@@ -463,7 +479,9 @@ int limera1n_exploit() {
 
 	return 0;
 }
+#endif
 
+#ifdef SHATTER
 int shatter_exploit() {
 	irecv_error_t error = 0;
 
@@ -563,6 +581,7 @@ int shatter_exploit() {
 
 	return 0;
 }
+#endif
 
 int upload_ibss() {
 	if(upload_dfu_image("iBSS") < 0) {
@@ -941,30 +960,44 @@ int pois0n_inject() {
 	//////////////////////////////////////
 	// Send exploit
 	if(device->chip_id == 8930){
+#ifdef SHATTER
 		debug("Preparing to upload SHAtter exploit\n");
 		if(shatter_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-	}
-	else if(device->chip_id == 8920 || device->chip_id == 8922) {
-#ifndef __APPLE__
+#else
+#	ifndef __APPLE__
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
+#	endif
+#endif
+	}
+	else if(device->chip_id == 8920 || device->chip_id == 8922) {
+#ifndef __APPLE__
+#	ifdef LIMERA1N
+		debug("Preparing to upload limera1n exploit\n");
+		if(limera1n_exploit() < 0) {
+			error("Unable to upload exploit data\n");
+			return -1;
+		}
+#	endif
 #else
 		error("Sorry, the limera1n exploit is not support on MacOSX yet\n");
 		return -1;
 #endif
 	}
 	else if(device->chip_id == 8720) {
+#ifdef STEAKS4UCE
 		debug("Preparing to upload steaks4uce exploit\n");
 		if(steaks4uce_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
+#endif
 	}
 	else {
 		error("Sorry, this device is not currently supported\n");
