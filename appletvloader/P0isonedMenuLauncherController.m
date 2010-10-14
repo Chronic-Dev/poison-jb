@@ -7,41 +7,82 @@
 
 #import "P0isonedMenuLauncherController.h"
 #import <Foundation/Foundation.h>
+
+#define kGPWebURL @"http://nitosoft.com/ATV2/gp/payloads.plist"
+
 @implementation P0isonedMenuLauncherController
 
-- (id)init {
+- (id) init
+{
 	if((self = [super init]) != nil) {
-		_menuItems = [[NSMutableArray alloc] init];
-
-		[_menuItems addObject:@"Fuck"];
-		[_menuItems addObject:@"Your"];
-		[_menuItems addObject:@"Couch"];
-		[_menuItems addObject:@"AppleTV2,1"];
-		[self setTitle:@"greenp0ison in yo' face!"];
-		//[self doSSHGoodness];
+		
+		//NSLog(@"%@ %s", self, _cmd);
+		
+		[self setListTitle:@"greenp0ison"];
+		
+		NSString *settingsPng = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"gp" ofType:@"png"];
+		
+		
+		id sp = [BRImage imageWithPath:settingsPng];
+		[self setListIcon:sp horizontalOffset:0.0 kerningFactor:0.15];
+		
+		_names = [[NSMutableArray alloc] init];
+		_versions = [[NSMutableArray alloc] init];
+		updateArray = [[NSMutableArray alloc] init];
+	
+		BOOL internetAvailable = [BRIPConfiguration internetAvailable];
+	
+		
+		if (internetAvailable == YES)
+		{
+			
+			updateArray = [[NSArray alloc] initWithContentsOfURL:[[NSURL alloc]initWithString:kGPWebURL]];		
+		} else {
+			
+			
+			//BRAlertController *alertCon = [self _internetNotAvailable];
+			//[alertCon retain];
+			//return alertCon;
+			
+		}
+		
+	
+		
+		[updateArray retain];
+	
 		[[self list] setDatasource:self];
-	} return self;
+		
+		return ( self );
+		
+	}
+}	
+
+
+-(void)dealloc
+{
+	[_names release];
+	[updateArray release];
+	[super dealloc];
 }
+
 
 - (id)previewControlForItem:(long)item
 {
 
 	
 	GPMedia *currentAsset = [[GPMedia alloc] init];
-	[currentAsset setTitle:[_menuItems objectAtIndex:item]];
-	BRImage *ourImage = [BRImage imageWithURL:[NSURL URLWithString:@"http://nitosoft.com/ATV2/gp/gp.png"]];
-	//NSString *currentURL = [[updateArray objectAtIndex:(item-6)] valueForKey:@"imageUrl"];
-	//NSString *currentVersion = [[updateArray objectAtIndex:(item-6)] valueForKey:@"version"];
-	NSString *description = @"This sodomizes your couch in a surly fashion";
-	//if ([[[updateArray objectAtIndex:(item-6)] allKeys] containsObject:@"description"])
-	//	description = [[updateArray objectAtIndex:(item-6)] valueForKey:@"description"];
-	[currentAsset setCoverArt:ourImage];
-	//[currentAsset setCoverArt:[BRImage imageWithURL:[NSURL URLWithString:currentURL]]];
+	[currentAsset setTitle:[[updateArray objectAtIndex:item] valueForKey:@"name"]];
+	NSString *currentURL = [[updateArray objectAtIndex:item] valueForKey:@"imageUrl"];
+	NSString *currentVersion = [[updateArray objectAtIndex:item] valueForKey:@"version"];
+	NSString *description = nil;
+	if ([[[updateArray objectAtIndex:item] allKeys] containsObject:@"description"])
+		description = [[updateArray objectAtIndex:item] valueForKey:@"description"];
+	[currentAsset setCoverArt:[BRImage imageWithURL:[NSURL URLWithString:currentURL]]];
 	NSMutableArray *customKeys = [[NSMutableArray alloc] init];
 	NSMutableArray *customObjects = [[NSMutableArray alloc] init];
 	
 	[customKeys addObject:@"Version"];
-	[customObjects addObject:@"4.2.0"];
+	[customObjects addObject:currentVersion];
 	if(description != nil)
 	{
 		[currentAsset setSummary:description];
@@ -57,17 +98,11 @@
 	return [preview autorelease];
 }
 
-- (id)oldpreviewControlForItem:(long)item
-{
-	BRImageAndSyncingPreviewController *previewController = [[BRImageAndSyncingPreviewController alloc] init];
-	BRImage *sampleImage = [[BRThemeInfo sharedTheme] gearImage];
-	//BRImage *image = [[BRImage imageWithPath:@""];
-	[previewController setImage:sampleImage];
-	return previewController;
-}
 
 - (void)itemSelected:(long)selected; {
-	NSLog(@"itemSelected: %@", [_menuItems objectAtIndex:selected]);
+	
+	NSDictionary *currentObject = [updateArray objectAtIndex:selected];
+	NSLog(@"install item: %@", currentObject);
 }
 
 - (void)doSSHGoodness {
@@ -80,17 +115,17 @@
 }
 
 - (long)itemCount {
-	return [_menuItems count];
+	return [updateArray count];
 }
 
 - (id)itemForRow:(long)row {
-	if(row > [_menuItems count])
+	if(row > [updateArray count])
 		return nil;
 
 	//NSLog(@"%@ %s", self, _cmd);
 	BRMenuItem * result = [[BRMenuItem alloc] init];
-	NSString *theTitle = [_menuItems objectAtIndex: row];
-
+	//NSString *theTitle = [_menuItems objectAtIndex: row];
+	NSString *theTitle = [[updateArray objectAtIndex:row] valueForKey:@"name"];
 	[result setText:theTitle withAttributes:[[BRThemeInfo sharedTheme] menuTitleTextAttributes]];
 
 	return result;

@@ -1,0 +1,7 @@
+greenP0ison version x.x
+
+	frappliance development: |bile|, DHowett, westbaer
+
+	exploit development: pod2g, posixninja
+	
+	special thanks: 

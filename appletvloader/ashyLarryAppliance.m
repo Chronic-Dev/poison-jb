@@ -14,13 +14,27 @@
 }
 
 - (void)selectCategoryWithIdentifier:(id)identifier {
-	P0isonedMenuLauncherController *menuController = [[P0isonedMenuLauncherController alloc] init];
-	NSLog(@"[BRApplicationStackManager singleton] : %@",[BRApplicationStackManager singleton]);
-	NSLog(@"[[BRApplicationStackManager singleton] stack] : %@",[[BRApplicationStackManager singleton] stack]);
-	//NSLog(@"self: %@ superclass: %@", self, super);
+	
+	id menuController = nil;
+	
+	if ([identifier isEqualToString:@"software"])
+	{
+		
+		menuController = [[P0isonedMenuLauncherController alloc] init];
+		
+	} else if ([identifier isEqualToString: @"about"])
+	{
+		NSString * path = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"About" ofType:@"txt"];
+		BRScrollingTextControl *textControls = [[BRScrollingTextControl alloc] init];
+		[textControls setDocumentPath:path encoding:NSUTF8StringEncoding];
+		NSString *myTitle = @"About greenp0ison";
+		[textControls setTitle:myTitle];
+		[textControls autorelease];
+		menuController =  [BRController controllerWithContentControl:textControls];
+	}
+	
 	[[[BRApplicationStackManager singleton] stack] pushController:menuController];
-	//[[self stack] pushController:menuController];
-	//return menuController;
+	
 }
 
 - (id)topShelfView {
@@ -47,9 +61,10 @@
 	if((self = [super init]) != nil) {
 		_topShelfController = [[TopShelfController alloc] init];
 		_applianceCategories = [[NSArray alloc] initWithObjects:
-					[BRApplianceCategory categoryWithName:@"Install SSH" identifier:@"ssh" preferredOrder:0],
-					nil
+					[BRApplianceCategory categoryWithName:@"Inject Software" identifier:@"software" preferredOrder:0],
+					[BRApplianceCategory categoryWithName:@"About" identifier:@"about" preferredOrder:1],nil
 				];
+	
 	} return self;
 }
 

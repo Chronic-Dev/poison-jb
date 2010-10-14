@@ -10,6 +10,10 @@
 
 @interface P0isonedMenuLauncherController : BRMediaMenuController {
 	NSMutableArray *_menuItems;
+	NSMutableArray		*_names;
+	NSMutableArray		*_versions;
+    NSString *          _imageName;
+	NSMutableArray *updateArray;
 }
 //list provider
 - (float)heightForRow:(long)row;

@@ -277,7 +277,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>9</integer>
+									<integer>1</integer>
 									<integer>0</integer>
 								</array>
 							</array>
@@ -327,7 +327,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8717E66F1266D85600960192</string>
+										<string>8717E67B1266DD1000960192</string>
 										<key>history</key>
 										<array>
 											<string>8717D99612667F5900960192</string>
@@ -335,7 +335,6 @@
 											<string>8717D9A412667FAE00960192</string>
 											<string>8717D9DD126682A900960192</string>
 											<string>8717DA031266871C00960192</string>
-											<string>8717E3861266C39200960192</string>
 											<string>8717E3AA1266C70C00960192</string>
 											<string>8717E3F31266CDA700960192</string>
 											<string>8717E3F71266CDBA00960192</string>
@@ -551,7 +550,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>873A29750D64FF2E0013BF3E</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>BRMetadataPreviewControl.h</string>
+								<string>ashyLarryAppliance.m</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -559,11 +558,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>873A29760D64FF2E0013BF3E</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>BRMetadataPreviewControl.h</string>
+										<string>ashyLarryAppliance.m</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8717E6701266D85600960192</string>
+										<string>8717E67C1266DD1000960192</string>
 										<key>history</key>
 										<array>
 											<string>8717D99612667F5900960192</string>
@@ -573,7 +572,6 @@
 											<string>8717DA031266871C00960192</string>
 											<string>8717E34A1266BD7500960192</string>
 											<string>8717E3771266C36400960192</string>
-											<string>8717E3861266C39200960192</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -824,7 +822,7 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>8717E6711266D85600960192</string>
+		<string>8717E6751266DA8200960192</string>
 		<string>/Users/blunt/Projects/AshyLarry/AshyLarry.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
