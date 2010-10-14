@@ -21,29 +21,34 @@
 
 - (id)leftJustifiedParagraphTextAttributesGP
 {
+	
+	/*
+	 
+	 BRFontName = ".HelveticaNeueATV";
+	 BRFontPointSize = 20;
+	 BRLineBreakModeKey = 4;
+	 BRTextAlignmentKey = 1;
+	 CTForegroundColor = "<CGColor 0x4dfb70> [<CGColorSpace 0x4b97b0> (kCGColorSpaceICCBased; kCGColorSpaceModelRGB; ICCProfile(RGB))] ( 1 1 1 1 )";
+	 }
+	 
+	 
+	 */
 	NSMutableDictionary *myDict = [[NSMutableDictionary alloc] init];
 	
 	BRThemeInfo *theInfo = [[BRThemeInfo sharedTheme] settingsItemSmallTextAttributes];
-	id colorObject = [theInfo valueForKey:@"NSColor"];
-	//NSLog(@"theInfo: %@", theInfo);
+	id colorObject = [theInfo valueForKey:@"CTForegroundColor"];
+	id fontName = [theInfo valueForKey:@"BRFontName"];
+	
 	[myDict setValue:[NSNumber numberWithInt:21] forKey:@"BRFontLines"];
 	[myDict setValue:[NSNumber numberWithInt:0] forKey:@"BRTextAlignmentKey"];
+	id sizeObject = [theInfo valueForKey:@"BRFontPointSize"];
+	id fontObject = [theInfo valueForKey:@"BRFontName"];
+	[myDict setValue:sizeObject forKey:@"BRFontPointSize"];
+	[myDict setValue:fontObject forKey:@"BRFontName"];
 	
+	[myDict setValue:fontName forKey:@"BRFontName"];
 	
-		
-		//id lineBreakMode = [theInfo valueForKey:@"BRLineBreakModeKey"];
-		id sizeObject = [theInfo valueForKey:@"BRFontPointSize"];
-		id fontObject = [theInfo valueForKey:@"BRFontName"];
-		[myDict setValue:sizeObject forKey:@"BRFontPointSize"];
-		[myDict setValue:fontObject forKey:@"BRFontName"];
-		//[myDict setValue:lineBreakMode forKey:@"BRLineBreakModeKey"];
-		//[myDict setValue:[NSNumber numberWithInt:24] forKey:@"BRFontPointSize"];
-		//[myDict setValue:@"HelveticaNeueATV-Medium" forKey:@"BRFontName"];
-		
-
-		[myDict setValue:@"LucidaGrande-Bold" forKey:@"BRFontName"];
-	
-	[myDict setValue:colorObject forKey:@"NSColor"];
+	[myDict setValue:colorObject forKey:@"CTForegroundColor"];
 	return [myDict autorelease];
 }
 
@@ -339,12 +344,13 @@
 {
     return ( [_header title] );
 }
+
 - (void) setSourceText: (NSString *) srcText
 {
 	
-		[_sourceText setText: srcText withAttributes:[[BRThemeInfo sharedTheme] centeredParagraphTextAttributesGP]];
-		
-
+	[_sourceText setText: srcText withAttributes:[[BRThemeInfo sharedTheme] leftJustifiedParagraphTextAttributesGP]];
+	
+	
     CGRect masterFrame = [[self parent] frame];
 	
 	CGSize maxSize;
@@ -353,7 +359,7 @@
 	
     CGSize txtSize = [_sourceText renderedSizeWithMaxSize:maxSize];
 	
- 
+	
     CGRect frame;
     frame.origin.x = (masterFrame.size.width - txtSize.width) * 0.5f;
     frame.origin.y = (masterFrame.size.height * 0.75f) - txtSize.height;
