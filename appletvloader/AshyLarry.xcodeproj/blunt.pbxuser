@@ -4,6 +4,7 @@
 		activeBuildConfigurationName = Debug;
 		activeTarget = D28A88AD04BDD90700651E21 /* ashyLarry */;
 		addToTargets = (
+			D28A88AD04BDD90700651E21 /* ashyLarry */,
 		);
 		codeSenseManager = 87FF3E4C12646F69001906CD /* Code sense */;
 		perUserDictionary = {
@@ -98,9 +99,9 @@
 	};
 	8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1284, 2940}}";
-			sepNavSelRange = "{1344, 0}";
-			sepNavVisRange = "{1262, 1143}";
+			sepNavIntBoundsRect = "{{0, 0}, {1284, 3003}}";
+			sepNavSelRange = "{2794, 31}";
+			sepNavVisRange = "{2541, 803}";
 			sepNavWindowFrame = "{{38, 23}, {1343, 829}}";
 		};
 	};
@@ -353,9 +354,32 @@
 	};
 	8717E83A1266F09E00960192 /* BRScrollingTextControl.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {993, 1092}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1284, 1029}}";
 			sepNavSelRange = "{0, 0}";
-			sepNavVisRange = "{0, 785}";
+			sepNavVisRange = "{412, 1833}";
+		};
+	};
+	8717E8D01266F18E00960192 /* About.txt */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {993, 480}}";
+			sepNavSelRange = "{76, 0}";
+			sepNavVisRange = "{0, 137}";
+			sepNavWindowFrame = "{{38, 23}, {1343, 829}}";
+		};
+	};
+	8717E8DE1266F96600960192 /* GPDownloadController.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1284, 1827}}";
+			sepNavSelRange = "{359, 20}";
+			sepNavVisRange = "{30, 864}";
+			sepNavWindowFrame = "{{15, 44}, {1343, 829}}";
+		};
+	};
+	8717E8DF1266F96600960192 /* GPDownloadController.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1284, 16695}}";
+			sepNavSelRange = "{22326, 0}";
+			sepNavVisRange = "{0, 654}";
 		};
 	};
 	87FF3E4B12646F69001906CD /* Source Control */ = {
@@ -374,9 +398,9 @@
 	};
 	87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {993, 2205}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1025, 2205}}";
 			sepNavSelRange = "{369, 0}";
-			sepNavVisRange = "{35, 509}";
+			sepNavVisRange = "{0, 0}";
 			sepNavWindowFrame = "{{12, 44}, {1343, 829}}";
 		};
 	};

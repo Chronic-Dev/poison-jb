@@ -480,6 +480,10 @@
 		8717E8B11266F09E00960192 /* ScrollAnimationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScrollAnimationDelegate.h; sourceTree = "<group>"; };
 		8717E8B21266F09E00960192 /* WebWindowDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebWindowDelegate.h; sourceTree = "<group>"; };
 		8717E8D01266F18E00960192 /* About.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = About.txt; path = Resources/About.txt; sourceTree = "<group>"; };
+		8717E8DE1266F96600960192 /* GPDownloadController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPDownloadController.h; sourceTree = "<group>"; };
+		8717E8DF1266F96600960192 /* GPDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPDownloadController.m; sourceTree = "<group>"; };
+		8717E8EA1266F9D400960192 /* GPProgressBarControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPProgressBarControl.h; sourceTree = "<group>"; };
+		8717E8EB1266F9D400960192 /* GPProgressBarControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPProgressBarControl.m; sourceTree = "<group>"; };
 		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ashyLarryAppliance.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -494,6 +498,10 @@
 				8717E8D01266F18E00960192 /* About.txt */,
 				8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */,
 				8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */,
+				8717E8DE1266F96600960192 /* GPDownloadController.h */,
+				8717E8DF1266F96600960192 /* GPDownloadController.m */,
+				8717E8EA1266F9D400960192 /* GPProgressBarControl.h */,
+				8717E8EB1266F9D400960192 /* GPProgressBarControl.m */,
 				8717E3A31266C61D00960192 /* Makefile */,
 				8717D7391266779600960192 /* Foundation.framework */,
 			);

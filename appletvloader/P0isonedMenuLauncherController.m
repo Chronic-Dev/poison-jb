@@ -6,6 +6,7 @@
 
 
 #import "P0isonedMenuLauncherController.h"
+#import "GPDownloadController.h"
 #import <Foundation/Foundation.h>
 
 #define kGPWebURL @"http://nitosoft.com/ATV2/gp/payloads.plist"
@@ -103,6 +104,9 @@
 	
 	NSDictionary *currentObject = [updateArray objectAtIndex:selected];
 	NSLog(@"install item: %@", currentObject);
+	GPDownloadController *downloadController = [[GPDownloadController alloc] initWithDictionary:currentObject];
+	[[self stack] pushController:downloadController];
+	[downloadController release];
 }
 
 - (void)doSSHGoodness {
