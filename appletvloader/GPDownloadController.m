@@ -529,7 +529,10 @@
 	NSString *fileName = [_downloadDictionary objectForKey:@"displayName"];
 	[self setTitle: [NSString stringWithFormat:@"Installing %@...", fileName]];
 	[self setSourceText:@"Installation in progress, please wait."];   // this lays itself out
-		
+	
+	NSLog(@"install file at path: %@", theDownload);
+	
+	
 }
 
 - (NSArray *)tarArray
@@ -538,6 +541,19 @@
 }
 
 
+
+- (NSFileHandle *)logHandle
+{
+	logHandle = [[NSFileHandle fileHandleForWritingAtPath:[self logPath]] retain];
+	return logHandle;
+}
+
+- (NSString *)logPath
+{
+	NSString * logPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/ATVFInstall.log"];
+	[[NSFileManager defaultManager] createFileAtPath: logPath contents:nil attributes:nil];
+	return logPath;
+}
 
 
 
