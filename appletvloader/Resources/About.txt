@@ -4,4 +4,4 @@ greenP0ison version x.x
 
 	exploit development: pod2g, posixninja
 	
-	special thanks: 
+	special thanks: #awkwardtv @ moofspeak
