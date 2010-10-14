@@ -18,7 +18,7 @@ static inline Type_ &MSHookIvar(id self, const char *name) {
 @interface BRMetadataPreviewControl (compat)
 - (void)_populateMetadata;
 - (void)_updateMetadataLayer;
-- (id) _loadCoverArt;
+- (void) _loadCoverArt;
 @end
 
 @interface BRMetadataPreviewControl (protectedAccess)
