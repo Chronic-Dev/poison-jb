@@ -1,6 +1,6 @@
 //
 //  P0isonedMenuLauncherController.m
-//  greenp0ison
+//  greenpois0n
 //
 //  Created by Kevin Bradley on 10/13/10.
 
@@ -19,7 +19,7 @@
 		
 		//NSLog(@"%@ %s", self, _cmd);
 		
-		[self setListTitle:@"greenp0ison"];
+		[self setListTitle:@"greenpois0n"];
 		
 		NSString *settingsPng = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"gp" ofType:@"png"];
 		

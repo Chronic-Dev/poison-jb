@@ -27,7 +27,7 @@
 		NSString * path = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"About" ofType:@"txt"];
 		BRScrollingTextControl *textControls = [[BRScrollingTextControl alloc] init];
 		[textControls setDocumentPath:path encoding:NSUTF8StringEncoding];
-		NSString *myTitle = @"About greenp0ison";
+		NSString *myTitle = @"About greenpois0n";
 		[textControls setTitle:myTitle];
 		[textControls autorelease];
 		menuController =  [BRController controllerWithContentControl:textControls];
