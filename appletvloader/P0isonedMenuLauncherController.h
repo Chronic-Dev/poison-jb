@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 #import "BackRow/BackRow.h"
+#import "GPMedia.h"
+#import "GPMediaPreview.h"
 
 @interface P0isonedMenuLauncherController : BRMediaMenuController {
 	NSMutableArray *_menuItems;

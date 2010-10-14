@@ -21,13 +21,13 @@
 	BRReflectionControl *_reflectionLayer;	// 56 = 0x38
 	BRMetadataControl *_metadataLayer;	// 60 = 0x3c
 	NSTimer *_timer;	// 64 = 0x40
-	BOOL _showsMetadataImmediately;	// 68 = 0x44
+	BOOL _showsMetadataIGPMediately;	// 68 = 0x44
 	BOOL _showingMetadata;	// 69 = 0x45
 }
 @property(retain) id asset;	// G=0x3160a9f9; S=0x315b44c1; converted property
 @property(assign) BOOL deletterboxAssetArtwork;	// G=0x3160ab75; S=0x3160ab99; converted property
 @property(assign) BOOL showsDefaultCoverArt;	// G=0x3160ab2d; S=0x3160ab51; converted property
-@property(assign) BOOL showsMetadataImmediately;	// G=0x315b49f9; S=0x315b7c0d; converted property
+@property(assign) BOOL showsMetadataIGPMediately;	// G=0x315b49f9; S=0x315b7c0d; converted property
 - (id)init;	// 0x315b41f5
 - (void)_coverArtChanged:(id)changed;	// 0x315b7d19
 - (void)_downloadStateChanged:(id)changed;	// 0x3160aa6d
@@ -51,8 +51,8 @@
 - (void)setImageProxy:(id)proxy;	// 0x3160abbd
 - (void)setMetadataProvider:(id)provider;	// 0x315b7bad
 // converted property setter: - (void)setShowsDefaultCoverArt:(BOOL)art;	// 0x3160ab51
-// converted property setter: - (void)setShowsMetadataImmediately:(BOOL)immediately;	// 0x315b7c0d
+// converted property setter: - (void)setShowsMetadataIGPMediately:(BOOL)iGPMediately;	// 0x315b7c0d
 // converted property getter: - (BOOL)showsDefaultCoverArt;	// 0x3160ab2d
-// converted property getter: - (BOOL)showsMetadataImmediately;	// 0x315b49f9
+// converted property getter: - (BOOL)showsMetadataIGPMediately;	// 0x315b49f9
 @end
 

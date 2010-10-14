@@ -26,6 +26,39 @@
 
 - (id)previewControlForItem:(long)item
 {
+
+	
+	GPMedia *currentAsset = [[GPMedia alloc] init];
+	[currentAsset setTitle:[_menuItems objectAtIndex:item]];
+	//NSString *currentURL = [[updateArray objectAtIndex:(item-6)] valueForKey:@"imageUrl"];
+	//NSString *currentVersion = [[updateArray objectAtIndex:(item-6)] valueForKey:@"version"];
+	NSString *description = nil;
+	//if ([[[updateArray objectAtIndex:(item-6)] allKeys] containsObject:@"description"])
+	//	description = [[updateArray objectAtIndex:(item-6)] valueForKey:@"description"];
+	[currentAsset setCoverArt:[[BRThemeInfo sharedTheme] gearImage]];
+	//[currentAsset setCoverArt:[BRImage imageWithURL:[NSURL URLWithString:currentURL]]];
+	NSMutableArray *customKeys = [[NSMutableArray alloc] init];
+	NSMutableArray *customObjects = [[NSMutableArray alloc] init];
+	
+	[customKeys addObject:@"Version"];
+	[customObjects addObject:@"1.0"];
+	if(description != nil)
+	{
+		[currentAsset setSummary:@"Description will go here"];
+	}
+	[currentAsset setCustomKeys:[customKeys autorelease] 
+					 forObjects:[customObjects autorelease]];
+	
+	
+	GPMediaPreview *preview = [[GPMediaPreview alloc]init];
+	[preview setAsset:currentAsset];
+	[preview setShowsMetadataIGPMediately:YES];
+	[currentAsset release];
+	return [preview autorelease];
+}
+
+- (id)oldpreviewControlForItem:(long)item
+{
 	BRImageAndSyncingPreviewController *previewController = [[BRImageAndSyncingPreviewController alloc] init];
 	BRImage *sampleImage = [[BRThemeInfo sharedTheme] gearImage];
 	//BRImage *image = [[BRImage imageWithPath:@""];

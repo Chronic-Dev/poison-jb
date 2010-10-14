@@ -11,6 +11,11 @@
 		8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = P0isonedMenuLauncherController.m; sourceTree = "<group>"; };
 		8717D7391266779600960192 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		8717D7581266790000960192 /* BackRow */ = {isa = PBXFileReference; lastKnownFileType = folder; path = BackRow; sourceTree = "<group>"; };
+		8717E37F1266C36B00960192 /* GPMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPMedia.h; sourceTree = "<group>"; };
+		8717E3801266C36B00960192 /* GPMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPMedia.m; sourceTree = "<group>"; };
+		8717E3811266C36B00960192 /* GPMediaPreview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPMediaPreview.h; sourceTree = "<group>"; };
+		8717E3821266C36B00960192 /* GPMediaPreview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GPMediaPreview.mm; sourceTree = "<group>"; };
+		8717E3A31266C61D00960192 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ashyLarryAppliance.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -19,27 +24,40 @@
 			isa = PBXGroup;
 			children = (
 				8717D7581266790000960192 /* BackRow */,
+				8717E3751266C35B00960192 /* Metadata */,
 				87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */,
 				8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */,
 				8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */,
+				8717E3A31266C61D00960192 /* Makefile */,
 				8717D7391266779600960192 /* Foundation.framework */,
 			);
 			name = nitoTV_2;
 			sourceTree = "<group>";
 		};
+		8717E3751266C35B00960192 /* Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				8717E37F1266C36B00960192 /* GPMedia.h */,
+				8717E3801266C36B00960192 /* GPMedia.m */,
+				8717E3811266C36B00960192 /* GPMediaPreview.h */,
+				8717E3821266C36B00960192 /* GPMediaPreview.mm */,
+			);
+			name = Metadata;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
-		D28A88AD04BDD90700651E21 /* nitoTV_2 */ = {
+		D28A88AD04BDD90700651E21 /* ashyLarry */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = 1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "nitoTV_2" */;
+			buildConfigurationList = 1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "ashyLarry" */;
 			buildPhases = (
 			);
 			buildToolPath = /usr/bin/make;
 			dependencies = (
 			);
-			name = nitoTV_2;
+			name = ashyLarry;
 			passBuildSettingsInEnvironment = 1;
 			productName = nitoTV_2;
 		};
@@ -55,7 +73,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D28A88AD04BDD90700651E21 /* nitoTV_2 */,
+				D28A88AD04BDD90700651E21 /* ashyLarry */,
 			);
 		};
 /* End PBXProject section */
@@ -72,7 +90,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = nitoTV_2;
+				PRODUCT_NAME = ashyLarry;
 			};
 			name = Debug;
 		};
@@ -113,7 +131,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "nitoTV_2" */ = {
+		1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "ashyLarry" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB919008733D9F0010E9CD /* Debug */,
