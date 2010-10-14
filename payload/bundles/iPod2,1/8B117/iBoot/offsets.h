@@ -36,7 +36,7 @@
 #define TARGET_CMD_LIST_END               (0x26E54)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0xE69E+1)
+#define TARGET_TASK_YIELD                 ((0xE69E)+1)
 #define TARGET_TASK_RUNNING               (0x26D20)
 #define TARGET_TASK_LIST                  (0x26DB8)
 

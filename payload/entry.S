@@ -48,6 +48,11 @@ fiq_vector:		.word halt
 .set	PATCH_CMD_1,	0x47184b00	@ _patch: LDR R3, =0x42000000 @ BX R3
 .set	PATCH_CMD_2,	0x42000000	@ _patch: 0x42000000
 
+.set	FP_CMD2_1,	0x47184b00	@ search: LDR R3, =0x09000000 @ BR R3
+.set	FP_CMD2_2,	0x09000000	@ search: 0x09000000
+.set	PATCH_CMD2_1,	0x47184b00	@ _patch: LDR R3, =0x0A000000 @ BX R3
+.set	PATCH_CMD2_2,	0x0A000000	@ _patch: 0x0A000000
+
 .code 32
 @---------------------------------------------
 reset:
@@ -56,13 +61,36 @@ reset:
 	lsr	r0, #24
 	cmp	r0, #0x42
 	beq	relocated
+
+	cmp r0, #0x41
+	beq relocate_new
+
+	cmp r0, #0x0A
+	beq relocated
+
+	cmp r0, #0x09
+	beq	relocate_old
+
+	b halt
+
+relocate_new:
+	ldr r0, =0x41000000
+	ldr r1, =0x42000000
+	b relocate
+
+relocate_old:
+	ldr r0, =0x09000000
+	ldr r1, =0x0A000000
+	b relocate
 	
-	bl	patch_go
-	bl	relocate
+relocate:
+	mov r4, r1
+	bl	copy
+	bl	patch
 	bl	clear_icache
 	bl	flush_dcache
 
-	mov	r0, #0x42000000
+	mov	r0, r4
 	blx	r0
 	b	done
 
@@ -72,6 +100,7 @@ relocated:
 	ldr	r2, [sp, #0x8]
 	ldr	r3, [sp, #0xc]
 	bl	main
+
 done:
 	pop	{r0-r12, pc}
 
@@ -80,33 +109,68 @@ halt:
 
 @---------------------------------------------
 .code 32
-relocate:
-	mov	r0, #0x41000000
-	mov	r1, #0x42000000
+copy:
+	@mov	r0, #0x41000000
+	@mov	r1, #0x42000000
 	mov	r2, #0x00100000
-relocate_loop:
+copy_loop:
 	ldr	r3, [r0], #4
 	str	r3, [r1], #4
-	subs	r2, r2, #4
-	bne	relocate_loop
+	subs r2, r2, #4
+	bne	copy_loop
 	bx	lr
 
 @---------------------------------------------
 .code 32
-patch_go:
-	push	{lr}
+patch:
+	push {lr}
+	mov	r0, pc
+	lsr	r0, #24
+
+patch1:
+	cmp r0, #0x41
+	bne patch2
 	ldr	r0, =FP_CMD_1
-	ldr     r1, =TARGET_BASEADDR
+	ldr r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD_2
 	blx	find_64
 	cmp	r0, #0
-	beq	patch_go_end
+	beq	patch_done
 	ldr	r1, =PATCH_CMD_1
 	str	r1, [r0]
 	ldr	r1, =PATCH_CMD_2
 	str	r1, [r0, #4]
-patch_go_end:
+	b patch_done
+
+patch2:
+	cmp r0, #0x09
+	bne	patch3
+	ldr	r0, =FP_CMD2_1
+	ldr r1, =TARGET_BASEADDR
+	mov	r2, #0x24000		@ search area
+	ldr	r3, =FP_CMD2_2
+	blx	find_64
+	cmp	r0, #0
+	beq	patch_done
+	ldr	r1, =PATCH_CMD2_1
+	str	r1, [r0]
+	ldr	r1, =PATCH_CMD2_2
+	str	r1, [r0, #4]
+	b patch_done
+
+patch3:
+	b halt
+
+perform:
+	blx	find_64
+	cmp	r0, #0
+	beq	patch_done
+	ldr	r1, =PATCH_CMD_1
+	str	r1, [r0]
+	ldr	r1, =PATCH_CMD_2
+	str	r1, [r0, #4]
+patch_done:
 	pop	{pc}
 
 @---------------------------------------------

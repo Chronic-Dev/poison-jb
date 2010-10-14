@@ -27,12 +27,14 @@
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n88ap.h"
 #include "payloads/iBSS.n90ap.h"
+#include "payloads/iBSS.n72ap.h"
 #include "payloads/iBSS.n18ap.h"
 #include "payloads/iBSS.n81ap.h"
 #include "payloads/iBoot.k66ap.h"
 #include "payloads/iBoot.k48ap.h"
 #include "payloads/iBoot.n88ap.h"
 #include "payloads/iBoot.n90ap.h"
+#include "payloads/iBoot.n72ap.h"
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
 
@@ -52,6 +54,7 @@ void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
 	progress_callback(value, user_object);
 }
 
+#ifdef SHATTER
 int receive_data(int bytes) {
 	char* buffer = NULL;
 	irecv_error_t error = 0;
@@ -72,6 +75,7 @@ int receive_data(int bytes) {
 	free(buffer);
 	return 0;
 }
+#endif
 
 int fetch_image(const char* path, const char* output) {
 	debug("Fetching %s...\n", path);
@@ -260,6 +264,24 @@ int upload_firmware_payload(char* type) {
 			payload = iBoot_n90ap;
 			size = sizeof(iBoot_n90ap);
 			debug("Loaded payload for iBoot on n90ap\n");
+		}
+		break;
+
+	case DEVICE_IPOD2G:
+		if(!strcmp(type, "iBSS")) {
+			payload = iBSS_n72ap;
+			size = sizeof(iBSS_n72ap);
+			debug("Loaded payload for iBSS on n72ap\n");
+		}
+		if(!strcmp(type, "iBEC")) {
+			//payload = iBEC_n72ap;
+			//size = sizeof(iBEC_n72ap);
+			debug("Loaded payload for iBEC on n72ap\n");
+		}
+		if(!strcmp(type, "iBoot")) {
+			payload = iBoot_n72ap;
+			size = sizeof(iBoot_n72ap);
+			debug("Loaded payload for iBoot on n72ap\n");
 		}
 		break;
 
@@ -681,28 +703,44 @@ int boot_ramdisk() {
 	irecv_saveenv(client);
 
 	debug("Loading iBoot\n");
-	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x09000000");
+	} else {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Shifting iBoot\n");
-	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x09000040 0x09000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Patching iBoot\n");
-	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go patch 0x09000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Jumping into iBoot\n");
-	error = irecv_send_command(client, "go jump 0x41000000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go jump 0x09000000");
+	} else {
+		error = irecv_send_command(client, "go jump 0x41000000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -747,14 +785,22 @@ int boot_ramdisk() {
 	}
 
 	debug("Decrypting ramdisk\n");
-	error = irecv_send_command(client, "go image decrypt 0x41000000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go image decrypt 0x09000000");
+	} else {
+		error = irecv_send_command(client, "go image decrypt 0x41000000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Moving ramdisk\n");
-	error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x09000040 0x0C000000 0x100000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -948,10 +994,15 @@ int pois0n_is_compatible() {
 	}
 	info("Identified device as %s\n", device->product);
 
-	if (device->chip_id != 8930 &&
-			device->chip_id != 8922 &&
-			device->chip_id != 8920 &&
-			device->chip_id != 8720) {
+	if (device->chip_id != 8930
+#ifdef LIMERA1N
+			&& device->chip_id != 8922
+			&& device->chip_id != 8920
+#endif
+#ifdef STEAKS4UCE
+			&& device->chip_id != 8720
+#endif
+			) {
 		error("Sorry device is not compatible with this jailbreak\n");
 		return -1;
 	}

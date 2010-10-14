@@ -51,7 +51,7 @@ int cmd_init() {
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) 0x43000000;
+	gCmdCommands = (CmdInfo**) (LOADADDR + 0x02000000);
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;
@@ -89,7 +89,7 @@ void cmd_add(char* name, CmdFunction handler, char* description) {
 	}
 
 	//command = (CmdInfo*) malloc(sizeof(CmdInfo));
-	command = (CmdInfo*) 0x43000000 + (gCmdCount * sizeof(CmdInfo));
+	command = (CmdInfo*) (LOADADDR + 0x02000000) + (gCmdCount * sizeof(CmdInfo));
 	command->name = name;
 	command->handler = handler;
 	command->description = description;
