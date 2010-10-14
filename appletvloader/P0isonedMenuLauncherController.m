@@ -7,8 +7,6 @@
 
 #import "P0isonedMenuLauncherController.h"
 #import <Foundation/Foundation.h>
-#import "BackRow/BackRow.h"
-
 @implementation P0isonedMenuLauncherController
 
 - (id)init {

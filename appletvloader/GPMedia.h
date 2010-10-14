@@ -1,9 +1,3 @@
-
-#import "BackRow/BackRow.h"
-
-
-
-
 @interface GPMedia : BRXMLMediaAsset {
 	unsigned int		resumeTime;			
 	int					installType;

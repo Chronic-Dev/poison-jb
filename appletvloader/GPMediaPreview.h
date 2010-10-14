@@ -1,5 +1,3 @@
-#import "BackRow/BackRow.h"
-
 #define GP_META_IMAGE_URL      @"ImageURL"
 #define GP_META_TITLE          @"Name"
 #define GP_META_SUMMARY        @"Summary"

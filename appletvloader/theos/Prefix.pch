@@ -1,7 +1,7 @@
 #ifdef __OBJC__
 	#import <Foundation/Foundation.h>
 	#if TARGET_IPHONE || TARGET_IPHONE_SIMULATOR
-		#import <UIKit/UIKit.h>
+		#import <BackRow/BackRow.h>
 	#endif
 
 	#define CLASS(cls) objc_getClass(#cls)
