@@ -19,9 +19,18 @@
 		[_menuItems addObject:@"Couch"];
 		[_menuItems addObject:@"AppleTV2,1"];
 		[self setTitle:@"greenp0ison in yo' face!"];
-		[self doSSHGoodness];
+		//[self doSSHGoodness];
 		[[self list] setDatasource:self];
 	} return self;
+}
+
+- (id)previewControlForItem:(long)item
+{
+	BRImageAndSyncingPreviewController *previewController = [[BRImageAndSyncingPreviewController alloc] init];
+	BRImage *sampleImage = [[BRThemeInfo sharedTheme] gearImage];
+	//BRImage *image = [[BRImage imageWithPath:@""];
+	[previewController setImage:sampleImage];
+	return previewController;
 }
 
 - (void)itemSelected:(long)selected; {

@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import "BackRow/BackRow.h"
 
-@interface P0isonedMenuLauncherController : BRMenuController {
+@interface P0isonedMenuLauncherController : BRMediaMenuController {
 	NSMutableArray *_menuItems;
 }
 //list provider
