@@ -15,7 +15,6 @@ typedef enum {
 
 
 @interface GPMediaPreview : BRMetadataPreviewControl{
-	int		padding[32];
 	NSMutableDictionary			*meta;
 	GPMetaType                MetaDataType;
 	BRImage                     *image;
@@ -28,7 +27,7 @@ typedef enum {
 
 @end
 
-@interface GPMediaPreview (private)
+@interface GPMediaPreview (Private)
 - (void)doPopulation;
 - (NSString *)coverArtForPath;
 @end

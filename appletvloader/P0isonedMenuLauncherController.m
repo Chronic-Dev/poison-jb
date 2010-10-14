@@ -10,6 +10,7 @@
 #import "BackRow/BackRow.h"
 
 @implementation P0isonedMenuLauncherController
+
 - (id)init {
 	if((self = [super init]) != nil) {
 		_menuItems = [[NSMutableArray alloc] init];
@@ -30,21 +31,22 @@
 	
 	GPMedia *currentAsset = [[GPMedia alloc] init];
 	[currentAsset setTitle:[_menuItems objectAtIndex:item]];
+	BRImage *ourImage = [BRImage imageWithURL:[NSURL URLWithString:@"http://nitosoft.com/ATV2/gp/gp.png"]];
 	//NSString *currentURL = [[updateArray objectAtIndex:(item-6)] valueForKey:@"imageUrl"];
 	//NSString *currentVersion = [[updateArray objectAtIndex:(item-6)] valueForKey:@"version"];
-	NSString *description = nil;
+	NSString *description = @"This sodomizes your couch in a surly fashion";
 	//if ([[[updateArray objectAtIndex:(item-6)] allKeys] containsObject:@"description"])
 	//	description = [[updateArray objectAtIndex:(item-6)] valueForKey:@"description"];
-	[currentAsset setCoverArt:[[BRThemeInfo sharedTheme] gearImage]];
+	[currentAsset setCoverArt:ourImage];
 	//[currentAsset setCoverArt:[BRImage imageWithURL:[NSURL URLWithString:currentURL]]];
 	NSMutableArray *customKeys = [[NSMutableArray alloc] init];
 	NSMutableArray *customObjects = [[NSMutableArray alloc] init];
 	
 	[customKeys addObject:@"Version"];
-	[customObjects addObject:@"1.0"];
+	[customObjects addObject:@"4.2.0"];
 	if(description != nil)
 	{
-		[currentAsset setSummary:@"Description will go here"];
+		[currentAsset setSummary:description];
 	}
 	[currentAsset setCustomKeys:[customKeys autorelease] 
 					 forObjects:[customObjects autorelease]];
@@ -52,7 +54,7 @@
 	
 	GPMediaPreview *preview = [[GPMediaPreview alloc]init];
 	[preview setAsset:currentAsset];
-	[preview setShowsMetadataIGPMediately:YES];
+	[preview setShowsMetadataImmediately:YES];
 	[currentAsset release];
 	return [preview autorelease];
 }

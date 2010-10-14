@@ -277,8 +277,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>6</integer>
-									<integer>2</integer>
+									<integer>9</integer>
 									<integer>0</integer>
 								</array>
 							</array>
@@ -316,7 +315,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>873A23A80D6464CB0013BF3E</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Makefile</string>
+								<string>GPMediaPreview.mm</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -324,11 +323,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>873A23A90D6464CB0013BF3E</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>Makefile</string>
+										<string>GPMediaPreview.mm</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8717E3FC1266CE0100960192</string>
+										<string>8717E66F1266D85600960192</string>
 										<key>history</key>
 										<array>
 											<string>8717D99612667F5900960192</string>
@@ -336,14 +335,14 @@
 											<string>8717D9A412667FAE00960192</string>
 											<string>8717D9DD126682A900960192</string>
 											<string>8717DA031266871C00960192</string>
-											<string>8717DD4E1266B62400960192</string>
 											<string>8717E3861266C39200960192</string>
-											<string>8717E39D1266C61100960192</string>
-											<string>8717E3A61266C69500960192</string>
 											<string>8717E3AA1266C70C00960192</string>
 											<string>8717E3F31266CDA700960192</string>
 											<string>8717E3F71266CDBA00960192</string>
-											<string>8717E3F81266CDBA00960192</string>
+											<string>8717E4181266CFBE00960192</string>
+											<string>8717E64D1266D69C00960192</string>
+											<string>8717E6691266D84700960192</string>
+											<string>8717E66A1266D84700960192</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -400,7 +399,7 @@
 									<key>GeometryConfiguration</key>
 									<dict>
 										<key>Frame</key>
-										<string>{{10, 27}, {1054, 456}}</string>
+										<string>{{10, 27}, {1054, 217}}</string>
 									</dict>
 									<key>Module</key>
 									<string>PBXProjectFindModule</string>
@@ -564,7 +563,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>8717E3FD1266CE0100960192</string>
+										<string>8717E6701266D85600960192</string>
 										<key>history</key>
 										<array>
 											<string>8717D99612667F5900960192</string>
@@ -572,7 +571,6 @@
 											<string>8717D9A412667FAE00960192</string>
 											<string>8717D9DD126682A900960192</string>
 											<string>8717DA031266871C00960192</string>
-											<string>8717DD4E1266B62400960192</string>
 											<string>8717E34A1266BD7500960192</string>
 											<string>8717E3771266C36400960192</string>
 											<string>8717E3861266C39200960192</string>
@@ -826,7 +824,7 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>8717E3FE1266CE0100960192</string>
+		<string>8717E6711266D85600960192</string>
 		<string>/Users/blunt/Projects/AshyLarry/AshyLarry.xcodeproj</string>
 	</array>
 	<key>WindowString</key>

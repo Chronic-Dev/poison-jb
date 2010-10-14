@@ -54,14 +54,18 @@ static inline Type_ &MSHookIvar(id self, const char *name) {
 	[super dealloc];
 }
 
+-(id)coverArtLayer
+{
+	
+	return MSHookIvar<BRCoverArtImageLayer *>(self, "_coverArtLayer");
+}
 
-
-- (void)setImage:(BRImage *)currentImage
+- (void)setImage:(id)currentImage
 {
     [image release];
     image=currentImage;
 	[currentImage release];
-	[_coverArtLayer setImage:image];
+	[[self coverArtLayer] setImage:image];
 	
 }
 
@@ -70,7 +74,7 @@ static inline Type_ &MSHookIvar(id self, const char *name) {
 {
     MetaDataType=kMetaTypeDefault;
     [super setAsset:asset];
-    [_coverArtLayer setImage:[asset coverArt]];
+    [[self coverArtLayer] setImage:[asset coverArt]];
 
 }
 -(void)setAssetMeta:(id)asset
@@ -84,11 +88,16 @@ static inline Type_ &MSHookIvar(id self, const char *name) {
 	return [[NSBundle bundleForClass:[self class]] pathForResource:@"ApplianceIcon" ofType:@"png"];
 }
 
+- (id)asset
+{
+	return MSHookIvar<id>(self, "_asset");
+}
+
 - (id)coverArtForPath
 {
     if (image!=nil)
         return image;
-    image=[_asset coverArt];
+    image=[[self asset] coverArt];
     if (image!=nil)
         return image;
 	return [GPMediaPreview coverArtForPath];
@@ -98,7 +107,7 @@ static inline Type_ &MSHookIvar(id self, const char *name) {
 - (void)_loadCoverArt
 {
 	[super _loadCoverArt];
-	if([_coverArtLayer texture] != nil)
+	if([[self coverArtLayer] texture] != nil)
 		return;
 	
 }
