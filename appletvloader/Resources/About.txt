@@ -1,6 +1,6 @@
 greenP0ison version x.x
 
-	frappliance development: |bile|, DHowett, westbaer
+	frappliance development: DHowett, westbaer, |bile|
 
 	exploit development: pod2g, posixninja
 	
