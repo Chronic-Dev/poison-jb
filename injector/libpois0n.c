@@ -813,7 +813,12 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	irecv_send_command(client, "go fsboot");
+	error = irecv_send_command(client, "go fsboot");
+	if (error != IRECV_E_SUCCESS) {
+		error("Unable to fsboot\n");
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -874,6 +879,10 @@ int boot_tethered() {
 	irecv_send_command(client, "go");
 
 	error = irecv_send_command(client, "go fsboot");
+	if (error != IRECV_E_SUCCESS) {
+		error("Unable to fsboot\n");
+		return -1;
+	}
 
 	return 0;
 }
