@@ -4,7 +4,6 @@
 //
 //  Created by Kevin Bradley on 10/13/10.
 
-#import <Foundation/Foundation.h>
 #import "GPMedia.h"
 #import "GPMediaPreview.h"
 

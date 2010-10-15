@@ -56,6 +56,8 @@
 		return ( self );
 		
 	}
+	
+	return ( self );
 }	
 
 

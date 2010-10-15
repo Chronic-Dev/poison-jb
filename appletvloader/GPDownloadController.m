@@ -1,6 +1,6 @@
 //
 
-
+#import <Foundation/Foundation.h>
 #import "GPDownloadController.h"
 
 @interface BRThemeInfo (SpecialAdditions)
@@ -68,8 +68,8 @@
 
 + (void) clearAllDownloadCaches
 {
-    [[NSFileManager defaultManager] removeFileAtPath: [self downloadCachePath]
-                                             handler: nil];
+
+	[[NSFileManager defaultManager] removeItemAtPath: [self downloadCachePath] error:nil];
 }
 
 + (NSString *) downloadCachePath
@@ -91,9 +91,9 @@
         __cachePath = [[__cachePath stringByAppendingPathComponent: @"greenPoison"] retain];
 
         // ensure this exists
-        [[NSFileManager defaultManager] createDirectoryAtPath: __cachePath
-                                                   attributes: nil];
-    }
+       [[NSFileManager defaultManager] createDirectoryAtPath:__cachePath withIntermediateDirectories:YES attributes:nil error:nil];
+
+	}
 
     return ( __cachePath );
 }
@@ -294,9 +294,8 @@
     if ( _outputPath == nil )
         return;
 
-    [[NSFileManager defaultManager] removeFileAtPath:
-        [_outputPath stringByDeletingLastPathComponent]
-                                             handler: nil];
+	[[NSFileManager defaultManager] removeItemAtPath: [_outputPath stringByDeletingLastPathComponent] error:nil];
+
 }
 
 // stack callbacks
@@ -398,9 +397,8 @@
     // they'll likely be the same, anyway
 
     // ensure that all new path components exist
-    [[NSFileManager defaultManager] createDirectoryAtPath: [_outputPath stringByDeletingLastPathComponent]
-                                               attributes: nil];
 
+	[[NSFileManager defaultManager] createDirectoryAtPath:[_outputPath stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:nil];
     //NSLog( @"Starting download to file '%@'", _outputPath );
 
     [download setDestination: _outputPath allowOverwrite: YES];
@@ -442,7 +440,7 @@
 - (void)delayScreensaver
 {
 	
-	//nothing right now.
+	//nothing right now. these old classes don't exist and i havent had an opportunity to find new ones
 	
 	Class cls = NSClassFromString( @"ATVScreenSaverManager" );
 	if ( cls != Nil )
