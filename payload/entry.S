@@ -140,7 +140,7 @@ patch1:
 	ldr	r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD_2
-	bl	find_64
+	blx	find_64
 	cmp	r0, #0
 	beq	patch2
 	ldr	r1, =PATCH_CMD_1
@@ -154,7 +154,7 @@ patch2:
 	ldr	r1, =TARGET_BASEADDR
 	mov	r2, #0x24000		@ search area
 	ldr	r3, =FP_CMD2_2
-	bl	find_64
+	blx	find_64
 	cmp	r0, #0
 	beq	patch3
 	ldr	r1, =PATCH_CMD2_1
@@ -166,10 +166,11 @@ patch2:
 patch3:
 
 patch_done:
-	pop	{r4,r5,pc}
+	pop	{pc}
 
 @---------------------------------------------
-.code 32
+.code 16
+.thumb_func
 find_64:
 	push	{r4, lr}
 
