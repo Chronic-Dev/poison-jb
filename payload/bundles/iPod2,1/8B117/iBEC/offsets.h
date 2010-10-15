@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - iPhone2,1/8B117/iBEC/offsets.h
+  * GreenPois0n Cynanide - iPod2,1/8B117/iBEC/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *

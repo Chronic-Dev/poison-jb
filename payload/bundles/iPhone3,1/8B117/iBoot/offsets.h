@@ -2,7 +2,6 @@
   * GreenPois0n Cynanide - iPhone3,1/8B117/iBoot/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
-  * Copyright (C) 2010 Nicolas Haunold
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
