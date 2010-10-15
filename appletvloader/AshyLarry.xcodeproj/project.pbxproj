@@ -484,7 +484,7 @@
 		8717E8DF1266F96600960192 /* GPDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPDownloadController.m; sourceTree = "<group>"; };
 		8717E8EA1266F9D400960192 /* GPProgressBarControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPProgressBarControl.h; sourceTree = "<group>"; };
 		8717E8EB1266F9D400960192 /* GPProgressBarControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPProgressBarControl.m; sourceTree = "<group>"; };
-		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ashyLarryAppliance.m; sourceTree = "<group>"; };
+		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ashyLarryAppliance.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -494,7 +494,7 @@
 				8717E6E31266F09E00960192 /* BackRow */,
 				8717E6B91266E50C00960192 /* payloads.plist */,
 				8717E3751266C35B00960192 /* Metadata */,
-				87FF3E4D12646F9B001906CD /* ashyLarryAppliance.m */,
+				87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */,
 				8717E8D01266F18E00960192 /* About.txt */,
 				8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */,
 				8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */,
