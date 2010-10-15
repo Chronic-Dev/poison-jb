@@ -8,9 +8,9 @@
 #ifndef AES_H
 #define AES_H
 
+#include "common.h"
 #include "device.h"
 #include "offsets.h"
-#include "common.h"
 #include "commands.h"
 
 #ifdef TARGET_AES_CRYPTO_CMD
@@ -26,7 +26,7 @@
 #define kAesSizeMax 0x30
 
 typedef enum {
-#ifdef S5L8900X
+#ifdef S5L8720X
 	kAesTypeGid = 0x200,
 	kAesTypeUid = 0x201
 #else

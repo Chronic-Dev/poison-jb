@@ -21,9 +21,9 @@
 #define DEVICE_H
 
 #define S5L8720X
-#define LOADADDR        0x09000000
-#define IBOOT_BASEADDR  0x0FF00000
-#define IBEC_BASEADDR   0x0FF00000
+#define LOADADDR        0x9000000
+#define IBOOT_BASEADDR  0xFF00000
+#define IBEC_BASEADDR   0xFF00000
 #define IBSS_BASEADDR   0x22000000
 #define LLB_BASEADDR    0x22000000
 #define KERNEL_PATH     "/boot/System/Library/Caches/com.apple.kernelcaches/kernelcache"

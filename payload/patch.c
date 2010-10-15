@@ -14,7 +14,8 @@
 #include "common.h"
 #include "commands.h"
 
-const unsigned char* patch_cert_seq = "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24";
+const unsigned char* patch_cert_seq1 = "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24";
+const unsigned char* patch_cert_seq2 = "\x01\x20\x40\x42\x88\x23\xDB\x00";
 const unsigned char* patch_cert = "\x00\x20\x00\x20";
 
 const unsigned char patch_perm_seq[] = "\x00\x38\x18\xBF\x01\x20\x80\xBD";
@@ -135,75 +136,66 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 int patch_firmware(unsigned char* address, int size) {
 	unsigned int i = 0;
 	/*
-	CERT: "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24" => "\x00\x20\x00\x20";
-	PERM: "\xf3\xdf\x90\xb5\x07\x4b\x1b\x68" => "\x4f\xf0\xff\x33"
-	ECID: "\x02\x94\x03\x94\x01\x90\x28\x46" => "\x00\x20\x00\x20"
-	CMD:  "\x80\xb5\x00\xaf\x82\xb0\x4f\xf0" => "\x00\x4b\x18\x47\x00\x00\x00\x41"
+	CERT: "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24" => "\x00\x20\x00\x20"; armv6
+	      "\x01\x20\x40\x42\x88\x23\xDB\x00" => "\x00\x20\x00\x20"; armv7
+	PERM: "\xf3\xdf\x90\xb5\x07\x4b\x1b\x68" => "\x4f\xf0\xff\x33"; armv7
+	      "\x83\x43\xD8\x0F\x01\x23\x58\x40" => "\x01\x20\x01\x20"; armv6
+	ECID: "\x02\x94\x03\x94\x01\x90\x28\x46" => "\x00\x20\x00\x20";
+	CMD:  "\x80\xb5\x00\xaf\x82\xb0\x4f\xf0" => "\x00\x4b\x18\x47\x00\x00\x00\x41";
 	      "\x90\xB5\x01\xAF\x84\xB0"
 	*/
-
-	unsigned char* cert_offset = patch_find(address, size, patch_cert_seq, 8);
-	if(cert_offset == NULL) {
-		printf("Unable to find RSA patch offset\n");
-		return -1;
-	}
-	printf("Found RSA patch offset at %p\n", cert_offset);
-	memcpy(cert_offset, patch_cert, 4);
-
 	/*
-	unsigned char* ecid_offset = patch_find(address, size, patch_ecid_seq, 8);
-	if(ecid_offset == NULL) {
-		printf("Unable to find ECID patch offset\n");
-		return -1;
+	printf("Finding RSA patch\n");
+	unsigned char* cert_offset = patch_find(address, size, "\x4F\xF0\xFF\x30\xDD\xF8\x40\x24", 8);
+	if(cert_offset == NULL) {
+		cert_offset = patch_find(address, size, "\x01\x20\x40\x42\x88\x23\xDB\x00", 8);
+		if(cert_offset == NULL) {
+			printf("Unable to find RSA patch offset\n");
+			return -1;
+		} else {
+			printf("Found RSA patch 2 offset at %p\n", cert_offset);
+			memcpy(cert_offset, patch_cert, 4);
+		}
+	} else {
+		printf("Found RSA patch 1 offset at %p\n", cert_offset);
+		memcpy(cert_offset, patch_cert, 4);
 	}
-	ecid_offset += 8;
-	printf("Found ECID patch offset at %p\n", ecid_offset);
-	memcpy(ecid_offset, patch_ecid, 4);
-	*/
-/*
-	unsigned char* permission_offset = patch_find(address, size, patch_perm_seq, 8);
-	if(permission_offset == NULL) {
-		printf("Unable to find permission patch offset\n");
-		return -1;
-	}
-	permission_offset += 2;
-	printf("Found PERM patch offset at %p\n", permission_offset);
-	memcpy(permission_offset, patch_perm, 4);
-	*/
+
 	unsigned char* image_load = find_function("image_load", LOADADDR, IBOOT_BASEADDR);
+	printf("Found image_load offset at %p\n", image_load);
 	if(image_load == NULL) {
 		printf("Unable to find image_load function\n");
-		return -1;
 	}
+
 	unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
 	if(permission_offset == NULL) {
-		printf("Unable to find permission patch offset\n");
-		return -1;
+		permission_offset = patch_find(image_load, size, "\x83\x43\xD8\x0F\x01\x23\x58\x40", 8);
+		if(permission_offset == NULL) {
+			printf("Unable to find permission patch offset\n");
+		} else {
+			permission_offset += 2;
+			printf("Found PERM patch offset at %p\n", permission_offset);
+			memcpy(permission_offset, "\x01\x20\x01\x20", 4);
+		}
+	} else {
+		permission_offset += 2;
+		printf("Found PERM patch offset at %p\n", permission_offset);
+		memcpy(permission_offset, patch_perm, 4);
 	}
-	permission_offset += 2;
-	printf("Found PERM patch offset at %p\n", permission_offset);
-	memcpy(permission_offset, patch_perm, 4);
+
 
 	unsigned char* command = find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
 	if(command == NULL) {
 		printf("Unable to find command patch offset\n");
-		return -1;
+	} else {
+		command--;
+		printf("Found command patch offset at %p\n", command);
+#ifdef S5L8720X
+		memcpy(command, "\x00\x4b\x18\x47\x00\x00\x00\x09", 8);
+#else
+		memcpy(command, "\x00\x4b\x18\x47\x00\x00\x00\x41", 8);
+#endif
 	}
-	command--;
-	printf("Found command patch offset at %p\n", command);
-	memcpy(command, patch_command, 8);
-
-/*
-	unsigned char* command_offset = patch_find(address, size, patch_command_seq1, 8);
-	if(command_offset == NULL) {
-		command_offset = patch_find(address, size, patch_command_seq2, 6);
-		if(command_offset == NULL) {
-			printf("Unable to find command patch offset\n");
-			return -1;
-		}
-	}
-	printf("Found command patch offset at %p\n", command_offset);
-	memcpy(command_offset, patch_command, 8);
 */
 	return 0;
 }

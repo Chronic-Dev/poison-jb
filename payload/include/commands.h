@@ -56,7 +56,7 @@
 #	warning "SELF_CMD_RAMDISK not defined"
 #endif
 
-#define MAX_COMMANDS 30
+#define MAX_COMMANDS 100
 
 #define CMDARG_TYPE_STRING 0
 #define CMDARG_TYPE_INTEGER 1

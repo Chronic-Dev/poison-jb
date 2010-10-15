@@ -74,23 +74,28 @@ reset:
 	b halt
 
 relocate_new:
-	ldr r0, =0x41000000
-	ldr r1, =0x42000000
+	ldr r4, =0x41000000
+	ldr r5, =0x42000000
 	b relocate
 
 relocate_old:
-	ldr r0, =0x09000000
-	ldr r1, =0x0A000000
+	ldr r4, =0x09000000
+	ldr r5, =0x0A000000
 	b relocate
 	
 relocate:
-	mov r4, r1
-	bl	copy
+	mov r0, r5
+	mov r1, #0
+	mov r2, #0x80000
+	bl  memset
 	bl	patch
-	bl	clear_icache
-	bl	flush_dcache
+	mov r0, r4
+	mov r1, r5
+	bl	copy
+	@bl	clear_icache
+	@bl	flush_dcache
 
-	mov	r0, r4
+	mov	r0, r5
 	blx	r0
 	b	done
 
@@ -110,9 +115,7 @@ halt:
 @---------------------------------------------
 .code 32
 copy:
-	@mov	r0, #0x41000000
-	@mov	r1, #0x42000000
-	mov	r2, #0x00100000
+	mov	r2, #0x80000
 copy_loop:
 	ldr	r3, [r0], #4
 	str	r3, [r1], #4
@@ -123,18 +126,18 @@ copy_loop:
 @---------------------------------------------
 .code 32
 patch:
-	push {lr}
-	mov	r0, pc
-	lsr	r0, #24
+	push {r4,r5,lr}
+	mov	r4, pc
+	lsr	r4, #24
 
 patch1:
-	cmp r0, #0x41
+	cmp r4, #0x41
 	bne patch2
 	ldr	r0, =FP_CMD_1
 	ldr r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD_2
-	blx	find_64
+	bl	find_64
 	cmp	r0, #0
 	beq	patch_done
 	ldr	r1, =PATCH_CMD_1
@@ -144,13 +147,13 @@ patch1:
 	b patch_done
 
 patch2:
-	cmp r0, #0x09
+	cmp r4, #0x9
 	bne	patch3
 	ldr	r0, =FP_CMD2_1
 	ldr r1, =TARGET_BASEADDR
-	mov	r2, #0x24000		@ search area
+	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD2_2
-	blx	find_64
+	bl	find_64
 	cmp	r0, #0
 	beq	patch_done
 	ldr	r1, =PATCH_CMD2_1
@@ -162,20 +165,11 @@ patch2:
 patch3:
 	b halt
 
-perform:
-	blx	find_64
-	cmp	r0, #0
-	beq	patch_done
-	ldr	r1, =PATCH_CMD_1
-	str	r1, [r0]
-	ldr	r1, =PATCH_CMD_2
-	str	r1, [r0, #4]
 patch_done:
-	pop	{pc}
+	pop	{r4,r5,pc}
 
 @---------------------------------------------
-.code 16
-.thumb_func
+.code 32
 find_64:
 	push	{r4, lr}
 

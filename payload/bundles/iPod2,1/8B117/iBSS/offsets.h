@@ -25,7 +25,7 @@
 
 // Standard offsets
 #define TARGET_FREE                       (0x7E64+1)
-#define TARGET_MALLOC                     ((0x7E6E)+1)
+#define TARGET_MALLOC                     (0x7E6F)
 #define TARGET_JUMP_TO                    (0xC198+1)
 #define TARGET_PRINTF                     (0x11478+1)
 #define TARGET_VPRINTF                    (0x11430+1)

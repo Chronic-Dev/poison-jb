@@ -32,9 +32,10 @@
 #include "commands.h"
 #include "filesystem.h"
 
-Bool gGpHasInit = FALSE;
+static Bool* gGpHasInit = LOADADDR+0x17FFFF0;
 
 int gp_init() {
+	gCmdCount = 0;
 	if(cmd_init()) return -1;
 	if(patch_init()) return -1;
 	if(memory_init()) return -1;
@@ -63,12 +64,14 @@ int gp_init() {
 	if(kernel_init()) return -1;
 //#endif
 
-	gGpHasInit = TRUE;
+	*gGpHasInit = TRUE;
 	return 0;
 }
 
 int main(int argc, CmdArg* argv) {
-	if(!gGpHasInit) {
+	hexdump(0x0, 0x40);
+	printf("%p GpHasInit == %d\n", gGpHasInit, *gGpHasInit);
+	if(!*gGpHasInit) {
 		puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
@@ -77,6 +80,7 @@ int main(int argc, CmdArg* argv) {
 		printf("Greenpois0n initialized\n");
 		return 0;
 	}
+
 
 #if TARGET_NVRAM_LIST
 	int i = 0;
@@ -99,11 +103,15 @@ int main(int argc, CmdArg* argv) {
 	}
 #endif
 
+
 	if(argc > 1) {
 		int i = 0;
 		char* command = argv[1].string;
+		//printf("Searching for command %s\n", command);
 		for(i = 0; i < gCmdCount; i++) {
+			//printf("%d\n", i);
 			if(!strcmp(gCmdCommands[i]->name, command)) {
+				//printf("Found %s\n", command);
 				return gCmdCommands[i]->handler(argc-1, &argv[1]);
 			}
 		}

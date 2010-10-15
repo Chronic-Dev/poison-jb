@@ -77,6 +77,20 @@ int receive_data(int bytes) {
 }
 #endif
 
+void clear_loadaddr() {
+	int i = 0;
+	char* buffer = NULL;
+
+	buffer = malloc(0x100000);
+	if(buffer == NULL) {
+		error("Unable to clear load address\n");
+		return;
+	}
+	memset(buffer, '\0', 0x100000);
+	irecv_send_buffer(client, buffer, 0x100000, 0);
+	free(buffer);
+}
+
 int fetch_image(const char* path, const char* output) {
 	debug("Fetching %s...\n", path);
 	if(download_file_from_zip(device->url, path, output, &download_callback) != 0) {
@@ -271,17 +285,17 @@ int upload_firmware_payload(char* type) {
 		if(!strcmp(type, "iBSS")) {
 			payload = iBSS_n72ap;
 			size = sizeof(iBSS_n72ap);
-			debug("Loaded payload for iBSS on n72ap\n");
+			debug("Loaded payload for iBSS on n72ap of size %d\n", size);
 		}
 		if(!strcmp(type, "iBEC")) {
 			//payload = iBEC_n72ap;
 			//size = sizeof(iBEC_n72ap);
-			debug("Loaded payload for iBEC on n72ap\n");
+			debug("Loaded payload for iBEC on n72ap of size %d\n", size);
 		}
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n72ap;
 			size = sizeof(iBoot_n72ap);
-			debug("Loaded payload for iBoot on n72ap\n");
+			debug("Loaded payload for iBoot on n72ap of size %d\n", size);
 		}
 		break;
 
@@ -334,6 +348,9 @@ int upload_firmware_payload(char* type) {
 		debug("%s\n", irecv_strerror(error));
 		return -1;
 	}
+
+	debug("Clearing payload buffer\n");
+	clear_loadaddr();
 
 	debug("Uploading iBSS payload\n");
 	error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
@@ -704,7 +721,7 @@ int boot_ramdisk() {
 
 	debug("Loading iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image load 0x69626F74 0x09000000");
+		error = irecv_send_command(client, "go image load 0x69626F74 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	}
@@ -715,7 +732,7 @@ int boot_ramdisk() {
 
 	debug("Shifting iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x09000040 0x09000000 0x48000");
+		error = irecv_send_command(client, "go memory move 0x9000040 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	}
@@ -726,7 +743,7 @@ int boot_ramdisk() {
 
 	debug("Patching iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go patch 0x09000000 0x48000");
+		error = irecv_send_command(client, "go patch 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	}
@@ -734,10 +751,10 @@ int boot_ramdisk() {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
-
+	return 0;
 	debug("Jumping into iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go jump 0x09000000");
+		error = irecv_send_command(client, "go jump 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go jump 0x41000000");
 	}
@@ -768,7 +785,7 @@ int boot_ramdisk() {
 	irecv_send_command(client, "go");
 
 	//irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
+	//irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
 	debug("Preparing to upload ramdisk\n");
@@ -786,7 +803,7 @@ int boot_ramdisk() {
 
 	debug("Decrypting ramdisk\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image decrypt 0x09000000");
+		error = irecv_send_command(client, "go image decrypt 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go image decrypt 0x41000000");
 	}
@@ -797,7 +814,7 @@ int boot_ramdisk() {
 
 	debug("Moving ramdisk\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x09000040 0x0C000000 0x100000");
+		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
 	} else {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
 	}
@@ -824,28 +841,28 @@ int boot_tethered() {
 	irecv_saveenv(client);
 
 	debug("Loading iBoot\n");
-	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	//error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Shifting iBoot\n");
-	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	//error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Patching iBoot\n");
-	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	//error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
 	}
 
 	debug("Jumping into iBoot\n");
-	error = irecv_send_command(client, "go jump 0x41000000");
+	//error = irecv_send_command(client, "go jump 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to execute iBSS payload\n");
 		return -1;
@@ -859,7 +876,7 @@ int boot_tethered() {
 	}
 
 	//irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
+	//irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
 	// Warning this payload will be broken since we can assume
@@ -1073,7 +1090,7 @@ int pois0n_inject() {
 	}
 
 	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 5);
+	client = irecv_reconnect(client, 10);
 	if (client == NULL) {
 		error("Unable to reconnect\n");
 		return -1;
