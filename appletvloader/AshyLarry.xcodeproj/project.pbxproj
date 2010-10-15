@@ -484,6 +484,8 @@
 		8717E8DF1266F96600960192 /* GPDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPDownloadController.m; sourceTree = "<group>"; };
 		8717E8EA1266F9D400960192 /* GPProgressBarControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPProgressBarControl.h; sourceTree = "<group>"; };
 		8717E8EB1266F9D400960192 /* GPProgressBarControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPProgressBarControl.m; sourceTree = "<group>"; };
+		8717EF3712680E2F00960192 /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Prefix.pch; path = theos/Prefix.pch; sourceTree = "<group>"; };
+		8717EF3C12680E9A00960192 /* CPlusFunctions.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CPlusFunctions.mm; sourceTree = "<group>"; };
 		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ashyLarryAppliance.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -491,18 +493,12 @@
 		08FB7794FE84155DC02AAC07 /* nitoTV_2 */ = {
 			isa = PBXGroup;
 			children = (
-				8717E6E31266F09E00960192 /* BackRow */,
+				8717EF2712680DF200960192 /* Classes */,
 				8717E6B91266E50C00960192 /* payloads.plist */,
-				8717E3751266C35B00960192 /* Metadata */,
-				87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */,
 				8717E8D01266F18E00960192 /* About.txt */,
-				8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */,
-				8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */,
-				8717E8DE1266F96600960192 /* GPDownloadController.h */,
-				8717E8DF1266F96600960192 /* GPDownloadController.m */,
-				8717E8EA1266F9D400960192 /* GPProgressBarControl.h */,
-				8717E8EB1266F9D400960192 /* GPProgressBarControl.m */,
 				8717E3A31266C61D00960192 /* Makefile */,
+				8717EF3712680E2F00960192 /* Prefix.pch */,
+				8717E6E31266F09E00960192 /* BackRow */,
 				8717D7391266779600960192 /* Foundation.framework */,
 			);
 			name = nitoTV_2;
@@ -988,6 +984,46 @@
 			);
 			name = BackRow;
 			path = theos/include/BackRow;
+			sourceTree = "<group>";
+		};
+		8717EF2712680DF200960192 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */,
+				8717EF5612680F8D00960192 /* Extensions */,
+				8717EF5212680F6700960192 /* Controllers */,
+				8717EF4F12680F5600960192 /* Downloading */,
+				8717E3751266C35B00960192 /* Metadata */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		8717EF4F12680F5600960192 /* Downloading */ = {
+			isa = PBXGroup;
+			children = (
+				8717E8DE1266F96600960192 /* GPDownloadController.h */,
+				8717E8DF1266F96600960192 /* GPDownloadController.m */,
+				8717E8EA1266F9D400960192 /* GPProgressBarControl.h */,
+				8717E8EB1266F9D400960192 /* GPProgressBarControl.m */,
+			);
+			name = Downloading;
+			sourceTree = "<group>";
+		};
+		8717EF5212680F6700960192 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */,
+				8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		8717EF5612680F8D00960192 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				8717EF3C12680E9A00960192 /* CPlusFunctions.mm */,
+			);
+			name = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
