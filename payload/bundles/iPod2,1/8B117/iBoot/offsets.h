@@ -1,8 +1,7 @@
 /**
-  * GreenPois0n Cynanide - iPhone2,1/8B117/iBoot/offsets.h
+  * GreenPois0n Cynanide - iPod2,1/8B117/iBoot/offsets.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
-  * Copyright (C) 2010 Nicolas Haunold
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -59,7 +58,7 @@
 #define TARGET_KERNEL_PHYMEM              (0x2A000)
 #define TARGET_KERNEL_BOOTARGS            (0x1EBC4)
 
-// NVRAM offsets
+// NVRAM offset
 #define TARGET_NVRAM_LIST                 (0x26E08)
 
 #endif // OFFSETS_H
