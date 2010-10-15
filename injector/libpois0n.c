@@ -709,7 +709,7 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable load iBoot to memory\n");
 		return -1;
 	}
 
@@ -720,7 +720,7 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to move iBoot into memory\n");
 		return -1;
 	}
 
@@ -731,7 +731,7 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to patch iBoot\n");
 		return -1;
 	}
 
@@ -742,7 +742,7 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go jump 0x41000000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to jump into iBoot\n");
 		return -1;
 	}
 
@@ -773,14 +773,14 @@ int boot_ramdisk() {
 
 	debug("Preparing to upload ramdisk\n");
 	if(upload_ramdisk() < 0) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to upload ramdisk\n");
 		return -1;
 	}
 
 	debug("Executing ramdisk\n");
 	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to execute ramdisk command\n");
 		return -1;
 	}
 
@@ -791,7 +791,7 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go image decrypt 0x41000000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to decrypt ramdisk\n");
 		return -1;
 	}
 
@@ -802,14 +802,14 @@ int boot_ramdisk() {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
 	}
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to move ramdisk\n");
 		return -1;
 	}
 
 	debug("Setting kernel bootargs\n");
 	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to set kernel bootargs\n");
 		return -1;
 	}
 
@@ -826,28 +826,28 @@ int boot_tethered() {
 	debug("Loading iBoot\n");
 	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to load iBoot to memory\n");
 		return -1;
 	}
 
 	debug("Shifting iBoot\n");
 	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to move iBoot into memory\n");
 		return -1;
 	}
 
 	debug("Patching iBoot\n");
 	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to patch iBoot\n");
 		return -1;
 	}
 
 	debug("Jumping into iBoot\n");
 	error = irecv_send_command(client, "go jump 0x41000000");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to execute iBSS payload\n");
+		error("Unable to jump into iBoot\n");
 		return -1;
 	}
 
@@ -895,7 +895,7 @@ int execute_ibss_payload() {
 	error = irecv_getenv(client, "boot-args", &bootargs);
 	if(error != IRECV_E_SUCCESS) {
 		debug("%s\n", irecv_strerror(error));
-		error("Unable to execute iBSS payload\n");
+		error("Unable to read env var\n");
 		return -1;
 	}
 
@@ -904,7 +904,7 @@ int execute_ibss_payload() {
 		debug("Booting jailbreak ramdisk\n");
 		//error = irecv_setenv(client, "boot-args", "1");
 		if(error != IRECV_E_SUCCESS) {
-			error("Unable to execute iBSS payload\n");
+			error("Unable to set env var\n");
 			return -1;
 		}
 
