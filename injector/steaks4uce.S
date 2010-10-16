@@ -37,7 +37,7 @@
 
 .set	FP_PERMS_CHECK_1,       0xb590dff3	@ search f3 df 90 b5 : F3 DF @ PUSH {R4,R7,LR}
 .set	FP_PERMS_CHECK_2,       0xbd901c20	@ search 20 1c 90 bd : MOVS R0, R4 @ POP {R4,R7,PC}
-.set	PATCH_PERMS_CHECK,      0xbd902000	@ _patch: MOV R0, #0 @ POP {R4,R7,PC}
+.set	PATCH_PERMS_CHECK,      0xbd902001	@ _patch: MOV R0, #1 @ POP {R4,R7,PC}
 
 .set	FP_IMAGE_VERIFY_TAG_1,  0x2b009b11	@ search 11 9b 00 2b : LDR R3, [SP,#0x44] @ CMP R3, #0
 .set	FP_IMAGE_VERIFY_TAG_2,  0xb0082001	@ search 01 20 08 b0 : MOV R0, #1 @ ADD SP, SP, #20
