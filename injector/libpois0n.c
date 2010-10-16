@@ -777,6 +777,7 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+	return 0;
 	debug("Executing ramdisk\n");
 	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
