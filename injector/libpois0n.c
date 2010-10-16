@@ -1062,7 +1062,6 @@ int pois0n_inject() {
 #endif
 	}
 	else if(device->chip_id == 8920 || device->chip_id == 8922) {
-#ifndef __APPLE__
 #	ifdef LIMERA1N
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
@@ -1070,10 +1069,6 @@ int pois0n_inject() {
 			return -1;
 		}
 #	endif
-#else
-		error("Sorry, the limera1n exploit is not support on MacOSX yet\n");
-		return -1;
-#endif
 	}
 	else if(device->chip_id == 8720) {
 #ifdef STEAKS4UCE
