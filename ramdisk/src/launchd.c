@@ -17,6 +17,7 @@ char* cache_env[] = {
 
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
+const char* fsck_hfs_user_old[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", NULL };
 const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
 const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
@@ -183,10 +184,12 @@ int main(int argc, char* argv[], char* env[]) {
 
 	puts("Checking user filesystem...\n");
 	if (fsexec(fsck_hfs_user, env) != 0) {
-		puts("Unable to fsck user filesystem?\n");
-		unmount("/mnt/dev", 0);
-		unmount("/mnt", 0);
-		return -1;
+		if (fsexec(fsck_hfs_user_old, env) != 0) {
+			puts("Unable to fsck user filesystem?\n");
+			unmount("/mnt/dev", 0);
+			unmount("/mnt", 0);
+			return -1;
+		}
 	}
 	puts("User filesystem checked\n");
 
@@ -202,8 +205,10 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Mounting user filesystem...\n");
 	mkdir("/mnt/private/var2", 0755);
 	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
-		puts("Unable to mount user filesystem!\n");
-		return -1;
+		if (hfs_mount("/dev/disk0s2", "/mnt/private/var2", 0) != 0) {
+			puts("Unable to mount user filesystem!\n");
+			return -1;
+		}
 	}
 	puts("User filesystem mounted\n");
 
