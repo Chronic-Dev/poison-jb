@@ -188,7 +188,7 @@ _wait_for_image:
 	LDR	R2,	[R6, #8]	@ header->fullSize
 	MOV	R5,	R2
 	BL	memcpy
-	/*
+
 	@ patch the image
 	LDR	R0,	=FP_RSA_CHECK_1
 	LDR	R1,	=loadaddr
@@ -236,7 +236,7 @@ perms_check_patched:
 	BEQ	image_verify_tag_patched
 	LDR	R1,	=PATCH_IMAGE_VERIFY_TAG
 	STR	R1,	[R0]
-	*/
+
 image_verify_tag_patched:
 
 	LDR	R0,	=FP_CMD_1

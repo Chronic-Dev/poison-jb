@@ -1052,13 +1052,13 @@ int pois0n_inject() {
 			return -1;
 		}
 #else
-#	ifndef __APPLE__
+//#	ifndef __APPLE__
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-#	endif
+//#	endif
 #endif
 	}
 	else if(device->chip_id == 8920 || device->chip_id == 8922) {
