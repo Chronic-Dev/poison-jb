@@ -280,8 +280,8 @@ bgcolor_patched:
 memcpy:
 
 _memcpy_loop:
-	LDR	R3,	[R1]
-	STR	R3,	[R0]
+	LDRB	R3,	[R1]
+	STRB	R3,	[R0]
 	ADD	R0,	#1
 	ADD	R1,	#1
 	SUB	R2,	#1
