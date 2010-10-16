@@ -187,14 +187,9 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Filesystem checked\n");
 
 	puts("Checking user filesystem...\n");
-	if (fsexec(fsck_hfs_user, env) != 0) {
-		if (fsexec(fsck_hfs_user_old, env) != 0) {
-			puts("Unable to fsck user filesystem?\n");
-			unmount("/mnt/dev", 0);
-			unmount("/mnt", 0);
-			return -1;
-		}
-	}
+	fsexec(fsck_hfs_user, env);
+	fsexec(fsck_hfs_user_old, env);
+	
 	puts("User filesystem checked\n");
 
 	puts("Updating filesystem...\n");
