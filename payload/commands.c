@@ -312,8 +312,8 @@ void clear_icache() {
 
 void hooked(int flags, void* addr, int phymem) {
 	// patch kernel
-	//printf("Entered hooked jump_to function!!!\n");
-	//printf("Patching kernel\n");
+	printf("Entered hooked jump_to function!!!\n");
+	printf("Patching kernel\n");
 	patch_kernel((void*)(LOADADDR - 0x1000000), 0xA00000);
 
 	printf("Replace hooking code with original\n");
@@ -326,5 +326,5 @@ void hooked(int flags, void* addr, int phymem) {
 
 	jump_to++;
 	printf("Calling %p\n", jump_to);
-	//jump_to(flags, addr, phymem);
+	jump_to(flags, addr, phymem);
 }
