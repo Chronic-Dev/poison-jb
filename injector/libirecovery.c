@@ -219,7 +219,7 @@ int irecv_control_transfer( irecv_client_t client,
 	if (timeout <= 10) {
 		// pod2g: dirty hack for limera1n support.
 		IOReturn kresult;
-		IOUSBDevRequestTO req;
+		IOUSBDevRequest req;
 		bzero(&req, sizeof(req));
 		struct darwin_device_handle_priv *priv = (struct darwin_device_handle_priv *)client->handle->os_priv;
 		struct darwin_device_priv *dpriv = (struct darwin_device_priv *)client->handle->dev->os_priv;
@@ -229,8 +229,6 @@ int irecv_control_transfer( irecv_client_t client,
 		req.wIndex            = OSSwapLittleToHostInt16 (wIndex);
 		req.wLength           = OSSwapLittleToHostInt16 (wLength);
 		req.pData             = data + LIBUSB_CONTROL_SETUP_SIZE;
-		req.completionTimeout = 0;
-		req.noDataTimeout     = 0;
 		kresult = (*(dpriv->device))->DeviceRequestAsync(dpriv->device, &req, (IOAsyncCallback1) dummy_callback, NULL);
 		usleep(5 * 1000);
 		kresult = (*(dpriv->device))->USBDeviceAbortPipeZero (dpriv->device);

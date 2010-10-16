@@ -493,7 +493,7 @@ int limera1n_exploit() {
 	irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000);
 	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10);
 
-	debug("Executing exploit\n");
+	//debug("Executing exploit\n");
 	irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000);
 
 	irecv_reset(client);
