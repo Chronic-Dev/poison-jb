@@ -313,7 +313,7 @@ void hooked(int flags, void* addr, int phymem) {
 	// patch kernel
 	//printf("Entered hooked jump_to function!!!\n");
 	//printf("Patching kernel\n");
-	patch_kernel((void*) 0x40000000, 0xA00000);
+	patch_kernel((void*)(LOADADDR - 0x1000000), 0xA00000);
 
 	//printf("Replace hooking code with original\n");
 	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
