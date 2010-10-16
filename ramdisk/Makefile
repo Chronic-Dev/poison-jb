@@ -51,8 +51,8 @@ ramdisk: launchd
 	hdiutil detach $(RAMDISK_VOLUME)
 
 encrypt:
-	#xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
-	#xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
+	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
+	xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
 	
 stage:
 	$(BIN2C) ramdisk.dmg ../injector/resources/ramdisk.h ramdisk

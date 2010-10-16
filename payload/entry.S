@@ -92,12 +92,13 @@ relocate:
 	mov	r4, r1
 	bl	copy
 	bl	patch
-	bl	clear_icache
 	cmp	r5, #0x09
 	bne	flush_new
 	bl	clear_dcache
+	bl	clear_icache
 	b	jump_main
 flush_new:
+	bl	clear_icache
 	bl	flush_dcache
 
 jump_main:

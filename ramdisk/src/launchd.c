@@ -17,6 +17,7 @@ char* cache_env[] = {
 
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
+const char* fsck_hfs_user_old[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", NULL };
 const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
 const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
@@ -25,7 +26,7 @@ const char* afc2add[] = { "/afc2add", NULL };
 
 static char** envp = NULL;
 
-int install_files() {
+int install_files(int is_old) {
 	int ret = 0;
 
 	puts("Creating directories for install\n");
@@ -36,7 +37,11 @@ int install_files() {
 	mkdir("/mnt/Applications/Loader.app", 0755);
 
 	puts("Installing fstab\n");
-	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	if (is_old) {
+		ret = cp("/files/fstab_old", "/mnt/private/etc/fstab");
+	} else {
+		ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	}
 	if (ret < 0) return -1;
 
 	puts("Adding AFC2...\n");
@@ -182,12 +187,9 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Filesystem checked\n");
 
 	puts("Checking user filesystem...\n");
-	if (fsexec(fsck_hfs_user, env) != 0) {
-		puts("Unable to fsck user filesystem?\n");
-		unmount("/mnt/dev", 0);
-		unmount("/mnt", 0);
-		return -1;
-	}
+	fsexec(fsck_hfs_user, env);
+	fsexec(fsck_hfs_user_old, env);
+	
 	puts("User filesystem checked\n");
 
 	puts("Updating filesystem...\n");
@@ -201,14 +203,20 @@ int main(int argc, char* argv[], char* env[]) {
 
 	puts("Mounting user filesystem...\n");
 	mkdir("/mnt/private/var2", 0755);
+
+	int is_old = 0;
 	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
-		puts("Unable to mount user filesystem!\n");
-		return -1;
+		if (hfs_mount("/dev/disk0s2", "/mnt/private/var2", 0) != 0) {
+			puts("Unable to mount user filesystem!\n");
+			return -1;
+		} else {
+			is_old = 1;
+		}
 	}
 	puts("User filesystem mounted\n");
 
 	puts("Installing files...\n");
-	if (install_files() != 0) {
+	if (install_files(is_old) != 0) {
 		puts("Failed to install files!\n");
 		unmount("/mnt/private/var2", 0);
 		rmdir("/mnt/private/var2");

@@ -335,10 +335,10 @@ int upload_firmware_payload(char* type) {
 		return -1;
 	}
 
-	debug("Uploading iBSS payload\n");
+	debug("Uploading %s payload\n", type);
 	error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to upload firmware payload\n");
+		error("Unable to upload %s payload\n", type);
 		return -1;
 	}
 
@@ -777,7 +777,6 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	return 0;
 	debug("Executing ramdisk\n");
 	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
@@ -830,28 +829,44 @@ int boot_tethered() {
 	irecv_saveenv(client);
 
 	debug("Loading iBoot\n");
-	error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x09000000");
+	} else {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to load iBoot to memory\n");
 		return -1;
 	}
 
 	debug("Shifting iBoot\n");
-	error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x09000040 0x09000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to move iBoot into memory\n");
 		return -1;
 	}
 
 	debug("Patching iBoot\n");
-	error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go patch 0x09000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to patch iBoot\n");
 		return -1;
 	}
 
 	debug("Jumping into iBoot\n");
-	error = irecv_send_command(client, "go jump 0x41000000");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go jump 0x09000000");
+	} else {
+		error = irecv_send_command(client, "go jump 0x41000000");
+	}
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to jump into iBoot\n");
 		return -1;
