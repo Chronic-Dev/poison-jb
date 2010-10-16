@@ -60,6 +60,8 @@
 .set    FP_CMD2_1,                      0xaf02b5b0      @ search b0 b5 02 af : PUSH {R4,R5,R7,LR} @ ADD R7, SP, #8
 .set    FP_CMD2_2,                      0x2801b082      @ search 82 b0 01 28 : SUB SP, SP, #8 @ CMP R0, #1
 
+.set	FP_CMD3_1,						0xaf01b590
+.set	FP_CMD3_2,						0xf04fb084
 .text
 @main code -----------------------------------
 .code 16
@@ -186,7 +188,7 @@ _wait_for_image:
 	LDR	R2,	[R6, #8]	@ header->fullSize
 	MOV	R5,	R2
 	BL	memcpy
-	
+	/*
 	@ patch the image
 	LDR	R0,	=FP_RSA_CHECK_1
 	LDR	R1,	=loadaddr
@@ -234,6 +236,7 @@ perms_check_patched:
 	BEQ	image_verify_tag_patched
 	LDR	R1,	=PATCH_IMAGE_VERIFY_TAG
 	STR	R1,	[R0]
+	*/
 image_verify_tag_patched:
 
 	LDR	R0,	=FP_CMD_1
@@ -249,7 +252,15 @@ image_verify_tag_patched:
 	LDR	R3,	=FP_CMD2_2
 	BL	find64
 	CMP	R0,	#0
+	BNE	bgcolor_patch
+	LDR	R0,	=FP_CMD3_1
+	LDR	R1,	=loadaddr
+	MOV	R2,	R5
+	LDR	R3,	=FP_CMD3_2
+	BL	find64
+	CMP	R0,	#0
 	BEQ	bgcolor_patched
+
 bgcolor_patch:
 	LDR	R1,	=PATCH_CMD_1
 	STR	R1,	[R0]

@@ -111,6 +111,7 @@ relocated:
 	ldr	r2, [sp, #0x8]
 	ldr	r3, [sp, #0xc]
 	bl	main
+	str r0, [sp, #0x0] @ push r0 return onto the stack to be returned
 
 done:
 	pop	{r0-r12, pc}
