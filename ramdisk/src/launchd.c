@@ -26,7 +26,7 @@ const char* afc2add[] = { "/afc2add", NULL };
 
 static char** envp = NULL;
 
-int install_files() {
+int install_files(int is_old) {
 	int ret = 0;
 
 	puts("Creating directories for install\n");
@@ -37,7 +37,11 @@ int install_files() {
 	mkdir("/mnt/Applications/Loader.app", 0755);
 
 	puts("Installing fstab\n");
-	ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	if (is_old) {
+		ret = cp("/files/fstab_old", "/mnt/private/etc/fstab");
+	} else {
+		ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	}
 	if (ret < 0) return -1;
 
 	puts("Adding AFC2...\n");
@@ -204,16 +208,20 @@ int main(int argc, char* argv[], char* env[]) {
 
 	puts("Mounting user filesystem...\n");
 	mkdir("/mnt/private/var2", 0755);
+
+	int is_old = 0;
 	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
 		if (hfs_mount("/dev/disk0s2", "/mnt/private/var2", 0) != 0) {
 			puts("Unable to mount user filesystem!\n");
 			return -1;
+		} else {
+			is_old = 1;
 		}
 	}
 	puts("User filesystem mounted\n");
 
 	puts("Installing files...\n");
-	if (install_files() != 0) {
+	if (install_files(is_old) != 0) {
 		puts("Failed to install files!\n");
 		unmount("/mnt/private/var2", 0);
 		rmdir("/mnt/private/var2");

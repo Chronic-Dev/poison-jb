@@ -151,7 +151,6 @@ int patch_firmware(unsigned char* address, int size) {
 		cert_offset = patch_find(address, size, "\x01\x20\x40\x42\x88\x23\xDB\x00", 8);
 		if(cert_offset == NULL) {
 			printf("Unable to find RSA patch offset\n");
-			return -1;
 		} else {
 			printf("Found RSA patch 2 offset at %p\n", cert_offset);
 			memcpy(cert_offset, patch_cert, 4);
@@ -165,22 +164,22 @@ int patch_firmware(unsigned char* address, int size) {
 	printf("Found image_load offset at %p\n", image_load);
 	if(image_load == NULL) {
 		printf("Unable to find image_load function\n");
-	}
-
-	unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
-	if(permission_offset == NULL) {
-		permission_offset = patch_find(image_load, size, "\x83\x43\xD8\x0F\x01\x23\x58\x40", 8);
+	} else {
+		unsigned char* permission_offset = patch_find(image_load, size, "\x00\x38\x18\xBF\x01\x20\x80\xBD", 8);
 		if(permission_offset == NULL) {
-			printf("Unable to find permission patch offset\n");
+			permission_offset = patch_find(image_load, size, "\x83\x43\xD8\x0F\x01\x23\x58\x40", 8);
+			if(permission_offset == NULL) {
+				printf("Unable to find permission patch offset\n");
+			} else {
+				permission_offset += 2;
+				printf("Found PERM patch offset at %p\n", permission_offset);
+				memcpy(permission_offset, "\x01\x20\x01\x20", 4);
+			}
 		} else {
 			permission_offset += 2;
 			printf("Found PERM patch offset at %p\n", permission_offset);
-			memcpy(permission_offset, "\x01\x20\x01\x20", 4);
+			memcpy(permission_offset, patch_perm, 4);
 		}
-	} else {
-		permission_offset += 2;
-		printf("Found PERM patch offset at %p\n", permission_offset);
-		memcpy(permission_offset, patch_perm, 4);
 	}
 
 	unsigned char* command = find_function("cmd_go", LOADADDR, IBOOT_BASEADDR);
