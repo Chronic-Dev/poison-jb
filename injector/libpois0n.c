@@ -335,10 +335,10 @@ int upload_firmware_payload(char* type) {
 		return -1;
 	}
 
-	debug("Uploading iBSS payload\n");
+	debug("Uploading %s payload\n", type);
 	error = irecv_send_buffer(client, (unsigned char*) payload, size, 1);
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to upload firmware payload\n");
+		error("Unable to upload %s payload\n", type);
 		return -1;
 	}
 
