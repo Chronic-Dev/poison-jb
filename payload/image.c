@@ -13,6 +13,7 @@
 #include "task.h"
 #include "image.h"
 #include "common.h"
+#include "device.h"
 
 LinkedList* gImageList = SELF_IMAGE_LIST;
 
@@ -114,12 +115,25 @@ int image_decrypt(void* image) {
     data = (void*) data_header + sizeof(ImageTagHeader);
 
     /* Decrypt kbag */
-    // FIXME: derive AES size from kbag length
-	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, 0x30, kAesTypeGid, 0, 0);
+#ifdef S5L8720X
+    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize128, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize128, kAesTypeGid, 0, 0);
+#else
+    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize256, kAesTypeGid);
+	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize256, kAesTypeGid, 0, 0);
+#endif*/
+
 
     /* Decrypt data */
     //FIXME: derive AES type from kbag type
-	aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+#ifdef S5L8720X
+    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x20, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType128, kbag->key, kbag->iv);
+
+#else
+    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x30, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+#endif
 	return 0;
 }
 

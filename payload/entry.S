@@ -198,6 +198,7 @@ find_return:
 clear_icache:
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5
+	mcr	p15, 0, r0, c7, c5, 4  @ Flush Prefetch Buffer
 	nop
 	nop
 	nop

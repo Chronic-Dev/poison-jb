@@ -26,7 +26,7 @@
 #define kAesSizeMax 0x30
 
 typedef enum {
-#ifdef S5L8900X
+#ifdef S5L8720X
 	kAesTypeGid = 0x200,
 	kAesTypeUid = 0x201
 #else
