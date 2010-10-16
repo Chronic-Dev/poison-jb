@@ -232,7 +232,7 @@ int irecv_control_transfer( irecv_client_t client,
 		req.completionTimeout = 0;
 		req.noDataTimeout     = 0;
 		kresult = (*(dpriv->device))->DeviceRequestAsync(dpriv->device, &req, (IOAsyncCallback1) dummy_callback, NULL);
-		usleep(10 * 1000);
+		usleep(5 * 1000);
 		kresult = (*(dpriv->device))->USBDeviceAbortPipeZero (dpriv->device);
 	} else {
 		return libusb_control_transfer(client->handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
