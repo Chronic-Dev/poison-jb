@@ -57,7 +57,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	CSED: 00 00 00 00 01 00 00 00 80 00 00 00 00 00 00 00 => 01 00 00 00 01 00 00 00 80 00 00 00 00 00 00 00 ; armv6 & armv7
 
 	AMFI: 00 B1 00 24 20 46 90 BD  +  0 => 00 B1 01 24 20 46 90 BD ; armv7
-	      0E 00 A0 E1 01 10 84 E2  + 20 => 0E 00 A0 E1 01 10 84 E2 ; armv6
+	      0E 00 A0 E1 01 10 84 E2  + 20 => 00 00 00 00 ; armv6
 
 	PROD: 00 23 00 94 01 95 02 95  + 10 => 00 20 00 20 ; armv7 & armv6
 
@@ -106,7 +106,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 		if(!memcmp(&address[i], "\x0E\x00\xA0\xE1\x01\x10\x84\xE2", 8)) {
 			target = i + 20;
 			printf("Found armv6 kernel patch 2 at %p\n", &address[target]);
-			memcpy((char*) &address[target], "\x0E\x00\xA0\xE1\x01\x10\x84\xE2", 8);
+			memcpy((char*) &address[target], "\x00\x00\x00\x00", 4);
 			continue;
 		}
 
