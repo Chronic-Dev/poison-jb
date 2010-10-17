@@ -9,8 +9,8 @@ UNAME := $(shell uname -s)
 ADDOBJ = ""
 
 ifeq ($(UNAME),Darwin)
-	CFLAGS = -I./include -I./resources -I/usr/local/include -I/opt/local/include -mmacosx-version-min=10.5 -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -arch i386 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk
-	LDFLAGS = -L/usr/lib -L/Users/posixninja/Documents/Workspace/greenpois0n2/interface/macosx/greenpois0n.app/Contents/Frameworks -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit -mmacosx-version-min=10.5 -arch i386 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wl,-no_compact_linkedit
+	CFLAGS = -I./include -I./resources -I/usr/local/include -I/opt/local/include -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk
+	LDFLAGS = -L/usr/lib -L/Users/posixninja/Documents/Workspace/greenpois0n2/interface/macosx/greenpois0n.app/Contents/Frameworks -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wl,-no_compact_linkedit
 	ADDOBJ = 
 else
 	ifeq ($(UNAME),MINGW32_NT-5.1)
