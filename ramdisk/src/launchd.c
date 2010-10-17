@@ -6,8 +6,8 @@
 #include "hfs_mount.h"
 
 #define INSTALL_LOADER
-#define INSTALL_HACKTIVATION
-#define INSTALL_UNTETHERED
+//#define INSTALL_HACKTIVATION
+//#define INSTALL_UNTETHERED
 
 char* cache_env[] = {
 		"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
@@ -32,8 +32,8 @@ int install_files(int is_old) {
 	puts("Creating directories for install\n");
 	mkdir("/mnt/private", 0755);
 	mkdir("/mnt/private/etc", 0755);
-	mkdir("/mnt/private/var", 0755);
-	mkdir("/mnt/private/var/db", 0755);
+	//mkdir("/mnt/private/var", 0755);
+	//mkdir("/mnt/private/var/db", 0755);
 	mkdir("/mnt/Applications/Loader.app", 0755);
 
 	puts("Installing fstab\n");
@@ -97,7 +97,7 @@ int install_files(int is_old) {
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) return ret;
 #endif
-
+/*
 	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
 		puts("Patching K48AP.plist\n");
 		ret = install("/files/capable", "/mnt/capable", 0, 80, 0755);
@@ -129,11 +129,11 @@ int install_files(int is_old) {
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
 	if (ret < 0) return -1;
-/*
+
 	unlink("/mnt/pf2");
 	unlink("/mnt/patch");
 	unlink("/mnt/libgmalloc.dylib");
-*/
+
 #endif
 #ifdef INSTALL_LOADER
 	puts("Installing sachet\n");
@@ -142,7 +142,7 @@ int install_files(int is_old) {
 	fsexec(sachet, cache_env);
 	unlink("/mnt/sachet");
 #endif
-
+*/
 
 	return 0;
 }
