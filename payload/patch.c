@@ -89,7 +89,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 #ifdef S5L8720X
 		if(!memcmp(&address[i], "\x00\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16)) {
 			target = i;
-			printf("Found kernel patch 1 at %p\n", &address[target]);
+			printf("Found armv6 kernel patch 1 at %p\n", &address[target]);
 			memcpy(&address[target], "\x01\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16);
 			continue;
 		}

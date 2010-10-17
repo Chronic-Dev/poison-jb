@@ -699,12 +699,9 @@ int upload_ibec_payload() {
 int boot_ramdisk() {
 	irecv_error_t error = 0;
 
-	irecv_setenv(client, "auto-boot", "false");
-	irecv_saveenv(client);
-
 	debug("Loading iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image load 0x69626F74 0x09000000");
+		error = irecv_send_command(client, "go image load 0x69626F74 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	}
@@ -715,7 +712,7 @@ int boot_ramdisk() {
 
 	debug("Shifting iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x09000040 0x09000000 0x48000");
+		error = irecv_send_command(client, "go memory move 0x9000040 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	}
@@ -726,7 +723,7 @@ int boot_ramdisk() {
 
 	debug("Patching iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go patch 0x09000000 0x48000");
+		error = irecv_send_command(client, "go patch 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	}
@@ -735,9 +732,12 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+	irecv_setenv(client, "auto-boot", "false");
+	irecv_saveenv(client);
+
 	debug("Jumping into iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go jump 0x09000000");
+		error = irecv_send_command(client, "go jump 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go jump 0x41000000");
 	}
@@ -756,9 +756,6 @@ int boot_ramdisk() {
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
-	// Warning this payload will be broken since we can assume
-	//   we have the correct offset, only use commands that don't
-	//   need specific offsets!!!!
 	if(upload_firmware_payload("iBoot") < 0) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -767,16 +764,12 @@ int boot_ramdisk() {
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
 
-	//irecv_setenv(client, "boot-args", "0");
-	irecv_setenv(client, "auto-boot", "true");
-	irecv_saveenv(client);
-
 	debug("Preparing to upload ramdisk\n");
 	if(upload_ramdisk() < 0) {
 		error("Unable to upload ramdisk\n");
 		return -1;
 	}
-	//return 0;
+
 	debug("Executing ramdisk\n");
 	error = irecv_send_command(client, "go ramdisk 1 1");
 	if(error != IRECV_E_SUCCESS) {
@@ -786,7 +779,7 @@ int boot_ramdisk() {
 
 	debug("Decrypting ramdisk\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image decrypt 0x09000000");
+		error = irecv_send_command(client, "go image decrypt 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go image decrypt 0x41000000");
 	}
@@ -797,7 +790,7 @@ int boot_ramdisk() {
 
 	debug("Moving ramdisk\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x09000040 0x0C000000 0x100000");
+		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
 	} else {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
 	}
@@ -807,12 +800,22 @@ int boot_ramdisk() {
 	}
 
 	debug("Setting kernel bootargs\n");
-	//error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
-	error = irecv_send_command(client, "go kernel bootargs rd=disk0s1 -v keepsyms=1 serial=1 debug=10");
-		if(error != IRECV_E_SUCCESS) {
+	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
 		error("Unable to set kernel bootargs\n");
 		return -1;
 	}
+
+	if(device->chip_id == 8720) {
+		// This is a tethered jailbreak
+		irecv_setenv(client, "boot-args", "1");
+		irecv_setenv(client, "auto-boot", "false");
+	} else {
+		// This is an untethered jailbreak
+		irecv_setenv(client, "boot-args", "0");
+		irecv_setenv(client, "auto-boot", "true");
+	}
+	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");
 	if (error != IRECV_E_SUCCESS) {
@@ -826,12 +829,9 @@ int boot_ramdisk() {
 int boot_tethered() {
 	irecv_error_t error = 0;
 
-	irecv_setenv(client, "auto-boot", "false");
-	irecv_saveenv(client);
-
 	debug("Loading iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image load 0x69626F74 0x09000000");
+		error = irecv_send_command(client, "go image load 0x69626F74 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
 	}
@@ -842,7 +842,7 @@ int boot_tethered() {
 
 	debug("Shifting iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x09000040 0x09000000 0x48000");
+		error = irecv_send_command(client, "go memory move 0x9000040 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
 	}
@@ -853,7 +853,7 @@ int boot_tethered() {
 
 	debug("Patching iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go patch 0x09000000 0x48000");
+		error = irecv_send_command(client, "go patch 0x9000000 0x48000");
 	} else {
 		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
 	}
@@ -862,9 +862,12 @@ int boot_tethered() {
 		return -1;
 	}
 
+	irecv_setenv(client, "auto-boot", "false");
+	irecv_saveenv(client);
+
 	debug("Jumping into iBoot\n");
 	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go jump 0x09000000");
+		error = irecv_send_command(client, "go jump 0x9000000");
 	} else {
 		error = irecv_send_command(client, "go jump 0x41000000");
 	}
@@ -880,13 +883,9 @@ int boot_tethered() {
 		return -1;
 	}
 
-	//irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
-	// Warning this payload will be broken since we can assume
-	//   we have the correct offset, only use commands that don't
-	//   need specific offsets!!!!
 	if(upload_firmware_payload("iBoot") < 0) {
 		error("Unable to boot the device tethered\n");
 		return -1;
@@ -894,6 +893,59 @@ int boot_tethered() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
+
+	debug("Preparing to upload ramdisk\n");
+	if(upload_ramdisk() < 0) {
+		error("Unable to upload ramdisk\n");
+		return -1;
+	}
+
+	debug("Executing ramdisk\n");
+	error = irecv_send_command(client, "go ramdisk 1 1");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute ramdisk command\n");
+		return -1;
+	}
+
+	debug("Decrypting ramdisk\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go image decrypt 0x9000000");
+	} else {
+		error = irecv_send_command(client, "go image decrypt 0x41000000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to decrypt ramdisk\n");
+		return -1;
+	}
+
+	debug("Moving ramdisk\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to move ramdisk\n");
+		return -1;
+	}
+
+	debug("Setting kernel bootargs\n");
+	error = irecv_send_command(client, "go kernel bootargs rd=disk0s1 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to set kernel bootargs\n");
+		return -1;
+	}
+
+	if(device->chip_id == 8720) {
+		// This is a tethered jailbreak
+		irecv_setenv(client, "boot-args", "1");
+		irecv_setenv(client, "auto-boot", "false");
+	} else {
+		// This is an untethered jailbreak
+		irecv_setenv(client, "boot-args", "0");
+		irecv_setenv(client, "auto-boot", "true");
+	}
+	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");
 	if (error != IRECV_E_SUCCESS) {
@@ -928,12 +980,6 @@ int execute_ibss_payload() {
 	// If boot-args hasn't been set then we've never been jailbroken
 	if(!strcmp(bootargs, "") || !strcmp(bootargs, "0")) {
 		debug("Booting jailbreak ramdisk\n");
-		//error = irecv_setenv(client, "boot-args", "1");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to set env var\n");
-			return -1;
-		}
-
 		if(boot_ramdisk() < 0) {
 			error("Unable to boot device into tethered mode\n");
 			return -1;

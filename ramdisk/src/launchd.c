@@ -6,8 +6,8 @@
 #include "hfs_mount.h"
 
 #define INSTALL_LOADER
-//#define INSTALL_HACKTIVATION
-//#define INSTALL_UNTETHERED
+#define INSTALL_HACKTIVATION
+#define INSTALL_UNTETHERED
 
 char* cache_env[] = {
 		"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
@@ -32,8 +32,8 @@ int install_files(int is_old) {
 	puts("Creating directories for install\n");
 	mkdir("/mnt/private", 0755);
 	mkdir("/mnt/private/etc", 0755);
-	//mkdir("/mnt/private/var", 0755);
-	//mkdir("/mnt/private/var/db", 0755);
+	mkdir("/mnt/private/var", 0755);
+	mkdir("/mnt/private/var/db", 0755);
 	mkdir("/mnt/Applications/Loader.app", 0755);
 
 	puts("Installing fstab\n");
@@ -51,13 +51,15 @@ int install_files(int is_old) {
 	unlink("/mnt/afc2add");
 
 #ifdef INSTALL_HACKTIVATION
-	puts("Installing hacktivate.dylib...\n");
-	ret = install("/files/hacktivate.dylib", "/mnt/usr/lib/hacktivate.dylib", 0, 80, 0755);
-	if (ret < 0) return ret;
+	if(!is_old) {
+		puts("Installing hacktivate.dylib...\n");
+		ret = install("/files/hacktivate.dylib", "/mnt/usr/lib/hacktivate.dylib", 0, 80, 0755);
+		if (ret < 0) return ret;
 
-	puts("Installing patched com.apple.mobile.lockdown.plist...\n");
-	ret = install("/files/com.apple.mobile.lockdown.plist", "/mnt/System/Library/LaunchDaemons/com.apple.mobile.lockdown.plist", 0, 0, 0644);
-	if (ret < 0) return ret;
+		puts("Installing patched com.apple.mobile.lockdown.plist...\n");
+		ret = install("/files/com.apple.mobile.lockdown.plist", "/mnt/System/Library/LaunchDaemons/com.apple.mobile.lockdown.plist", 0, 0, 0644);
+		if (ret < 0) return ret;
+	}
 #endif
 
 #ifdef INSTALL_LOADER
@@ -97,43 +99,46 @@ int install_files(int is_old) {
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) return ret;
 #endif
-/*
-	if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
-		puts("Patching K48AP.plist\n");
-		ret = install("/files/capable", "/mnt/capable", 0, 80, 0755);
-		if (ret < 0) return -1;
-		fsexec(capable, cache_env);
-		unlink("/mnt/capable");
+
+	if(!is_old) {
+		if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
+			puts("Patching K48AP.plist\n");
+			ret = install("/files/capable", "/mnt/capable", 0, 80, 0755);
+			if (ret < 0) return -1;
+			fsexec(capable, cache_env);
+			unlink("/mnt/capable");
+		}
 	}
 
 #ifdef INSTALL_UNTETHERED
-	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	puts("Creating untethered exploit\n");
-	unlink("/mnt/usr/bin/patch");
-	ret = install("/files/patch", "/mnt/usr/bin/patch", 0, 80, 0755);
-	if (ret < 0) return -1;
+	if(!is_old) {
+		unlink("/mnt/usr/lib/pf2");
+		unlink("/mnt/usr/bin/patch");
+		unlink("/mnt/usr/lib/libgmalloc.dylib");
+		unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 
-	puts("Installing pf2\n");
-	unlink("/mnt/usr/lib/pf2");
-	fsexec(patch_kernel, cache_env);
-	ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
-	if (ret < 0) return -1;
+		puts("Creating untethered exploit\n");
+		ret = install("/files/patch", "/mnt/usr/bin/patch", 0, 80, 0755);
+		if (ret < 0) return -1;
 
-	puts("Installing libgmalloc\n");
-	unlink("/mnt/usr/lib/libgmalloc.dylib");
-	fsexec(patch_dyld, cache_env);
-	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
-	if (ret < 0) return -1;
+		puts("Installing pf2\n");
+		fsexec(patch_kernel, cache_env);
+		ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
+		if (ret < 0) return -1;
 
-	puts("Installing launchd_use_gmalloc\n");
-	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
-	if (ret < 0) return -1;
+		puts("Installing libgmalloc\n");
+		fsexec(patch_dyld, cache_env);
+		ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
+		if (ret < 0) return -1;
 
-	unlink("/mnt/pf2");
-	unlink("/mnt/patch");
-	unlink("/mnt/libgmalloc.dylib");
+		puts("Installing launchd_use_gmalloc\n");
+		ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
+		if (ret < 0) return -1;
 
+		unlink("/mnt/pf2");
+		unlink("/mnt/patch");
+		unlink("/mnt/libgmalloc.dylib");
+	}
 #endif
 #ifdef INSTALL_LOADER
 	puts("Installing sachet\n");
