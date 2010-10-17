@@ -1,5 +1,5 @@
-CFLAGS=-I../../injector -Igreenpois0n.app/Contents/Frameworks
-LDFLAGS=-L../../injector -Lgreenpois0n.app/Contents/Frameworks -lpois0n -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit -framework Cocoa
+CFLAGS=-I../../injector -Igreenpois0n.app/Contents/Frameworks -mmacosx-version-min=10.5 -arch i386 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk
+LDFLAGS=-L../../injector -Lgreenpois0n.app/Contents/Frameworks -lpois0n -lusb-1.0 -lcurl -lz -framework CoreFoundation -framework IOKit -framework Cocoa -mmacosx-version-min=10.5 -arch i386 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk -Wl,-no_compact_linkedit
 
 all:
 	@echo "Building Mac OS X GUI"
