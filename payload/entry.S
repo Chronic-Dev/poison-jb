@@ -94,7 +94,7 @@ relocate:
 	bl	patch
 	cmp	r5, #0x09
 	bne	flush_new
-	bl	clear_dcache
+	@bl	clear_dcache
 	bl	clear_icache
 	b	jump_main
 flush_new:
