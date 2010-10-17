@@ -151,7 +151,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 			printf("Found armv6 kernel patch 5 at %p\n", &address[target]);
 			memcpy(&address[target], "\x00\x20", 2);
 			continue;
-		}]
+		}
 
 		/*
 		 * Patch 6
