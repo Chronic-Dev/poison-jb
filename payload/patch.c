@@ -11,6 +11,7 @@
 #include "task.h"
 #include "lock.h"
 #include "patch.h"
+#include "device.h"
 #include "common.h"
 #include "commands.h"
 
@@ -77,13 +78,70 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	????: 1F 4C 1E E0 28 46 51 46  +  8 => 01 20 01 20
 
 	SHA1: A0 47 08 B1 28 46 30 E0  +  8 => 00 20 00 20
-
+          85 68 00 23 .. 93 .. 93 -        .. .. .. .. 29 46 04 22
 	TFP0: 85 68 00 23 02 93 01 93  +  8 => 0B E0 C0 46 ; armv7
-	      85 68 02 93 01 93 00 2C  +  8 => 0B E0 C0 46 ; armv6
+	      85 68 .. 93 .. 93 00 2c          0B D1
+	      85 68 02 93 01 93 00 2C  +  8 => 0E 93 BD 93 ; armv6
 	*/
 	unsigned int i = 0;
 	enter_critical_section();
 	for(i = 0; i < size; i++) {
+#ifdef S5L8720X
+		if(!memcmp(&address[i], "\x00\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16)) {
+			target = i;
+			printf("Found kernel patch 1 at %p\n", &address[target]);
+			memcpy(&address[target], "\x01\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x2E\xD1\x35\x98\x80\x07\x33\xD4\x6B\x08\x1E\x1C\xEB\x0A\x01\x22", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 1 at %p\n", &address[target]);
+			memcpy(&address[target], "\x2E\xD1\x35\x98\x80\x07\x00\x28\x6B\x08\x1E\x1C\xEB\x0A\x01\x22", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x00\x40\xA0\xE3\x04\x00\xA0\xE1\x90\x80\xBD\xE8\x90\x5D\x3B\x80", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 2 at %p\n", &address[target]);
+			memcpy(&address[target], "\x01\x40\xA0\xE3\x04\x00\xA0\xE1\x90\x80\xBD\xE8\x90\x5D\x3B\x80", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x00\x00\xE0\xE3\x1A\x00\x00\xEA\xC8\x30\x17\xE5\xC4\x40\x17\xE5", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 3 at %p\n", &address[target]);
+			memcpy(&address[target], "\x00\x00\xA0\xE3\x1A\x00\x00\xEA\xC8\x30\x17\xE5\xC4\x40\x17\xE5", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x02\x95\x03\x94\xFF\xF7\x16\xFF\x00\x28\x1F\xD0\x1C\xE0\x00\x21", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 4 at %p\n", &address[target]);
+			memcpy(&address[target], "\x02\x95\x03\x94\x00\x20\x00\x20\x00\x28\x1F\xD0\x1C\xE0\x00\x21", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x06\x9A\x07\x9B\x58\x46\x1C\x49\xFF\xF7\xFC\xFE\x43\x42\x18\x43", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 5 at %p\n", &address[target]);
+			memcpy(&address[target], "\x06\x9A\x07\x9B\x58\x46\x1C\x49\x00\x20\x00\x20\x43\x42\x18\x43", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x7A\x4B\x98\x47\x00\x28\x00\xD0\xC5\xE0\x06\x98\xFF\xF7\x90\xFD", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 6 at %p\n", &address[target]);
+			memcpy(&address[target], "\x7A\x4B\x98\x47\x00\x20\x00\xD0\xC5\xE0\x06\x98\xFF\xF7\x90\xFD", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x05\x1E\x00\xD0\xBF\xE0\x41\x46\x4B\x7C\x0A\x7C\x1B\x02\x1A\x43", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 7 at %p\n", &address[target]);
+			memcpy(&address[target], "\x00\x25\x00\xD0\xBF\xE0\x41\x46\x4B\x7C\x0A\x7C\x1B\x02\x1A\x43", 16);
+			continue;
+		}
+		if(!memcmp(&address[i], "\x53\x40\x1C\x43\xA8\x42\xF7\xD9\x00\x2C\x00\xD0\xFF\x24\x30\x1C", 16)) {
+			target = i;
+			printf("Found armv6 kernel patch 8 at %p\n", &address[target]);
+			memcpy(&address[target], "\x53\x40\x1C\x43\xA8\x42\xF7\xD9\x00\x2C\x00\xD0\x00\x24\x30\x1C", 16);
+			continue;
+		}
+#else
 		/*
 		 * Patch 1
 		 */
@@ -195,6 +253,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 			continue;
 		}
 
+#endif
 	}
 	exit_critical_section();
 	return 0;

@@ -807,8 +807,9 @@ int boot_ramdisk() {
 	}
 
 	debug("Setting kernel bootargs\n");
-	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
-	if(error != IRECV_E_SUCCESS) {
+	//error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	error = irecv_send_command(client, "go kernel bootargs rd=disk0s1 -v keepsyms=1 serial=1 debug=10");
+		if(error != IRECV_E_SUCCESS) {
 		error("Unable to set kernel bootargs\n");
 		return -1;
 	}
