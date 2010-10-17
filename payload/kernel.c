@@ -27,8 +27,7 @@ int(*kernel_load)(void* input, int max_size, char** output) = SELF_KERNEL_LOAD;
 
 int kernel_init() {
 	printf("Initializing kernel\n");
-	//cmd_add("kernel", &kernel_cmd, "operations for filesystem kernel");
-	cmd_add("kernel", &kernel_cmd, "Nothing");
+	cmd_add("kernel", &kernel_cmd, "operations for filesystem kernel");
 	return 0;
 }
 
