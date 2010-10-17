@@ -7,4 +7,7 @@ ashyLarry_INSTALL_PATH = /Applications/Lowtide.app/Appliances
 ashyLarry_BUNDLE_EXTENSION = frappliance
 ashyLarry_LDFLAGS = -undefined dynamic_lookup #-L$(FW_PROJECT_DIR) -lBackRow
 
+SUBPROJECTS = wuntar
+
+include $(FW_MAKEDIR)/aggregate.mk
 include $(FW_MAKEDIR)/bundle.mk
