@@ -68,7 +68,7 @@ int gp_init() {
 }
 
 int main(int argc, CmdArg* argv) {
-	if(!gGpHasInit) {
+	if(!gGpHasInit || gCmdCount==0) {
 		puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
@@ -108,7 +108,7 @@ int main(int argc, CmdArg* argv) {
 			}
 		}
 
-		printf("Command Not Found\n\n");
+		printf("Command %s not found.\n\n", command);
 		return -1;
 	}
 
