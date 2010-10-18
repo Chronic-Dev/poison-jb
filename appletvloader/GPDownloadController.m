@@ -478,14 +478,7 @@
 - (BOOL) download: (NSURLDownload *) download
    shouldDecodeSourceDataOfMIMEType: (NSString *) encodingType
 {
-	return ( NO );
-    NSLog( @"Asked to decode data of MIME type '%@'", encodingType );
-
-    // we'll allow decoding only if it won't interfere with resumption
-    if ( [encodingType isEqualToString: @"application/gzip"] || [encodingType isEqualToString: @"application/x-gzip"] )
-        return ( NO );
-
-    return ( YES );
+    return YES;
 }
 
 - (void) download: (NSURLDownload *) download
