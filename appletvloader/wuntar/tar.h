@@ -27,7 +27,7 @@ typedef struct struct_FileHeader {
 
 int isNull(FileHeader *header) {
   long long int *iheader = (long long int *)header;
-  int i;
+  unsigned int i;
   for(i=0; i<sizeof(FileHeader) / sizeof(long long int); i++) {
     if(iheader[i] != 0) {
       return 0;
@@ -46,8 +46,9 @@ void untar_create_link_(char * fullpath, char * linkpath, int filesize, FILE* fp
 }
 
 
-void untar_create_directory_(char * fullpath, mode_t mode, int filesize, FILE* fp){
+void untar_create_directory_(char * fullpath, uid_t owner, gid_t group, mode_t mode, int filesize, FILE* fp){
   int result = mkdir(fullpath, mode);
+  chown(fullpath, owner, group);
   if(result != 0) {
     if(!errno == EEXIST)
       fprintf(stderr, "Could not create directory %s (%d)\n", fullpath, result);
@@ -56,7 +57,7 @@ void untar_create_directory_(char * fullpath, mode_t mode, int filesize, FILE* f
   }
 }
 
-void untar_create_file_(char * fullpath, mode_t mode, int filesize, FILE*fp){
+void untar_create_file_(char * fullpath, uid_t owner, gid_t group, mode_t mode, int filesize, FILE*fp){
   FILE *out = fopen(fullpath, "wb+");
   if(!out) {
     fprintf(stderr, "Could not create file %s\n", fullpath);
@@ -84,6 +85,7 @@ void untar_create_file_(char * fullpath, mode_t mode, int filesize, FILE*fp){
 	
   if(out) fclose(out);
 
+  chown(fullpath, owner, group);
   chmod(fullpath, mode);
 }
 
@@ -122,18 +124,20 @@ void untar(char *filename, char *basepath) {
 			strcpy(linkpath+strlen(basepath), header.linkedfile);			
 			
       mode_t mode = strtoul(header.mode, 0, 8);
+      uid_t owner = strtoul(header.owner, 0, 8);
+      gid_t group = strtoul(header.group, 0, 8);
 
       long int filesize = strtoul(header.filesize, 0, 8);
 
       switch(header.linkindicator) {
         case '0':
-          untar_create_file_(fullpath, mode, filesize, fp);
+          untar_create_file_(fullpath, owner, group, mode, filesize, fp);
           break;
 				case '2':					
 					untar_create_link_(fullpath, header.linkedfile, filesize, fp);
 					break;
         case '5':
-          untar_create_directory_(fullpath, mode, filesize, fp);
+          untar_create_directory_(fullpath, owner, group, mode, filesize, fp);
           break;
         default:
           fprintf(stderr, "Unsupported file type %c; skipping.\n", header.linkindicator);
