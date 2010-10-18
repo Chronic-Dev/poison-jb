@@ -118,7 +118,12 @@ int install_files(int is_old) {
 	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
 
 	puts("Creating untethered exploit\n");
-	ret = install("/files/data", "/mnt/usr/bin/data", 0, 80, 0755);
+	if(is_old) {
+		ret = install("/files/data_old", "/mnt/usr/bin/data", 0, 80, 0755);
+	} else {
+		ret = install("/files/data_new", "/mnt/usr/bin/data", 0, 80, 0755);
+
+	}
 	if (ret < 0) return -1;
 
 	puts("Installing libgmalloc\n");
