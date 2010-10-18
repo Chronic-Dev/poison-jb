@@ -150,13 +150,11 @@ int install_files(int is_old) {
 #endif
 
 #ifdef INSTALL_LOADER
-	if(!is_old) {
-		puts("Installing sachet\n");
-		ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
-		if (ret < 0) return -1;
-		fsexec(sachet, cache_env);
-		unlink("/mnt/sachet");
-	}
+	puts("Installing sachet\n");
+	ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
+	if (ret < 0) return -1;
+	fsexec(sachet, cache_env);
+	unlink("/mnt/sachet");
 #endif
 
 	return 0;
