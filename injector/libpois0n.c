@@ -957,6 +957,73 @@ int boot_tethered() {
 }
 
 int boot_iboot() {
+	irecv_error_t error = 0;
+
+	debug("Loading iBoot\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x9000000");
+	} else {
+		error = irecv_send_command(client, "go image load 0x69626F74 0x41000000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable load iBoot to memory\n");
+		return -1;
+	}
+
+	debug("Shifting iBoot\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x9000040 0x9000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x41000000 0x48000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to move iBoot into memory\n");
+		return -1;
+	}
+
+	debug("Patching iBoot\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go patch 0x9000000 0x48000");
+	} else {
+		error = irecv_send_command(client, "go patch 0x41000000 0x48000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to patch iBoot\n");
+		return -1;
+	}
+
+	irecv_setenv(client, "auto-boot", "false");
+	irecv_saveenv(client);
+
+	debug("Jumping into iBoot\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go jump 0x9000000");
+	} else {
+		error = irecv_send_command(client, "go jump 0x41000000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to jump into iBoot\n");
+		return -1;
+	}
+
+	debug("Reconnecting to device\n");
+	client = irecv_reconnect(client, 5);
+	if (client == NULL) {
+		error("Unable to boot the device tethered\n");
+		return -1;
+	}
+
+	irecv_setenv(client, "auto-boot", "true");
+	irecv_saveenv(client);
+
+	if(upload_firmware_payload("iBoot") < 0) {
+		error("Unable to boot the device tethered\n");
+		return -1;
+	}
+
+	debug("Initializing greenpois0n in iBoot\n");
+	irecv_send_command(client, "go");
+
 	return 0;
 }
 
