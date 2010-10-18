@@ -18,8 +18,9 @@ char* cache_env[] = {
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* fsck_hfs_user_old[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", NULL };
-const char* patch_dyld[] = { "/usr/bin/patch", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
-const char* patch_kernel[] = { "/usr/bin/patch", "-K", "/System/Library/Caches/com.apple.kernelcaches/kernelcache", NULL };
+const char* patch_dyld_new[] = { "/usr/bin/data", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
+const char* patch_dyld_old[] = { "/usr/bin/data", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv6", NULL };
+const char* patch_kernel[] = { "/usr/bin/data", "-K", NULL };
 const char* sachet[] = { "/sachet", "/Applications/Loader.app", NULL };
 const char* capable[] = { "/capable", "K48AP", "hide-non-default-apps", NULL };
 const char* afc2add[] = { "/afc2add", NULL };
@@ -44,7 +45,7 @@ int install_files(int is_old) {
 	}
 	if (ret < 0) return -1;
 
-	puts("Adding AFC2...\n");
+	puts("Installing AFC2...\n");
 	ret = install("/files/afc2add", "/mnt/afc2add", 0, 80, 0755);
 	if (ret < 0) return -1;
 	fsexec(afc2add, cache_env);
@@ -111,43 +112,47 @@ int install_files(int is_old) {
 	}
 
 #ifdef INSTALL_UNTETHERED
+	unlink("/mnt/usr/lib/pf2");
+	unlink("/mnt/usr/bin/data");
+	unlink("/mnt/usr/lib/libgmalloc.dylib");
+	unlink("/mnt/private/var/db/.launchd_use_gmalloc");
+
+	puts("Creating untethered exploit\n");
+	ret = install("/files/data", "/mnt/usr/bin/data", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing libgmalloc\n");
+	if(is_old) {
+		fsexec(patch_dyld_old, cache_env);
+	} else {
+		fsexec(patch_dyld_new, cache_env);
+	}
+	ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing pf2 exploit\n");
+	fsexec(patch_kernel, cache_env);
+	ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing launchd_use_gmalloc\n");
+	ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	unlink("/mnt/pf2");
+	unlink("/mnt/libgmalloc.dylib");
+	unlink("/mnt/usr/bin/data");
+#endif
+
+#ifdef INSTALL_LOADER
 	if(!is_old) {
-		unlink("/mnt/usr/lib/pf2");
-		unlink("/mnt/usr/bin/patch");
-		unlink("/mnt/usr/lib/libgmalloc.dylib");
-		unlink("/mnt/private/var/db/.launchd_use_gmalloc");
-
-		puts("Creating untethered exploit\n");
-		ret = install("/files/patch", "/mnt/usr/bin/patch", 0, 80, 0755);
+		puts("Installing sachet\n");
+		ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
 		if (ret < 0) return -1;
-
-		puts("Installing pf2\n");
-		fsexec(patch_kernel, cache_env);
-		ret = install("/mnt/pf2", "/mnt/usr/lib/pf2", 0, 80, 0755);
-		if (ret < 0) return -1;
-
-		puts("Installing libgmalloc\n");
-		fsexec(patch_dyld, cache_env);
-		ret = install("/mnt/libgmalloc.dylib", "/mnt/usr/lib/libgmalloc.dylib", 0, 80, 0755);
-		if (ret < 0) return -1;
-
-		puts("Installing launchd_use_gmalloc\n");
-		ret = install("/files/launchd_use_gmalloc", "/mnt/private/var/db/.launchd_use_gmalloc", 0, 80, 0755);
-		if (ret < 0) return -1;
-
-		unlink("/mnt/pf2");
-		unlink("/mnt/patch");
-		unlink("/mnt/libgmalloc.dylib");
+		fsexec(sachet, cache_env);
+		unlink("/mnt/sachet");
 	}
 #endif
-#ifdef INSTALL_LOADER
-	puts("Installing sachet\n");
-	ret = install("/files/sachet", "/mnt/sachet", 0, 80, 0755);
-	if (ret < 0) return -1;
-	fsexec(sachet, cache_env);
-	unlink("/mnt/sachet");
-#endif
-*/
 
 	return 0;
 }

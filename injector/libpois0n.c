@@ -776,7 +776,7 @@ int boot_ramdisk() {
 		error("Unable to execute ramdisk command\n");
 		return -1;
 	}
-
+/*
 	debug("Decrypting ramdisk\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go image decrypt 0x9000000");
@@ -787,7 +787,7 @@ int boot_ramdisk() {
 		error("Unable to decrypt ramdisk\n");
 		return -1;
 	}
-
+*/
 	debug("Moving ramdisk\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
@@ -806,15 +806,15 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	if(device->chip_id == 8720) {
+	//if(device->chip_id == 8720) {
 		// This is a tethered jailbreak
-		irecv_setenv(client, "boot-args", "1");
-		irecv_setenv(client, "auto-boot", "false");
-	} else {
+		//irecv_setenv(client, "boot-args", "1");
+		//irecv_setenv(client, "auto-boot", "false");
+	//} else {
 		// This is an untethered jailbreak
 		irecv_setenv(client, "boot-args", "0");
 		irecv_setenv(client, "auto-boot", "true");
-	}
+	//}
 	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");
@@ -906,7 +906,7 @@ int boot_tethered() {
 		error("Unable to execute ramdisk command\n");
 		return -1;
 	}
-
+/*
 	debug("Decrypting ramdisk\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go image decrypt 0x9000000");
@@ -917,7 +917,7 @@ int boot_tethered() {
 		error("Unable to decrypt ramdisk\n");
 		return -1;
 	}
-
+*/
 	debug("Moving ramdisk\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
@@ -936,15 +936,15 @@ int boot_tethered() {
 		return -1;
 	}
 
-	if(device->chip_id == 8720) {
+	//if(device->chip_id == 8720) {
 		// This is a tethered jailbreak
-		irecv_setenv(client, "boot-args", "1");
-		irecv_setenv(client, "auto-boot", "false");
-	} else {
+		//irecv_setenv(client, "boot-args", "1");
+		//irecv_setenv(client, "auto-boot", "false");
+	//} else {
 		// This is an untethered jailbreak
 		irecv_setenv(client, "boot-args", "0");
 		irecv_setenv(client, "auto-boot", "true");
-	}
+	//}
 	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");
@@ -956,7 +956,7 @@ int boot_tethered() {
 	return 0;
 }
 
-int boot_verbose() {
+int boot_iboot() {
 	return 0;
 }
 
@@ -998,10 +998,10 @@ int execute_ibss_payload() {
 		debug("Booting iBSS in payload mode\n");
 		return 0;
 	}
-	// If boot-args is 3 then boot tethered in verbose (needed?)
+	// If boot-args is 3, then don't boot kernel, just load iBoot payload
 	else if(!strcmp(bootargs, "3")) {
 		debug("Booting device in verbose mode\n");
-		if(boot_verbose() < 0) {
+		if(boot_iboot() < 0) {
 			error("Unable to boot device into verbose mode\n");
 			return -1;
 		}
@@ -1099,23 +1099,21 @@ int pois0n_inject() {
 			return -1;
 		}
 #else
-//#	ifndef __APPLE__
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-//#	endif
 #endif
 	}
 	else if(device->chip_id == 8920 || device->chip_id == 8922) {
-#	ifdef LIMERA1N
+#ifdef LIMERA1N
 		debug("Preparing to upload limera1n exploit\n");
 		if(limera1n_exploit() < 0) {
 			error("Unable to upload exploit data\n");
 			return -1;
 		}
-#	endif
+#endif
 	}
 	else if(device->chip_id == 8720) {
 #ifdef STEAKS4UCE
