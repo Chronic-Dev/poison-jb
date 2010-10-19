@@ -26,6 +26,7 @@
 #include "nvram.h"
 #include "image.h"
 #include "patch.h"
+#include "memory.h"
 #include "kernel.h"
 #include "common.h"
 #include "commands.h"
@@ -36,36 +37,67 @@ Bool gGpHasInit = FALSE;
 int gp_init() {
 	if(cmd_init()) return -1;
 	if(patch_init()) return -1;
+	if(memory_init()) return -1;
+
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
 #endif
+
 #if TARGET_BDEV_LIST
 	if(bdev_init()) return -1;
 #endif
+
 #if TARGET_IMAGE_LIST && TARGET_BDEV_LIST && TARGET_AES_CRYPTO_CMD
 	if(image_init()) return -1;
 #endif
+
 #if TARGET_NVRAM_LIST
 	if(nvram_init()) return -1;
 #endif
+
 #if TARGET_FS_MOUNT && TARGET_FS_UNMOUNT && TARGET_FS_LOAD_FILE
 	if(fs_init()) return -1;
 #endif
-#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
+
+//#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
 	if(kernel_init()) return -1;
-#endif
+//#endif
+
 	gGpHasInit = TRUE;
 	return 0;
 }
 
 int main(int argc, CmdArg* argv) {
-	if(!gGpHasInit) {
+	if(!gGpHasInit || gCmdCount==0) {
+		puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;
 		}
 		printf("Greenpois0n initialized\n");
+		return 0;
 	}
+
+#if TARGET_NVRAM_LIST
+	int i = 0;
+	for(i = 1; i < argc; i++) {
+		if(!strcmp(argv[i].string, "$_")) {
+			NvramVar* retval = nvram_find_var("?");
+			printf("substituting $_ with %s\n", retval->string);
+			argv[i].string = retval->string;
+			continue;
+		}
+		if(argv[i].string[0] == '$') {
+			NvramVar* var = nvram_find_var(&(argv[i].string[1]));
+			if(var == NULL) {
+				printf("Unable to find nvram var for %s\n", &(argv[i].string[1]));
+			} else {
+				printf("substituting %s with %s\n", argv[i].string, var->string);
+				argv[i].string = var->string;
+			}
+		}
+	}
+#endif
 
 	if(argc > 1) {
 		int i = 0;
@@ -76,7 +108,7 @@ int main(int argc, CmdArg* argv) {
 			}
 		}
 
-		printf("Command Not Found\n\n");
+		printf("Command %s not found.\n\n", command);
 		return -1;
 	}
 

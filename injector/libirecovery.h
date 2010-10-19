@@ -23,7 +23,13 @@
 extern "C" {
 #endif
 
+#ifndef WIN32
 #include <libusb-1.0/libusb.h>
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#define sleep(n) Sleep(1000 * n)
+#endif
 
 #define APPLE_VENDOR_ID 0x05AC
 
@@ -37,6 +43,7 @@ extern "C" {
 #define CPID_IPAD1G       8930
 #define CPID_IPHONE4      8930
 #define CPID_IPOD4G       8930
+#define CPID_APPLETV2     8930
 
 #define BDID_UNKNOWN        -1
 #define BDID_IPHONE2G        0
@@ -48,6 +55,7 @@ extern "C" {
 #define BDID_IPAD1G          2
 #define BDID_IPHONE4         0
 #define BDID_IPOD4G          8
+#define BDID_APPLETV2       10
 
 #define DEVICE_UNKNOWN      -1
 #define DEVICE_IPHONE2G      0
@@ -59,6 +67,7 @@ extern "C" {
 #define DEVICE_IPAD1G        6
 #define DEVICE_IPHONE4       7
 #define DEVICE_IPOD4G        8
+#define DEVICE_APPLETV2      9
 
 enum {
 	kRecoveryMode1 = 0x1280,
@@ -112,7 +121,17 @@ struct irecv_client {
 	int alt_interface;
 	unsigned short mode;
 	char serial[256];
+	
+#ifndef WIN32
 	libusb_device_handle* handle;
+#else
+	HANDLE handle;
+	HANDLE hDFU;
+	HANDLE hIB;
+	LPSTR iBootPath;
+	LPSTR DfuPath;
+#endif
+	
 	irecv_event_cb_t progress_callback;
 	irecv_event_cb_t received_callback;
 	irecv_event_cb_t connected_callback;
@@ -131,24 +150,26 @@ struct irecv_device {
 };
 
 static struct irecv_device irecv_devices[] = {
-	{  0, "iPhone1,1", "m68ap",  0,  8900,
+	{  0, "iPhone1,1",  "m68ap",  0,  8900,
 	NULL },
-	{  1, "iPod1,1",   "n45ap",  2,  8900,
+	{  1, "iPod1,1",    "n45ap",  2,  8900,
 	NULL },
-	{  2, "iPhone1,2", "n82ap",  4,  8900,
-	NULL },
-	{  3, "iPod2,1",   "n72ap",  0,  8720,
-	NULL },
-	{  4, "iPhone2,1", "n88ap",  0,  8920,
-	NULL },
-	{  5, "iPod3,1",   "n18ap",  2,  8922,
-	NULL },
-	{  6, "iPad1,1",   "k48ap",  2,  8930,
+	{  2, "iPhone1,2",  "n82ap",  4,  8900,
+	"http://appldnld.apple.com/iPhone4/061-7932.20100908.3fgt5/iPhone1,2_4.1_8B117_Restore.ipsw" },
+	{  3, "iPod2,1",    "n72ap",  0,  8720,
+	"http://appldnld.apple.com/iPhone4/061-7937.20100908.ghj4f/iPod2,1_4.1_8B117_Restore.ipsw" },
+	{  4, "iPhone2,1",  "n88ap",  0,  8920,
+	"http://appldnld.apple.com/iPhone4/061-7938.20100908.F3rCk/iPhone2,1_4.1_8B117_Restore.ipsw" },
+	{  5, "iPod3,1",    "n18ap",  2,  8922,
+	"http://appldnld.apple.com/iPhone4/061-7941.20100908.sV9KE/iPod3,1_4.1_8B117_Restore.ipsw" },
+	{  6, "iPad1,1",    "k48ap",  2,  8930,
 	"http://appldnld.apple.com/iPad/061-8801.20100811.CvfR5/iPad1,1_3.2.2_7B500_Restore.ipsw" },
-	{  7, "iPhone3,1", "n90ap",  0,  8930,
+	{  7, "iPhone3,1",  "n90ap",  0,  8930,
 	"http://appldnld.apple.com/iPhone4/061-7939.20100908.Lcyg3/iPhone3,1_4.1_8B117_Restore.ipsw" },
-	{  8, "iPod4,1",   "n81ap",  8,  8930,
+	{  8, "iPod4,1",    "n81ap",  8,  8930,
 	"http://appldnld.apple.com/iPhone4/061-8490.20100901.hyjtR/iPod4,1_4.1_8B117_Restore.ipsw" },
+	{  9, "AppleTV2,1", "k66ap", 10,  8930,
+	"http://appldnld.apple.com/AppleTV/061-8940.20100926.Tvtnz/AppleTV2,1_4.1_8M89_Restore.ipsw" },
 	{ -1,  NULL,        NULL,   -1,    -1,
 	NULL }
 };
@@ -169,18 +190,20 @@ irecv_error_t irecv_event_unsubscribe(irecv_client_t client, irecv_event_type ty
 
 irecv_error_t irecv_send_file(irecv_client_t client, const char* filename, int dfuNotifyFinished);
 irecv_error_t irecv_send_command(irecv_client_t client, char* command);
-irecv_error_t irecv_send_buffer(irecv_client_t client, char* buffer, unsigned long length, int dfuNotifyFinished);
+irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, unsigned long length, int dfuNotifyFinished);
 
+irecv_error_t irecv_saveenv(irecv_client_t client);
 irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** value);
 irecv_error_t irecv_setenv(irecv_client_t client, const char* variable, const char* value);
 irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_interface);
 irecv_error_t irecv_get_cpid(irecv_client_t client, unsigned int* cpid);
 irecv_error_t irecv_get_bdid(irecv_client_t client, unsigned int* bdid);
 irecv_error_t irecv_get_ecid(irecv_client_t client, unsigned long long* ecid);
+void irecv_hexdump(unsigned char* buf, unsigned int len, unsigned int addr);
 
 void irecv_init();
 void irecv_exit();
-irecv_client_t irecv_reconnect(irecv_client_t client);
+irecv_client_t irecv_reconnect(irecv_client_t client, int initial_pause);
 irecv_error_t irecv_reset_counters(irecv_client_t client);
 irecv_error_t irecv_finish_transfer(irecv_client_t client);
 irecv_error_t irecv_recv_buffer(irecv_client_t client, char* buffer, unsigned long length);

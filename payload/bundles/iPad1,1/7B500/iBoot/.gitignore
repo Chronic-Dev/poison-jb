@@ -1,0 +1,3 @@
+*.o
+payload
+payload.elf

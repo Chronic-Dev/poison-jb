@@ -29,9 +29,9 @@ void write_DAC(int value);
 
 // c7
 void clear_icache();
-void clear_dcache();
+//void clear_dcache(); //pod2g: removed, not armv6 compatible
 
 // multiple
-void clear_cpu_caches();
+//void clear_cpu_caches(); //pod2g: removed, not armv6 compatible
 
 #endif

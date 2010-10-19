@@ -53,6 +53,11 @@
 //#define TARGET_FS_UNMOUNT                 (0x0)
 //#define TARGET_FS_LOAD_FILE               (0x0)
 
+// Kernel offsets
+#define TARGET_KERNEL_LOAD                (0x12D70+1)
+#define TARGET_KERNEL_PHYMEM              (0x28980)
+#define TARGET_KERNEL_BOOTARGS            (0x20B04)
+
 // NVRAM offsets
 #define TARGET_NVRAM_LIST                 (0x24958)
 

@@ -48,22 +48,61 @@ fiq_vector:		.word halt
 .set	PATCH_CMD_1,	0x47184b00	@ _patch: LDR R3, =0x42000000 @ BX R3
 .set	PATCH_CMD_2,	0x42000000	@ _patch: 0x42000000
 
+.set	FP_CMD2_1,	0x47184b00	@ search: LDR R3, =0x09000000 @ BR R3
+.set	FP_CMD2_2,	0x09000000	@ search: 0x09000000
+.set	PATCH_CMD2_1,	0x47184b00	@ _patch: LDR R3, =0x0A000000 @ BX R3
+.set	PATCH_CMD2_2,	0x0A000000	@ _patch: 0x0A000000
+
+.set	new_loadaddr,		0x41000000
+.set	new_payload_dest,	0x42000000
+.set	old_loadaddr,		0x09000000
+.set	old_payload_dest,	0x0A000000
+
 .code 32
 @---------------------------------------------
 reset:
 	push	{r0-r12, lr}
-	mov	r0, pc
-	lsr	r0, #24
-	cmp	r0, #0x42
+	mov	r5, pc
+	lsr	r5, #24
+	cmp	r5, #0x42
 	beq	relocated
+
+	cmp	r5, #0x0A
+	beq	relocated
+
+	cmp	r5, #0x41
+	beq	relocate_new
 	
-	bl	patch_go
-	bl	relocate
+	cmp	r5, #0x09
+	beq	relocate_old
+
+	b	halt
+
+relocate_new:
+	ldr	r0, =new_loadaddr
+	ldr	r1, =new_payload_dest
+	b	relocate
+
+relocate_old:
+	ldr	r0, =old_loadaddr
+	ldr	r1, =old_payload_dest
+	b	relocate
+	
+relocate:
+	mov	r4, r1
+	bl	copy
+	bl	patch
+	cmp	r5, #0x09
+	bne	flush_new
+	@bl	clear_dcache
+	bl	clear_icache
+	b	jump_main
+flush_new:
 	bl	clear_icache
 	bl	flush_dcache
 
-	mov	r0, #0x42000000
-	blx	r0
+jump_main:
+	blx	r4
 	b	done
 
 relocated:
@@ -72,6 +111,8 @@ relocated:
 	ldr	r2, [sp, #0x8]
 	ldr	r3, [sp, #0xc]
 	bl	main
+	str r0, [sp, #0x0] @ push r0 return onto the stack to be returned
+
 done:
 	pop	{r0-r12, pc}
 
@@ -80,33 +121,53 @@ halt:
 
 @---------------------------------------------
 .code 32
-relocate:
-	mov	r0, #0x41000000
-	mov	r1, #0x42000000
+copy:
 	mov	r2, #0x00100000
-relocate_loop:
+copy_loop:
 	ldr	r3, [r0], #4
 	str	r3, [r1], #4
 	subs	r2, r2, #4
-	bne	relocate_loop
+	bne	copy_loop
 	bx	lr
 
 @---------------------------------------------
 .code 32
-patch_go:
+patch:
 	push	{lr}
+	mov	r0, pc
+	lsr	r0, #24
+
+patch1:
 	ldr	r0, =FP_CMD_1
-	ldr     r1, =TARGET_BASEADDR
+	ldr	r1, =TARGET_BASEADDR
 	mov	r2, #0x2c000		@ search area
 	ldr	r3, =FP_CMD_2
 	blx	find_64
 	cmp	r0, #0
-	beq	patch_go_end
+	beq	patch2
 	ldr	r1, =PATCH_CMD_1
 	str	r1, [r0]
 	ldr	r1, =PATCH_CMD_2
 	str	r1, [r0, #4]
-patch_go_end:
+	b	patch_done
+
+patch2:
+	ldr	r0, =FP_CMD2_1
+	ldr	r1, =TARGET_BASEADDR
+	mov	r2, #0x24000		@ search area
+	ldr	r3, =FP_CMD2_2
+	blx	find_64
+	cmp	r0, #0
+	beq	patch3
+	ldr	r1, =PATCH_CMD2_1
+	str	r1, [r0]
+	ldr	r1, =PATCH_CMD2_2
+	str	r1, [r0, #4]
+	b	patch_done
+
+patch3:
+
+patch_done:
 	pop	{pc}
 
 @---------------------------------------------
@@ -139,6 +200,7 @@ find_return:
 clear_icache:
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c5
+	mcr	p15, 0, r0, c7, c5, 4  @ Flush Prefetch Buffer
 	nop
 	nop
 	nop
@@ -150,5 +212,14 @@ clear_icache:
 flush_dcache:
 	mrc	p15, 0, r0, c1, c0, 1
 	bx	lr
-@---------------------------------------------
 
+@---------------------------------------------
+.code 32
+clear_dcache:
+    mov r0, #0
+    mcr p15, 0, r0, c7, c10, 0  @ Clean Entire Data Cache
+    mcr p15, 0, r0, c7, c10, 4  @ Data Synchronization Barrier
+    bx lr
+
+@---------------------------------------------
+.end

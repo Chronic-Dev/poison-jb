@@ -2,45 +2,57 @@ PLATFORM=/Developer/Platforms/iPhoneOS.platform
 SDKVER=4.0
 SDK=$(PLATFORM)/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 CC=$(PLATFORM)/Developer/usr/bin/gcc-4.2
+LD=$(PLATFORM)/Developer/usr/bin/ld
+AS=$(PLATFORM)/Developer/usr/bin/as
+BIN2C=../tools/bin2c
 STRIP=$(PLATFORM)/Developer/usr/bin/strip
 
 
-RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
-RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+#RAMDISK_IV=4445214ed192b6ccfe6953c6ae80c55e
+RAMDISK_IV=6800a52c8761b30b001327ea9b918653 
+#RAMDISK_KEY=7f50d391295747a06d03cdb2ae536fa089a368e473a470148f44750712c58105
+RAMDISK_KEY=53e72495ea0d5dba53a1eae7529d6a95e8eb1d5d9185298c0f3323bc2c27f26f 
 RAMDISK_TEMPLATE=018-7074-092.dmg
 
-LAUNCHD_SOURCES=launchd/launchd.c launchd/syscalls.S launchd/utils.c
+LAUNCHD_SOURCES=src/launchd.c src/utils.c src/syscalls.S
 
-RAMDISK_VOLUME=GREEND1SK
+RAMDISK_LABEL=pois0ndisk
+RAMDISK_VOLUME=/Volumes/$(RAMDISK_LABEL)
 
-CFLAGS=-arch armv6 -isysroot $(SDK) -std=c99 -I./include -I./include/hfs -I/usr/include -I/usr/local/include -I/opt/local/include
-LDFLAGS=-F$(SDK)/System/Library/PrivateFrameworks \
-	-framework CoreFoundation \
+LAUNCHD_CFLAGS=-arch armv6 -isysroot=$(SDK) -I./include -I$(SDK)/usr/include -static -nostartfiles -nodefaultlibs -nostdlib -Wl,-e,_main
+LAUNCHD_LDFLAGS=
 
 UNAME := $(shell uname -s)
 PWD = $(shell pwd)
 
 ifeq ($(UNAME),Darwin)
-all: ramdisk/sbin/launchd ramdisk.dmg encrypt
-else
-all: encrypt
-endif
-
-ramdisk/sbin/launchd:
-	$(CC) $(CFLAGS) -static -o ramdisk/sbin/launchd $(LAUNCHD_SOURCES) -nostdlib
-	strip ramdisk/sbin/launchd
-	ldid -S ramdisk/sbin/launchd
-
-ramdisk.dmg: launchd
-	sudo hdiutil create -srcfolder ./ramdisk -align 512k -fs HFSX -volname $(RAMDISK_VOLUME) -layout NONE -format UDRW ramdisk.dmg 
-	sudo hdiutil attach ramdisk.dmg
-	sudo chown root:wheel $(PWD)/ramdisk/sbin/launchd
-	sudo hdiutil detach $(PWD)/ramdisk/sbin/launchd
-	sudo mv ramdisk.dmg ramdisk.hfs
-
-encrypt:
-	xpwntool ramdisk.hfs ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
+all: launchd ramdisk encrypt stage
 
 clean:
-	rm -rf ramdisk.dmg
-	rm -rf ramdisk/sbin/launchd
+	rm -rf ramdisk.img3 ramdisk.dmg
+	rm -rf src/*.o src/launchd
+	
+else
+all: stage
+clean:
+endif
+
+launchd:
+	$(CC) -o src/launchd $(LAUNCHD_SOURCES) $(LAUNCHD_CFLAGS) $(LAUNCHD_LDFLAGS)
+	#strip src/launchd
+	ldid -S src/launchd
+
+ramdisk: launchd
+	cp template.dmg ramdisk.dmg
+	hdiutil attach ramdisk.dmg
+	cp src/launchd $(RAMDISK_VOLUME)/sbin/
+	cp -R files/* $(RAMDISK_VOLUME)/files/
+	sync
+	hdiutil detach $(RAMDISK_VOLUME)
+
+encrypt:
+	xpwntool ramdisk.dmg ramdisk.img3 -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -t $(RAMDISK_TEMPLATE)
+	xpwntool ramdisk.img3 ramdisk.dmg -k $(RAMDISK_KEY) -iv $(RAMDISK_IV) -decrypt
+	
+stage:
+	$(BIN2C) ramdisk.dmg ../injector/resources/ramdisk.h ramdisk

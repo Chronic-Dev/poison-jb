@@ -5,6 +5,11 @@
 #import "MemLoaderOperation.h"
 #import "NSURLDownload.h"
 #import <unistd.h> 
+#import "tar.h"
+
+@interface UIDevice (LoaderExt) 
+- (BOOL)isWildcat;
+@end
 
 @implementation LoaderVC
 
@@ -20,10 +25,22 @@
 	[self.view setUserInteractionEnabled:YES];
 }
 
+- (void)showOptions:(id)sender {
+	// sigh
+	UIActionSheet *_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Remove Loader.app" otherButtonTitles:nil];
+	[_ setTag:0x8BAA];
+	[_ showInView:self.view];
+	[_ release];
+}
+
 - (void)viewDidLoad {
 	[super viewDidLoad];
 
 	self.title = kTitle;
+	
+	UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:@"Options" style:UIBarButtonItemStyleBordered target:self action:@selector(showOptions:)];
+	self.navigationItem.leftBarButtonItem = item;
+	[item release];
 
 	_queue = [[NSOperationQueue alloc] init];
 	_myHud = [[UIProgressHUD alloc] initWithWindow:[[UIApplication sharedApplication] keyWindow]];
@@ -46,7 +63,9 @@
 - (void)updatedSources:(id)obj {
 	if(obj == nil) {
 		[self removeHUD];
-		// TODO: UIAlertView "error"
+		UIAlertView *_ = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Please make sure that you're connected to the internet before launching Loader." delegate:nil cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+		[_ show];
+		[_ release];
 	} else {
 		NSDictionary *ref = (NSDictionary *)CFPropertyListCreateFromXMLData(kCFAllocatorDefault, (CFDataRef)obj, kCFPropertyListImmutable, NULL);
 		if(ref != nil && [ref isKindOfClass:[NSDictionary class]]) {
@@ -121,18 +140,35 @@
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
 	[self.tableView deselectRowAtIndexPath:_currentIndex animated:YES];
 
-	if(buttonIndex != [actionSheet cancelButtonIndex]) {
-		NSDictionary *item = [[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:_currentIndex.row];
-		
-		NSURLRequest *theRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:[item objectForKey:@"URL"]]];
-		NSURLDownload *theDownload = [[NSURLDownload alloc] initWithRequest:theRequest delegate:self];
-		if(theDownload) {
-			[theDownload setDestination:@"/tmp/loader_package.tar" allowOverwrite:YES];
-			[self addHUDWithText:@"Downloading..."];
-		} else {
-			UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Unknown Error. Check Internet Connection." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
-			[alert show];
-			[alert release];
+	if(actionSheet.tag != 0x8BAA) {
+		if(buttonIndex != [actionSheet cancelButtonIndex]) {
+			NSDictionary *item = [[_sourceDict objectForKey:@"AvailableSoftware"] objectAtIndex:_currentIndex.row];
+			
+			if([[item objectForKey:@"AllowReinstall"] boolValue] == FALSE) {
+				if([[NSFileManager defaultManager] fileExistsAtPath:[item objectForKey:@"ReinstallCheckPattern"]]) {
+					UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:[NSString stringWithFormat:@"%@ has already been installed.", [item objectForKey:@"Name"]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+					[alert show];
+					[alert release];
+					return;
+				}
+			}
+			
+			NSURLRequest *theRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:[item objectForKey:@"URL"]]];
+			NSURLDownload *theDownload = [[NSURLDownload alloc] initWithRequest:theRequest delegate:self];
+			if(theDownload) {
+				[theDownload setDestination:@"/tmp/loader_package.tar" allowOverwrite:YES];
+				[self addHUDWithText:@"Downloading..."];
+			} else {
+				UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error" message:@"Unknown Error. Check Internet Connection." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+				[alert show];
+				[alert release];
+			}
+		}
+	} else {
+		if(buttonIndex != [actionSheet cancelButtonIndex]) {
+			if(buttonIndex == 0) {
+				[self suicide];
+			}
 		}
 	}
 }
@@ -173,7 +209,6 @@
 - (void)removeStuff {
 	NSFileManager *f = [NSFileManager defaultManager];
 	[f removeItemAtPath:@"/tmp/loader_package.tar.gz" error:nil];
-	[f removeItemAtPath:@"/bin/cdev-tar" error:nil];
 }
 
 - (void)suicide {
@@ -186,20 +221,32 @@
 			[self suicide];
 		}
 	}
+	
+	[[[UIApplication sharedApplication] delegate] setReboot:YES];
 }
 
 - (void)extractPackage {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-	//system("/bin/cdev-tar xf /tmp/loader_package.tar -C /");
-	execl("/bin/cdev-tar", "xf", "/tmp/loader_package.tar", "-C", "/", NULL);	
+	untar("/tmp/loader_package.tar", "/");
 
 	[self performSelectorOnMainThread:@selector(cleanUp) withObject:nil waitUntilDone:YES];
 
 	[pool release];
 }
 
+
+- (BOOL)isWildcat {
+	if([[UIDevice currentDevice] respondsToSelector:@selector(isWildcat)] && [[UIDevice currentDevice] isWildcat]) {
+		return YES;
+	}
+
+	return NO;
+}
+
 - (void)cleanUp {
+	notify_post("com.apple.mobile.application_installed");
+	
 	[_myHud done];
 	[_myHud setText:@"Success!"];
 
@@ -210,6 +257,24 @@
 
 	[self removeStuff];
 	[self performSelector:@selector(removeHUD) withObject:nil afterDelay:2.0];
+	
+	if([self isWildcat]) {
+		NSString *filePath = @"/System/Library/CoreServices/SpringBoard.app/K48AP.plist";
+		
+		NSMutableDictionary *capabilityDict, *fileDict;
+
+		fileDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
+		capabilityDict = [[NSMutableDictionary alloc] initWithDictionary:[fileDict objectForKey:@"capabilities"]];
+		
+		[capabilityDict setObject:[NSNumber numberWithBool:NO] forKey:@"hide-non-default-apps"];
+
+		[fileDict setObject:capabilityDict forKey:@"capabilities"];
+		[fileDict writeToFile:filePath atomically:NO];
+
+		[fileDict release];
+		[capabilityDict release];
+	}
+
 }
 
 - (void)downloadDidFinish:(NSURLDownload *)download {

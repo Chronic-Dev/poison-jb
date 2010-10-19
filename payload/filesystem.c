@@ -14,6 +14,7 @@ void(*fs_mount)(const char *partition, const char *type, const char *path) = SEL
 void(*fs_unmount)(const char *path) = SELF_FS_UNMOUNT;
 
 int fs_init() {
+	printf("Initializing filesystem\n");
 	cmd_add("fs", &fs_cmd, "perform operations on the filesystem");
 	return 0;
 }

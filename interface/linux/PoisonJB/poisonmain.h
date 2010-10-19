@@ -15,9 +15,19 @@ public:
 
 protected:
     void changeEvent(QEvent *e);
+    void updateTimerText(QString &t);
+
+private slots:
+    void ResetTimer();
+    void Jailbreak();
+    void countdownDFU();
 
 private:
     Ui::PoisonMain *ui;
+    int step;
+    int time;
+    void doJailbreak();
+    QTimer *timer;
 };
 
 #endif // POISONMAIN_H

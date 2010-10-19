@@ -22,8 +22,11 @@
 #include <string.h>
 
 #include "lock.h"
+#include "patch.h"
 #include "common.h"
 #include "commands.h"
+#include "functions.h"
+#include "coprocessor.h"
 
 int gCmdCount = 0;
 Bool gCmdHasInit = FALSE;
@@ -32,19 +35,23 @@ CmdInfo** gCmdCommands = NULL;
 
 void* gCmdListEnd = SELF_CMD_LIST_END;
 void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
-int(*jump_to)(int flags, void* addr, int unk) = SELF_JUMP_TO;
-int(*cmd_ramdisk)(int argc, CmdArg* argv) = SELF_CMD_RAMDISK;
+int(*fsboot)(void) = NULL;
+int(*jump_to)(int flags, void* addr, int phymem) = SELF_JUMP_TO;
+int(*load_ramdisk)(int argc) = SELF_CMD_RAMDISK;
+
+void hooked(int flags, void* addr, int phymem);
 
 /*
  * Private Functions
  */
 int cmd_init() {
 	if(gCmdHasInit) return 0;
+	printf("Initializing commands\n");
 
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) malloc(sizeof(CmdInfo*) * MAX_COMMANDS);
+	gCmdCommands = (CmdInfo**) (LOADADDR + 0x02000000);
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;
@@ -60,10 +67,16 @@ int cmd_init() {
 	cmd_add("mw", &cmd_mw, "write value to specified address");
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
+	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
+	cmd_add("test", &cmd_test, "test finding functions offsets");
 
-#ifdef TARGET_CMD_RAMDISK
-	cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+#ifndef TARGET_CMD_RAMDISK
+	load_ramdisk = find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR);
 #endif
+
+	if(load_ramdisk) {
+		cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
+	}
 
 	return 0;
 }
@@ -75,7 +88,8 @@ void cmd_add(char* name, CmdFunction handler, char* description) {
 		return;
 	}
 
-	command = (CmdInfo*) malloc(sizeof(CmdInfo));
+	//command = (CmdInfo*) malloc(sizeof(CmdInfo));
+	command = (CmdInfo*) (LOADADDR + 0x02000000) + (gCmdCount * sizeof(CmdInfo));
 	command->name = name;
 	command->handler = handler;
 	command->description = description;
@@ -104,8 +118,6 @@ void cmd_start() {
  * Public Functions
  */
 int cmd_help(int argc, CmdArg* argv) {
-	//cmd_start();
-
 	int i = 0;
 	enter_critical_section();
 	printf("Commands:\n");
@@ -121,8 +133,6 @@ int cmd_help(int argc, CmdArg* argv) {
 }
 
 int cmd_echo(int argc, CmdArg* argv) {
-	//cmd_start();
-	puts("Entered cmd_echo\n");
 	int i = 0;
 	if(argc >= 2) {
 		enter_critical_section();
@@ -235,4 +245,86 @@ int cmd_call(int argc, CmdArg* argv) {
 	printf("returned: %08x\n", ret);
 
 	return 0;
+}
+
+int cmd_fsboot(int argc, CmdArg* argv) {
+	int i = 0;
+	void* address = NULL;
+	void(*hooker)(int flags, void* addr, void* phymem) = &hooked;
+	if(argc != 1) {
+		puts("usage: fsboot\n");
+		return 0;
+	}
+
+	// search for jump_to function
+	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
+		jump_to = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	} else {
+		// 80  B5  00  AF  04  46  15  46
+		jump_to = patch_find(IBOOT_BASEADDR, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+	}
+	printf("Found jump_to function at %p\n", jump_to);
+
+	memcpy(jump_to, "\x00\x4b\x98\x47", 4);
+	memcpy(jump_to+4, &hooker, 4);
+
+	printf("Hooked jump_to function to call 0x%08x\n", hooker);
+	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
+		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x11\x48", 6);
+	} else
+	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "k66ap")) {
+		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
+	} else {
+		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
+	}
+	printf("Found fsboot function at %p\n", fsboot);
+
+	//call address
+	fsboot++;
+	printf("Calling %p\n", fsboot);
+	fsboot();
+
+	return 0;
+}
+
+int cmd_test(int argc, CmdArg* argv) {
+	printf("aes_crypto_cmd: 0x%08x\n", find_function("aes_crypto_cmd", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("free: 0x%08x\n", find_function("free", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("cmd_ramdisk: 0x%08x\n", find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR));
+	printf("fs_mount: 0x%08x\n", find_function("fs_mount", TARGET_BASEADDR, TARGET_BASEADDR));
+	return 0;
+}
+
+int cmd_ramdisk(int argc, CmdArg* argv) {
+	printf("%d\n", load_ramdisk(3));
+	return 0;
+}
+
+void clear_icache() {
+    __asm__("mov r0, #0");
+    __asm__("mcr p15, 0, r0, c7, c5, 0");
+    __asm__("mcr p15, 0, r0, c7, c5, 4");
+    __asm__("nop");
+    __asm__("nop");
+    __asm__("nop");
+    __asm__("nop");
+};
+
+void hooked(int flags, void* addr, int phymem) {
+	// patch kernel
+	printf("Entered hooked jump_to function!!!\n");
+	printf("Patching kernel\n");
+	patch_kernel((void*)(LOADADDR - 0x1000000), 0xA00000);
+
+	printf("Replace hooking code with original\n");
+	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
+		memcpy(jump_to, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	} else {
+		memcpy(jump_to, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+	}
+	clear_icache();
+
+	jump_to++;
+	printf("Calling %p\n", jump_to);
+	jump_to(flags, addr, phymem);
 }

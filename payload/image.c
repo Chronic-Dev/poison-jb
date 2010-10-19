@@ -13,10 +13,12 @@
 #include "task.h"
 #include "image.h"
 #include "common.h"
+#include "device.h"
 
 LinkedList* gImageList = SELF_IMAGE_LIST;
 
 int image_init() {
+	printf("Initializing image\n");
 	cmd_add("image", &image_cmd, "display and operate on for firmware images");
 	return 0;
 }
@@ -26,15 +28,23 @@ int image_cmd(int argc, CmdArg* argv) {
 	void* address = NULL;
 	char* action = NULL;
 	if(argc < 2) {
-		puts("usage: task <list/load> [options]\n");
-		puts("  list                   \t\tdisplay list of active tasks\n");
-		puts("  load <image> <address> \t\tdisplay list of active tasks\n");
+		puts("usage: image <list/load> [options]\n");
+		puts("  list                   \t\tdisplay list of bdev images\n");
+		puts("  load <image> <address> \t\tload an img3 from bdev\n");
+		puts("  decrypt <address>      \t\tdecrypt an img3 in memory\n");
 		return 0;
 	}
 
 	action = argv[1].string;
 	if(!strcmp(action, "list")) {
 		image_display_list();
+	}
+
+	if(argc == 3) {
+		if(!strcmp(action, "decrypt")) {
+			address = (void*) argv[2].uinteger;
+			return image_decrypt(address);
+		}
 	}
 
 	if(argc == 4) {
@@ -84,7 +94,7 @@ void* image_find_tag(void* image, unsigned int tag, unsigned int size) {
 	return 0;
 }
 
-void image_decrypt(void* image) {
+int image_decrypt(void* image) {
 	void* data = NULL;
 
 	ImageHeader* header = (ImageHeader*) image;
@@ -92,25 +102,39 @@ void image_decrypt(void* image) {
 
 	if (data == 0) {
 		puts("Unable to find DATA tag\n");
-		return;
+		return -1;
 	}
 
 	ImageKbag* kbag = (ImageKbag*) image_find_tag(image, IMAGE_KBAG, header->fullSize);
 	if (kbag == 0) {
 		puts("Unable to find KBAG tag\n");
-		return;
+		return -1;
 	}
 
 	ImageTagHeader* data_header = (ImageTagHeader*) data;
     data = (void*) data_header + sizeof(ImageTagHeader);
 
     /* Decrypt kbag */
-    // FIXME: derive AES size from kbag length
-	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, 0x30, kAesTypeGid, 0, 0);
+#ifdef S5L8720X
+    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize128, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize128, kAesTypeGid, 0, 0);
+#else
+    printf("Decrypting kbag of size 0x%x with type 0x%x\n", kAesSize256, kAesTypeGid);
+	aes_crypto_cmd(kAesDecrypt, kbag->iv, kbag->iv, kAesSize256, kAesTypeGid, 0, 0);
+#endif*/
+
 
     /* Decrypt data */
     //FIXME: derive AES type from kbag type
-	aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+#ifdef S5L8720X
+    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x20, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType128, kbag->key, kbag->iv);
+
+#else
+    printf("Decrypting data of size 0x%x with type 0x%x\n", 0x30, kAesTypeGid);
+    aes_crypto_cmd(kAesDecrypt, data, data, (data_header->dataSize - (data_header->dataSize % 16)), kAesType256, kbag->key, kbag->iv);
+#endif
+	return 0;
 }
 
 ImageDescriptor* image_find(unsigned int signature) {
