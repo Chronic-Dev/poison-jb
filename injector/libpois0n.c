@@ -130,12 +130,12 @@ int upload_dfu_image(const char* type) {
 	snprintf(image, 254, "%s.%s", type, device->model);
 
 	debug("Checking if %s already exists\n", image);
-	//if(stat(image, &buf) != 0) {
+	if(stat(image, &buf) != 0) {
 		if(fetch_dfu_image(type, image) < 0) {
 			error("Unable to upload DFU image\n");
 			return -1;
 		}
-	//}
+	}
 
 	if(client->mode != kDfuMode) {
 		debug("Resetting device counters\n");
@@ -164,12 +164,12 @@ int upload_firmware_image(const char* type) {
 	snprintf(image, 254, "%s.%s", type, device->model);
 
 	debug("Checking if %s already exists\n", image);
-	//if(stat(image, &buf) != 0) {
+	if(stat(image, &buf) != 0) {
 		if(fetch_firmware_image(type, image) < 0) {
 			error("Unable to upload firmware image\n");
 			return -1;
 		}
-	//}
+	}
 
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
@@ -654,12 +654,12 @@ int upload_kernelcache() {
 	memset(&buf, '\0', sizeof(buf));
 	snprintf(kernelcache, 254, "kernelcache.release.%c%c%c", device->model[0], device->model[1], device->model[2]);
 	debug("Checking if kernelcache already exists\n");
-	//if(stat(kernelcache, &buf) != 0) {
+	if(stat(kernelcache, &buf) != 0) {
 		if(fetch_image(kernelcache, kernelcache) < 0) {
 			error("Unable to upload kernelcache\n");
 			return -1;
 		}
-	//}
+	}
 
 	debug("Resetting device counters\n");
 	error = irecv_reset_counters(client);
@@ -735,6 +735,20 @@ int boot_ramdisk() {
 	debug("Preparing to upload kernelcache\n");
 	if(upload_kernelcache() < 0) {
 		error("Unable to upload kernelcache\n");
+		return -1;
+	}
+
+	debug("Hooking jump_to command\n");
+	error = irecv_send_command(client, "go rdboot");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to hook jump_to\n");
+		return -1;
+	}
+
+	debug("Booting ramdisk\n");
+	error = irecv_send_command(client, "bootx");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to boot ramdisk\n");
 		return -1;
 	}
 /*
@@ -966,15 +980,9 @@ int boot_tethered() {
 		return -1;
 	}
 
-	//if(device->chip_id == 8720) {
-		// This is a tethered jailbreak
-		//irecv_setenv(client, "boot-args", "1");
-		//irecv_setenv(client, "auto-boot", "false");
-	//} else {
-		// This is an untethered jailbreak
-		irecv_setenv(client, "boot-args", "0");
-		irecv_setenv(client, "auto-boot", "true");
-	//}
+
+	irecv_setenv(client, "boot-args", "0");
+	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");

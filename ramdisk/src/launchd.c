@@ -5,9 +5,9 @@
 #include "syscalls.h"
 #include "hfs_mount.h"
 
-#define INSTALL_LOADER
-#define INSTALL_HACKTIVATION
-#define INSTALL_UNTETHERED
+//#define INSTALL_LOADER
+//#define INSTALL_HACKTIVATION
+//#define INSTALL_UNTETHERED
 
 char* cache_env[] = {
 		"DYLD_SHARED_CACHE_DONT_VALIDATE=1",
@@ -178,10 +178,13 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Mounting filesystem...\n");
 	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_RDONLY) != 0) {
 		puts("Unable to mount filesystem!\n");
+
 		return -1;
 	}
 	puts("Filesystem mounted\n");
-
+	// TEST
+	reboot(1);
+	// TEST
 	puts("Mounting devices...\n");
 	if (mount("devfs", "/mnt/dev", 0, NULL) != 0) {
 		puts("Unable to mount devices!\n");
@@ -213,7 +216,7 @@ int main(int argc, char* argv[], char* env[]) {
 		return -1;
 	}
 	puts("Filesystem updated\n");
-
+/*
 	puts("Mounting user filesystem...\n");
 	mkdir("/mnt/private/var2", 0755);
 
@@ -239,7 +242,7 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Installation complete\n");
 	sync();
-
+*/
 	puts("Unmounting disks...\n");
 	rmdir("/mnt/private/var2");
 	unmount("/mnt/private/var2", 0);
