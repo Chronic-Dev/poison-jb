@@ -15,7 +15,7 @@ char* cache_env[] = {
 		"DYLD_SHARED_REGION=private"
 };
 
-const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1", NULL };
+const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* fsck_hfs_user_old[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", NULL };
 const char* patch_dyld_new[] = { "/usr/bin/data", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
@@ -29,7 +29,7 @@ static char** envp = NULL;
 
 int install_files(int is_old) {
 	int ret = 0;
-
+/*
 	puts("Creating directories for install\n");
 	mkdir("/mnt/private", 0755);
 	mkdir("/mnt/private/etc", 0755);
@@ -44,7 +44,7 @@ int install_files(int is_old) {
 		ret = cp("/files/fstab", "/mnt/private/etc/fstab");
 	}
 	if (ret < 0) return -1;
-
+*/
 	puts("Installing AFC2...\n");
 	ret = install("/files/afc2add", "/mnt/afc2add", 0, 80, 0755);
 	if (ret < 0) return -1;
@@ -100,7 +100,7 @@ int install_files(int is_old) {
 	ret = install("/files/Loader.app/PkgInfo", "/mnt/Applications/Loader.app/PkgInfo", 0, 80, 0755);
 	if (ret < 0) return ret;
 #endif
-
+/*
 	if(!is_old) {
 		if(access("/mnt/System/Library/CoreServices/SpringBoard.app/K48AP.plist", 0) == 0) {
 			puts("Patching K48AP.plist\n");
@@ -110,7 +110,7 @@ int install_files(int is_old) {
 			unlink("/mnt/capable");
 		}
 	}
-
+*/
 #ifdef INSTALL_UNTETHERED
 	unlink("/mnt/usr/lib/pf2");
 	unlink("/mnt/usr/bin/data");
@@ -170,21 +170,18 @@ int main(int argc, char* argv[], char* env[]) {
 	envp = env;
 
 	puts("Searching for disk...\n");
-	while (stat("/dev/disk0s1", &status) != 0) {
+	while (stat("/dev/disk0s1s1", &status) != 0) {
 		sleep(1);
 	}
 	puts("Pois0nDisk - by Chronic-Dev Team\n");
 
 	puts("Mounting filesystem...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_RDONLY) != 0) {
+	if (hfs_mount("/dev/disk0s1s1", "/mnt", MNT_ROOTFS | MNT_RDONLY) != 0) {
 		puts("Unable to mount filesystem!\n");
-
 		return -1;
 	}
 	puts("Filesystem mounted\n");
-	// TEST
-	reboot(1);
-	// TEST
+
 	puts("Mounting devices...\n");
 	if (mount("devfs", "/mnt/dev", 0, NULL) != 0) {
 		puts("Unable to mount devices!\n");
@@ -209,17 +206,17 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("User filesystem checked\n");
 
 	puts("Updating filesystem...\n");
-	if (hfs_mount("/dev/disk0s1", "/mnt", MNT_ROOTFS | MNT_UPDATE) != 0) {
+	if (hfs_mount("/dev/disk0s1s1", "/mnt", MNT_ROOTFS | MNT_UPDATE) != 0) {
 		puts("Unable to update filesystem!\n");
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
 	}
 	puts("Filesystem updated\n");
-/*
-	puts("Mounting user filesystem...\n");
-	mkdir("/mnt/private/var2", 0755);
 
+	//puts("Mounting user filesystem...\n");
+	//mkdir("/mnt/private/var2", 0755);
+/*
 	int is_old = 0;
 	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
 		if (hfs_mount("/dev/disk0s2", "/mnt/private/var2", 0) != 0) {
@@ -230,22 +227,22 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 	}
 	puts("User filesystem mounted\n");
-
+*/
 	puts("Installing files...\n");
-	if (install_files(is_old) != 0) {
+	if (install_files(1) != 0) {
 		puts("Failed to install files!\n");
-		unmount("/mnt/private/var2", 0);
-		rmdir("/mnt/private/var2");
+		//unmount("/mnt/private/var2", 0);
+		//rmdir("/mnt/private/var2");
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
 	}
 	puts("Installation complete\n");
 	sync();
-*/
+
 	puts("Unmounting disks...\n");
-	rmdir("/mnt/private/var2");
-	unmount("/mnt/private/var2", 0);
+	//rmdir("/mnt/private/var2");
+	//unmount("/mnt/private/var2", 0);
 	unmount("/mnt/dev", 0);
 	unmount("/mnt", 0);
 
