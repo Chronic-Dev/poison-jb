@@ -40,6 +40,7 @@
 
 extern char* gBootArgs;
 extern char** gKernelPhyMem;
+extern int(*kernel_atv_load)(char* boot_path, char** output);
 extern int(*kernel_load)(void* input, int max_size, char** output);
 
 int kernel_init();

@@ -50,8 +50,7 @@ int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
 }
 
 void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
-	double value = ((double) progress * 100.0);
-	progress_callback(value, user_object);
+	progress_callback(progress, user_object);
 }
 
 #ifdef SHATTER
@@ -699,6 +698,54 @@ int upload_ibec_payload() {
 int boot_ramdisk() {
 	irecv_error_t error = 0;
 
+	debug("Initializing greenpois0n in iBoot\n");
+	irecv_send_command(client, "go");
+
+	debug("Preparing to upload ramdisk\n");
+	if(upload_ramdisk() < 0) {
+		error("Unable to upload ramdisk\n");
+		return -1;
+	}
+
+	debug("Executing ramdisk\n");
+	error = irecv_send_command(client, "ramdisk");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to execute ramdisk command\n");
+		return -1;
+	}
+/*
+	debug("Moving ramdisk\n");
+	if(device->chip_id == 8720) {
+		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
+	} else {
+		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
+	}
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to move ramdisk\n");
+		return -1;
+	}
+*/
+	debug("Setting kernel bootargs\n");
+	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to set kernel bootargs\n");
+		return -1;
+	}
+
+	debug("Preparing to upload kernelcache\n");
+	if(upload_kernelcache() < 0) {
+		error("Unable to upload kernelcache\n");
+		return -1;
+	}
+/*
+	error = irecv_send_command(client, "bootx");
+	if(error != IRECV_E_SUCCESS) {
+		error("Unable to move iBoot into memory\n");
+		return -1;
+	}
+*/
+	return 0;
+	/*
 	debug("Loading iBoot\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go image load 0x69626F74 0x9000000");
@@ -753,8 +800,8 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	irecv_setenv(client, "auto-boot", "true");
-	irecv_saveenv(client);
+	//irecv_setenv(client, "auto-boot", "true");
+	//irecv_saveenv(client);
 
 	if(upload_firmware_payload("iBoot") < 0) {
 		error("Unable to boot the device tethered\n");
@@ -776,18 +823,7 @@ int boot_ramdisk() {
 		error("Unable to execute ramdisk command\n");
 		return -1;
 	}
-/*
-	debug("Decrypting ramdisk\n");
-	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go image decrypt 0x9000000");
-	} else {
-		error = irecv_send_command(client, "go image decrypt 0x41000000");
-	}
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to decrypt ramdisk\n");
-		return -1;
-	}
-*/
+
 	debug("Moving ramdisk\n");
 	if(device->chip_id == 8720) {
 		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
@@ -806,15 +842,8 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	//if(device->chip_id == 8720) {
-		// This is a tethered jailbreak
-		//irecv_setenv(client, "boot-args", "1");
-		//irecv_setenv(client, "auto-boot", "false");
-	//} else {
-		// This is an untethered jailbreak
-		irecv_setenv(client, "boot-args", "0");
-		irecv_setenv(client, "auto-boot", "true");
-	//}
+	irecv_setenv(client, "boot-args", "0");
+	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
 
 	error = irecv_send_command(client, "go fsboot");
@@ -824,6 +853,7 @@ int boot_ramdisk() {
 	}
 
 	return 0;
+	*/
 }
 
 int boot_tethered() {

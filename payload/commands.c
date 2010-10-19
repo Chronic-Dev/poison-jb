@@ -51,7 +51,7 @@ int cmd_init() {
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
-	gCmdCommands = (CmdInfo**) (LOADADDR + 0x02000000);
+	gCmdCommands = (CmdInfo**) (LOADADDR + 0x01800000);
 
 	// add all built in commands to our private commands
 	CmdInfo** current = (CmdInfo**) gCmdListBegin;
@@ -68,6 +68,7 @@ int cmd_init() {
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
 	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
+	cmd_add("rdboot", &cmd_rdboot, "patch and boot kernel with ramdisk\n");
 	cmd_add("test", &cmd_test, "test finding functions offsets");
 
 #ifndef TARGET_CMD_RAMDISK
@@ -89,7 +90,7 @@ void cmd_add(char* name, CmdFunction handler, char* description) {
 	}
 
 	//command = (CmdInfo*) malloc(sizeof(CmdInfo));
-	command = (CmdInfo*) (LOADADDR + 0x02000000) + (gCmdCount * sizeof(CmdInfo));
+	command = (CmdInfo*) (LOADADDR + 0x01800000) + (gCmdCount * sizeof(CmdInfo));
 	command->name = name;
 	command->handler = handler;
 	command->description = description;
@@ -191,8 +192,7 @@ int cmd_md(int argc, CmdArg* argv) {
 	enter_critical_section();
 	printf("%p\n", value);
 	exit_critical_section();
-
-	return 0;
+	return value;
 }
 
 int cmd_jump(int argc, CmdArg* argv) {
@@ -283,6 +283,35 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 	fsboot++;
 	printf("Calling %p\n", fsboot);
 	fsboot();
+
+	return 0;
+}
+
+int cmd_rdboot(int argc, CmdArg* argv) {
+	int i = 0;
+	void* address = NULL;
+	void(*hooker)(int flags, void* addr, void* phymem) = &hooked;
+	if(argc != 1) {
+		puts("usage: rdboot\n");
+		return 0;
+	}
+
+	// search for jump_to function
+	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
+		jump_to = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	} else {
+		// 80  B5  00  AF  04  46  15  46
+		jump_to = patch_find(TARGET_BASEADDR, 0x30000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+	}
+	printf("Found jump_to function at %p\n", jump_to);
+
+	memcpy(jump_to, "\x00\x4b\x98\x47", 4);
+	memcpy(jump_to+4, &hooker, 4);
+
+	printf("Hooked jump_to function to call 0x%08x\n", hooker);
+
+	//call address
+	printf("Calling bootx\n");
 
 	return 0;
 }

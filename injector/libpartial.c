@@ -8,6 +8,7 @@
 
 #include "libpartial.h"
 
+static size_t count = 0;
 char endianness = IS_LITTLE_ENDIAN;
 
 int download_file_from_zip(const char* url, const char* path, const char* output, PartialZipProgressCallback progressCallback) {
@@ -82,10 +83,12 @@ static size_t receiveData(void* data, size_t size, size_t nmemb, void** pFileDat
 	size_t* progress = ((size_t*)pFileData[3]);
 
 	if(progress) {
+		count += size * nmemb;
 		*progress += size * nmemb;
 	}
 
 	if(info && info->progressCallback && file) {
+		*progress = ((double) count/ (double) file->compressedSize) * 100.0;
 		info->progressCallback(info, file, *progress);
 	}
 
@@ -187,7 +190,6 @@ ZipInfo* PartialZipInit(const char* url)
 	curl_easy_setopt(info->hIPSW, CURLOPT_WRITEDATA, info);
 	curl_easy_setopt(info->hIPSW, CURLOPT_RANGE, sRange);
 	curl_easy_setopt(info->hIPSW, CURLOPT_HTTPGET, 1);
-
 	curl_easy_perform(info->hIPSW);
 
 	char* cur;
@@ -284,6 +286,7 @@ CDFile* PartialZipListFiles(ZipInfo* info)
 
 unsigned char* PartialZipGetFile(ZipInfo* info, CDFile* file)
 {
+	count = 0;
 	LocalFile localHeader;
 	LocalFile* pLocalHeader = &localHeader;
 

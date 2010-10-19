@@ -23,6 +23,7 @@ static char* gKernelAddr = NULL;
 char* gBootArgs = SELF_KERNEL_BOOTARGS;
 char** gKernelPhyMem = SELF_KERNEL_PHYMEM;
 
+int(*kernel_atv_load)(char* boot_path, char** output) = SELF_KERNEL_LOAD;
 int(*kernel_load)(void* input, int max_size, char** output) = SELF_KERNEL_LOAD;
 
 int kernel_init() {
@@ -49,30 +50,20 @@ int kernel_cmd(int argc, CmdArg* argv) {
 	size = argv[3].uinteger;
 	address = (unsigned char*) argv[2].uinteger;
 	if(!strcmp(action, "load")) {
-
-#if TARGET_FS_MOUNT && TARGET_FS_LOAD_FILE
-		fs_mount("nand0a", "hfs", "/boot");
-		fs_load_file(KERNEL_PATH, (void*) address, compressed);
-		printf("loaded kernelcache image at %p with %u bytes\n", address, *compressed);
-#endif
-
-
-#if TARGET_KERNEL_BOOTARGS// && TARGET_NVRAM_LIST
-		//NvramVar* bootargs = nvram_find_var("boot-args");
-		//printf("boot-args set to %s\n", bootargs->string);
-		//keepsyms=1
-		strcpy(gBootArgs, "rd=md0 -v keepsyms=1");
-#endif
-
-		kernel_load((void*) address, size, &gKernelAddr);
-		printf("kernelcache prepped at %p with %p and phymem %p\n", address, gKernelAddr, *gKernelPhyMem);
-		patch_kernel(0x40000000, 0xA00000);
-		printf("booting kernelcache...\n");
-		jump_to(3, gKernelAddr, *gKernelPhyMem);
+		if(strstr((char*) (IBOOT_BASEADDR + 0x200), "k66ap")) {
+			printf("Loading AppleTV kernelcache from %s\n", KERNEL_PATH);
+			kernel_atv_load(KERNEL_PATH, &gKernelAddr);
+		} else {
+			printf("Loading kernelcache from 0x%x\n", address);
+			kernel_load((void*) address, size, &gKernelAddr);
+		}
+		printf("kernelcache prepped at %p with phymem %p\n", gKernelAddr, *gKernelPhyMem);
 	}
 	else if(!strcmp(action, "patch")) {
 		printf("patching kernel...\n");
-		patch_kernel(address, size);
+		if(gKernelAddr) {
+			patch_kernel(gKernelAddr, 0xC00000);
+		}
 	}
 	else if(!strcmp(action, "bootargs")) {
 		kernel_bootargs(argc, argv);
@@ -90,7 +81,7 @@ int kernel_bootargs(int argc, CmdArg* argv) {
 	int i = 0;
 	gBootArgs = find_string("rd=md0");
 	if(gBootArgs != 0) {
-		int size = 0x20; //strlen(gBootArgs);
+		int size = strlen(gBootArgs);
 		for(i = 2; i < argc; i++) {
 			if(i == 2) {
 				strncpy(gBootArgs, "", size);

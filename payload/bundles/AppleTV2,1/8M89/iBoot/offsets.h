@@ -55,7 +55,7 @@
 #define TARGET_FS_LOAD_FILE               (0x1A0F0+1)
 
 // Kernel offsets
-#define TARGET_KERNEL_LOAD                (0x12AB0+1)
+#define TARGET_KERNEL_LOAD                (0x13924+1)
 #define TARGET_KERNEL_PHYMEM              (0x362C0)
 #define TARGET_KERNEL_BOOTARGS            (0x28C5C)
 

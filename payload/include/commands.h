@@ -98,6 +98,7 @@ int cmd_mw(int argc, CmdArg* argv);
 int cmd_md(int argc, CmdArg* argv);
 int cmd_call(int argc, CmdArg* argv);
 int cmd_fsboot(int argc, CmdArg* argv);
+int cmd_rdboot(int argc, CmdArg* argv);
 int cmd_ramdisk(int argc, CmdArg* argv);
 int cmd_test(int argc, CmdArg* argv);
 

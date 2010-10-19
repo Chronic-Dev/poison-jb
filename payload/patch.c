@@ -84,7 +84,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 	      85 68 02 93 01 93 00 2C  +  8 => 0E 93 BD 93 ; armv6
 	*/
 	unsigned int i = 0;
-	enter_critical_section();
+	//enter_critical_section();
 	for(i = 0; i < size; i++) {
 #ifdef S5L8720X
 		if(!memcmp(&address[i], "\x00\x00\x00\x00\x01\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00", 16)) {
@@ -264,7 +264,7 @@ int patch_kernel(unsigned char* address, unsigned int size) {
 
 #endif
 	}
-	exit_critical_section();
+	//exit_critical_section();
 	return 0;
 }
 
