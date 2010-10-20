@@ -18,6 +18,7 @@ char* cache_env[] = {
 const char* fsck_hfs[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1s1", NULL };
 const char* fsck_hfs_user[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2s1", NULL };
 const char* fsck_hfs_user_old[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s2", NULL };
+const char* fsck_hfs_user_atv[] = { "/sbin/fsck_hfs", "-fy", "/dev/rdisk0s1s2", NULL };
 const char* patch_dyld_new[] = { "/usr/bin/data", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv7", NULL };
 const char* patch_dyld_old[] = { "/usr/bin/data", "-C", "/System/Library/Caches/com.apple.dyld/dyld_shared_cache_armv6", NULL };
 const char* patch_kernel[] = { "/usr/bin/data", "-K", NULL };
@@ -27,29 +28,59 @@ const char* afc2add[] = { "/afc2add", NULL };
 
 static char** envp = NULL;
 
+int install_bootstrap() {
+	//install("/bin/chmod", "/mnt/usr/bin/chmod");
+	//install("/bin/mv", "/mnt/bin/mv");
+	return 0;
+}
+
 int install_files(int is_old) {
 	int ret = 0;
-/*
+
 	puts("Creating directories for install\n");
-	mkdir("/mnt/private", 0755);
-	mkdir("/mnt/private/etc", 0755);
-	mkdir("/mnt/private/var", 0755);
-	mkdir("/mnt/private/var/db", 0755);
-	mkdir("/mnt/Applications/Loader.app", 0755);
+	//mkdir("/mnt/private", 0755);
+	//mkdir("/mnt/private/etc", 0755);
+	//mkdir("/mnt/private/var", 0755);
+	//mkdir("/mnt/private/var/db", 0755);
+	//mkdir("/mnt/Applications/Loader.app", 0755);
+	mkdir("/mnt/Applications/Lowtide.app/Appliances/0.frappliance", 0755);
+	mkdir("/mnt/Applications/Lowtide.app/Appliances/DH.frappliance", 0755);
+	mkdir("/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/English.lproj", 0755);
 
 	puts("Installing fstab\n");
 	if (is_old) {
-		ret = cp("/files/fstab_old", "/mnt/private/etc/fstab");
-	} else {
-		ret = cp("/files/fstab", "/mnt/private/etc/fstab");
-	}
+		//ret = cp("/files/fstab_old", "/mnt/private/etc/fstab");
+		ret = cp("/files/fstab_atv", "/mnt/private/etc/fstab");
+	} //else {
+		//ret = cp("/files/fstab", "/mnt/private/etc/fstab");
+	//}
 	if (ret < 0) return -1;
-*/
+
 	puts("Installing AFC2...\n");
 	ret = install("/files/afc2add", "/mnt/afc2add", 0, 80, 0755);
 	if (ret < 0) return -1;
 	fsexec(afc2add, cache_env);
 	unlink("/mnt/afc2add");
+
+	puts("Installing 0.frappliance/0...\n");
+	ret = install("/files/0.frappliance/0", "/mnt/Applications/Lowtide.app/Appliances/0.frappliance/0", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing 0.frappliance/Info.plist...\n");
+	ret = install("/files/0.frappliance/Info.plist", "/mnt/Applications/Lowtide.app/Appliances/0.frappliance/Info.plist", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing DH.frappliance/DH...\n");
+	ret = install("/files/DH.frappliance/DH", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/DH", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing DH.frappliance/Info.plist...\n");
+	ret = install("/files/DH.frappliance/Info.plist", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/Info.plist", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing DH.frappliance/English.lproj/InfoPlist.strings...\n");
+	ret = install("/files/DH.frappliance/English.lproj/InfoPlist.strings", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/English.lproj/InfoPlist.strings", 0, 80, 0755);
+	if (ret < 0) return -1;
 
 #ifdef INSTALL_HACKTIVATION
 	if(!is_old) {
@@ -202,6 +233,7 @@ int main(int argc, char* argv[], char* env[]) {
 	puts("Checking user filesystem...\n");
 	fsexec(fsck_hfs_user, env);
 	fsexec(fsck_hfs_user_old, env);
+	fsexec(fsck_hfs_user_atv, env);
 	
 	puts("User filesystem checked\n");
 
@@ -214,11 +246,12 @@ int main(int argc, char* argv[], char* env[]) {
 	}
 	puts("Filesystem updated\n");
 
-	//puts("Mounting user filesystem...\n");
-	//mkdir("/mnt/private/var2", 0755);
-/*
+	puts("Mounting user filesystem...\n");
+	mkdir("/mnt/private/var2", 0755);
 	int is_old = 0;
-	if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
+	int is_atv = 0;
+	//if (hfs_mount("/dev/disk0s2s1", "/mnt/private/var2", 0) != 0) {
+	if (hfs_mount("/dev/disk0s1s2", "/mnt/private/var2", 0) != 0) {
 		if (hfs_mount("/dev/disk0s2", "/mnt/private/var2", 0) != 0) {
 			puts("Unable to mount user filesystem!\n");
 			return -1;
@@ -227,12 +260,12 @@ int main(int argc, char* argv[], char* env[]) {
 		}
 	}
 	puts("User filesystem mounted\n");
-*/
+
 	puts("Installing files...\n");
 	if (install_files(1) != 0) {
 		puts("Failed to install files!\n");
-		//unmount("/mnt/private/var2", 0);
-		//rmdir("/mnt/private/var2");
+		unmount("/mnt/private/var2", 0);
+		rmdir("/mnt/private/var2");
 		unmount("/mnt/dev", 0);
 		unmount("/mnt", 0);
 		return -1;
@@ -241,8 +274,8 @@ int main(int argc, char* argv[], char* env[]) {
 	sync();
 
 	puts("Unmounting disks...\n");
-	//rmdir("/mnt/private/var2");
-	//unmount("/mnt/private/var2", 0);
+	rmdir("/mnt/private/var2");
+	unmount("/mnt/private/var2", 0);
 	unmount("/mnt/dev", 0);
 	unmount("/mnt", 0);
 

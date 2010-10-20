@@ -700,7 +700,7 @@ int boot_ramdisk() {
 
 	debug("Initializing greenpois0n in iBoot\n");
 	irecv_send_command(client, "go");
-
+/*
 	debug("Preparing to upload ramdisk\n");
 	if(upload_ramdisk() < 0) {
 		error("Unable to upload ramdisk\n");
@@ -713,25 +713,14 @@ int boot_ramdisk() {
 		error("Unable to execute ramdisk command\n");
 		return -1;
 	}
-/*
-	debug("Moving ramdisk\n");
-	if(device->chip_id == 8720) {
-		error = irecv_send_command(client, "go memory move 0x9000040 0xC000000 0x100000");
-	} else {
-		error = irecv_send_command(client, "go memory move 0x41000040 0x44000000 0x100000");
-	}
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to move ramdisk\n");
-		return -1;
-	}
-*/
+
 	debug("Setting kernel bootargs\n");
 	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
 	if(error != IRECV_E_SUCCESS) {
 		error("Unable to set kernel bootargs\n");
 		return -1;
 	}
-
+*/
 	debug("Preparing to upload kernelcache\n");
 	if(upload_kernelcache() < 0) {
 		error("Unable to upload kernelcache\n");
@@ -745,19 +734,13 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-	debug("Booting ramdisk\n");
+	debug("Booting kernel\n");
 	error = irecv_send_command(client, "bootx");
 	if(error != IRECV_E_SUCCESS) {
-		error("Unable to boot ramdisk\n");
+		error("Unable to boot kernel\n");
 		return -1;
 	}
-/*
-	error = irecv_send_command(client, "bootx");
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to move iBoot into memory\n");
-		return -1;
-	}
-*/
+
 	return 0;
 	/*
 	debug("Loading iBoot\n");
