@@ -43,9 +43,8 @@ int install_files(int is_old) {
 	//mkdir("/mnt/private/var", 0755);
 	//mkdir("/mnt/private/var/db", 0755);
 	//mkdir("/mnt/Applications/Loader.app", 0755);
-	mkdir("/mnt/Applications/Lowtide.app/Appliances/0.frappliance", 0755);
-	mkdir("/mnt/Applications/Lowtide.app/Appliances/DH.frappliance", 0755);
-	mkdir("/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/English.lproj", 0755);
+	mkdir("/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance", 0755);
+	mkdir("/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/English.lproj", 0755);
 
 	puts("Installing fstab\n");
 	if (is_old) {
@@ -62,24 +61,32 @@ int install_files(int is_old) {
 	fsexec(afc2add, cache_env);
 	unlink("/mnt/afc2add");
 
-	puts("Installing 0.frappliance/0...\n");
-	ret = install("/files/0.frappliance/0", "/mnt/Applications/Lowtide.app/Appliances/0.frappliance/0", 0, 80, 0755);
+	puts("Installing ashyLarry.frappliance/ashyLarry...\n");
+	ret = install("/files/ashyLarry.frappliance/ashyLarry", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/ashyLarry", 0, 80, 0755);
 	if (ret < 0) return -1;
 
-	puts("Installing 0.frappliance/Info.plist...\n");
-	ret = install("/files/0.frappliance/Info.plist", "/mnt/Applications/Lowtide.app/Appliances/0.frappliance/Info.plist", 0, 80, 0755);
+	puts("Installing ashyLarry.frappliance/Info.plist...\n");
+	ret = install("/files/ashyLarry.frappliance/Info.plist", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/Info.plist", 0, 80, 0755);
 	if (ret < 0) return -1;
 
-	puts("Installing DH.frappliance/DH...\n");
-	ret = install("/files/DH.frappliance/DH", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/DH", 0, 80, 0755);
+	puts("Installing ashyLarry.frappliance/About.txt...\n");
+	ret = install("/files/ashyLarry.frappliance/About.txt", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/About.txt", 0, 80, 0755);
 	if (ret < 0) return -1;
 
-	puts("Installing DH.frappliance/Info.plist...\n");
-	ret = install("/files/DH.frappliance/Info.plist", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/Info.plist", 0, 80, 0755);
+	puts("Installing ashyLarry.frappliance/gp_mainMenu.png...\n");
+	ret = install("/files/ashyLarry.frappliance/gp_mainMenu.png", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/gp_mainMenu.png", 0, 80, 0755);
 	if (ret < 0) return -1;
 
-	puts("Installing DH.frappliance/English.lproj/InfoPlist.strings...\n");
-	ret = install("/files/DH.frappliance/English.lproj/InfoPlist.strings", "/mnt/Applications/Lowtide.app/Appliances/DH.frappliance/English.lproj/InfoPlist.strings", 0, 80, 0755);
+	puts("Installing ashyLarry.frappliance/gp.png...\n");
+	ret = install("/files/ashyLarry.frappliance/gp.png", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/gp.png", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing ashyLarry.frappliance/English.lproj/InfoPlist.strings...\n");
+	ret = install("/files/ashyLarry.frappliance/English.lproj/InfoPlist.strings", "/mnt/Applications/Lowtide.app/Appliances/ashyLarry.frappliance/English.lproj/InfoPlist.strings", 0, 80, 0755);
+	if (ret < 0) return -1;
+
+	puts("Installing wuntar...\n");
+	ret = install("/files/wuntar", "/mnt/usr/bin/wuntar", 0, 80, 0755);
 	if (ret < 0) return -1;
 
 #ifdef INSTALL_HACKTIVATION
