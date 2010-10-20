@@ -41,7 +41,7 @@ all:
 	$(DD) if=shatter2.bin of=shatter.dfu bs=1 seek=179328 conv=notrunc
 	$(BIN2C) shatter.dfu shatter.h shatter
 	
-	$(BIN2C) ../payload/bundles/iPad1,1/7B500/iBoot/payload payloads/iBoot.k48ap.h iBoot_k48ap
+	#$(BIN2C) ../payload/bundles/iPad1,1/7B500/iBoot/payload payloads/iBoot.k48ap.h iBoot_k48ap
 	$(CC) $(CFLAGS) -c libpois0n.c libirecovery.c libpartial.c
 	$(AR) rs libpois0n.a libpois0n.o libirecovery.o libpartial.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -o injectpois0n injectpois0n.c libpois0n.a $(ADDOBJ)
