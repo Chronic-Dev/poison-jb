@@ -31,6 +31,7 @@
 #include "common.h"
 #include "commands.h"
 #include "filesystem.h"
+#include "framebuffer.h"
 
 Bool gGpHasInit = FALSE;
 
@@ -38,7 +39,7 @@ int gp_init() {
 	if(cmd_init()) return -1;
 	if(patch_init()) return -1;
 	if(memory_init()) return -1;
-
+	if(fb_init()) return -1;
 #if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
 #endif
@@ -62,6 +63,7 @@ int gp_init() {
 //#if TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
 	if(kernel_init()) return -1;
 //#endif
+
 
 	gGpHasInit = TRUE;
 	return 0;
