@@ -1,9 +1,8 @@
 all:
 	mkdir -p staging
-	make -C tools
-	mkdir -p injector/resources
-	make -C exploit
 	mkdir -p injector/payloads
+	mkdir -p injector/resources
+	make -C tools
 	make -C payload
 	make copy -C loader
 	make -C ramdisk
@@ -12,7 +11,6 @@ all:
 
 clean:	
 	make clean -C tools
-	make clean -C exploit
 	make clean -C payload
 	make clean -C loader
 	make real-clean -C loader

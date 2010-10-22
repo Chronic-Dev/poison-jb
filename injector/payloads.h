@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Syringe - injector/exploits.h
+  * GreenPois0n Syringe - payloads.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
@@ -20,6 +20,10 @@
 #ifndef PAYLOADS_H
 #define PAYLOADS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n88ap.h"
@@ -34,5 +38,9 @@
 #include "payloads/iBoot.n72ap.h"
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
