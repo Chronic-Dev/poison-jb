@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Syringe - common.h
+  * GreenPois0n Syringe - injector/exploits.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
@@ -17,29 +17,22 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef PAYLOADS_H
+#define PAYLOADS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "libirecovery.h"
-
-#ifdef WIN32
-#define sleep(n) Sleep(1000 * n)
-#endif
-
-#define info(...) printf(__VA_ARGS__)
-#define error(...) fprintf(stderr, __VA_ARGS__)
-#define debug(...) if(libpois0n_debug) fprintf(stderr, __VA_ARGS__)
-
-extern int libpois0n_debug;
-extern irecv_client_t client;
-extern irecv_device_t device;
-
-#ifdef __cplusplus
-}
-#endif
+#include "payloads/iBSS.k66ap.h"
+#include "payloads/iBSS.k48ap.h"
+#include "payloads/iBSS.n88ap.h"
+#include "payloads/iBSS.n90ap.h"
+#include "payloads/iBSS.n72ap.h"
+#include "payloads/iBSS.n18ap.h"
+#include "payloads/iBSS.n81ap.h"
+#include "payloads/iBoot.k66ap.h"
+#include "payloads/iBoot.k48ap.h"
+#include "payloads/iBoot.n88ap.h"
+#include "payloads/iBoot.n90ap.h"
+#include "payloads/iBoot.n72ap.h"
+#include "payloads/iBoot.n18ap.h"
+#include "payloads/iBoot.n81ap.h"
 
 #endif
