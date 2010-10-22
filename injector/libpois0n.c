@@ -50,8 +50,7 @@ int recovery_callback(irecv_client_t client, const irecv_event_t* event) {
 }
 
 void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
-	double value = ((double) progress * 100.0);
-	progress_callback(value, user_object);
+	progress_callback(progress, user_object);
 }
 
 #ifdef SHATTER
@@ -727,17 +726,9 @@ int boot_ramdisk() {
 			return -1;
 		}
 
-		debug("Hooking jump_to command\n");
-		error = irecv_send_command(client, "go rdboot");
-		if(error != IRECV_E_SUCCESS) {
-			error("Unable to hook jump_to\n");
-			return -1;
-		}
-
-		debug("Booting kernel\n");
 		error = irecv_send_command(client, "bootx");
 		if(error != IRECV_E_SUCCESS) {
-			error("Unable to boot kernel\n");
+			error("Unable to move iBoot into memory\n");
 			return -1;
 		}
 
@@ -781,7 +772,10 @@ int boot_ramdisk() {
 		return -1;
 	}
 
+<<<<<<< HEAD
 		// This is an untethered jailbreak
+=======
+>>>>>>> appletv
 	irecv_setenv(client, "boot-args", "0");
 	irecv_setenv(client, "auto-boot", "true");
 	irecv_saveenv(client);
@@ -793,6 +787,7 @@ int boot_ramdisk() {
 	}
 
 	return 0;
+	*/
 }
 
 int boot_tethered() {
