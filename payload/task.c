@@ -24,10 +24,104 @@
 #include "task.h"
 #include "lock.h"
 #include "common.h"
+#include "commands.h"
+#include "functions.h"
 
 LinkedList* gTaskList = SELF_TASK_LIST;
 TaskDescriptor** gTaskRunning = SELF_TASK_RUNNING;
-void(*task_yield)(void) = SELF_TASK_YIELD;
+void(*task_yield)(void) = NULL;
+
+void* find_task_yield() {
+	return find_function("task_yield", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_task_running() {
+	return 0;
+}
+
+void* find_task_list() {
+	return 0;
+}
+
+int task_init() {
+	task_yield = find_task_yield();
+	if(task_yield == NULL) {
+		puts("Unable to find task_yield\n");
+	} else {
+		printf("Found task_yield at 0x%x\n", task_yield);
+		cmd_add("task", &cmd_task, "view and change running tasks");
+	}
+	return 0;
+}
+
+int cmd_task(int argc, CmdArg* argv) {
+	int i = 0;
+	char* name = NULL;
+	char* action = NULL;
+	if(argc < 2) {
+		puts("usage: task <list> [options]\n");
+		puts("  list          \t\tdisplay list of active tasks\n");
+		puts("  info <task>   \t\tdisplay info about task\n");
+		puts("  start <task>  \t\tstart a existing task\n");
+		return 0;
+	}
+
+	action = argv[1].string;
+	if(!strcmp(action, "list")) {
+		task_display_list();
+	}
+
+	if(argc >= 3) {
+		name = malloc(0x10);
+		memset(name, 0, 0x10);
+		if(!strcmp(action, "info")) {
+			for(i = 2; i < argc; i++) {
+				if(i > 2) {
+					strncat(name, " ", 0x10);
+				}
+				strncat(name, argv[i].string, 0x10);
+			}
+
+			task_display_info(name);
+		} else
+
+		if(!strcmp(action, "start")) {
+			for(i = 2; i < argc; i++) {
+				if(i > 2) {
+					strncat(name, " ", 0x10);
+				}
+				strncat(name, argv[i].string, 0x10);
+			}
+
+			TaskDescriptor* task = task_find(name);
+			if(task != NULL) {
+				task_start(task);
+			} else {
+				puts("Cannot find task\n");
+			}
+		} else
+
+		if(!strcmp(action, "exit")) {
+			for(i = 2; i < argc; i++) {
+				if(i > 2) {
+					strncat(name, " ", 0x10);
+				}
+				strncat(name, argv[i].string, 0x10);
+			}
+
+			TaskDescriptor* task = task_find(name);
+			if(task != NULL) {
+				task_exit(task);
+			} else {
+				puts("Cannot find task\n");
+			}
+		}
+
+		free(name);
+	}
+
+	return 0;
+}
 
 void task_display_list() {
 	LinkedList* list = gTaskList->next;

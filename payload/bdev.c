@@ -17,7 +17,7 @@
 BdevDescriptor** gBdevList = (void*) SELF_BDEV_LIST;
 
 int bdev_init() {
-	printf("Initializing bdev\n");
+	//printf("Initializing bdev\n");
 	cmd_add("bdev", &bdev_cmd, "read or write data to block devices");
 	return 0;
 }

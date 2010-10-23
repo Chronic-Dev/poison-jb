@@ -15,7 +15,7 @@
 LinkedList* gNvramList = SELF_NVRAM_LIST;
 
 int nvram_init() {
-	printf("Initializing nvram\n");
+	//printf("Initializing nvram\n");
 	cmd_add("nvram", &nvram_cmd, "view and modify nvram variables");
 	return 0;
 }

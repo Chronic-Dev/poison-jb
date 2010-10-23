@@ -26,14 +26,18 @@
 #include "commands.h"
 #include "functions.h"
 
-int(*aes_crypto_cmd)(AesOption option, void* input, void* output, unsigned int size, AesMode mode, void* iv, void* key) = (void*) TARGET_AES_CRYPTO_CMD;
+int(*aes_crypto_cmd)(AesOption option, void* input, void* output, unsigned int size, AesMode mode, void* iv, void* key) = NULL;
 
 int aes_init() {
-	printf("Initializing aes\n");
+	//printf("Initializing aes\n");
 	aes_crypto_cmd = find_function("aes_crypto_cmd", TARGET_BASEADDR, TARGET_BASEADDR);
-	if(aes_crypto_cmd != 0) {
+	if(aes_crypto_cmd == NULL) {
+		puts("Unable to find aes_crypto_cmd\n");
+	} else {
+		printf("Found aes_crypto_cmd at 0x%x\n", aes_crypto_cmd);
 		cmd_add("aes", &aes_cmd, "encrypt/decrypt kbag aes keys using gid");
 	}
+
 	return 0;
 }
 

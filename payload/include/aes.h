@@ -13,13 +13,9 @@
 #include "common.h"
 #include "commands.h"
 
-#ifdef TARGET_AES_CRYPTO_CMD
-#	define SELF_AES_CRYPTO_CMD ((void*)(TARGET_BASEADDR + TARGET_AES_CRYPTO_CMD))
-#endif
-
 #ifndef SELF_AES_CRYPTO_CMD
 #	define SELF_AES_CRYPTO_CMD 0
-#	error "SELF_AES_CRYPTO_CMD not defined"
+#	warning "SELF_AES_CRYPTO_CMD not defined"
 #endif
 
 #define kAesSizeMin 0x20

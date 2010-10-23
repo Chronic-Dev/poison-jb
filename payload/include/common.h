@@ -27,27 +27,6 @@
 #define NULL 0
 #endif
 
-// Easier dependency checking in the future
-//#define USE_CMD           TARGET_CMD_LIST_BEGIN && TARGET_CMD_LIST_END
-//#define USE_AES           TARGET_AES_CRYPTO_CMD
-//#define USE_BDEV          TARGET_BDEV_LIST
-//#define USE_IMAGE         TARGET_IMAGE_LIST
-//#define USE_FS            TARGET_FS_MOUNT && TARGET_FS_UNMOUNT && TARGET_FS_LOAD_FILE
-//#define USE_KERNEL        TARGET_KERNEL_LOAD && TARGET_KERNEL_PHYMEM
-//#define USE_NVRAM         TARGET_NVRAM_LIST
-//#define USE_TASK          TARGET_TASK_LIST && TARGET_CURRENT_TASK
-
-//#define HAS_CMD           USE_CMD
-//#define HAS_AES           USE_AES && USE_CMD
-//#define HAS_BDEV          USE_BDEV && USE_CMD
-//#define HAS_IMAGE         USE_IMAGE && USE_AES && USE_CMD
-//#define HAS_FS            USE_FS && USE_CMD
-//#define HAS_KERNEL        USE_KERNEL && USE_FS && USE_AES && USE_CMD
-//#define HAS_TASK          USE_TASK && USE_CMD
-
-#ifdef TARGET_PRINTF
-#	define SELF_PRINTF ((void*)(TARGET_BASEADDR + TARGET_PRINTF))
-#endif
 #ifdef TARGET_VPRINTF
 #	define SELF_VPRINTF ((void*)(TARGET_BASEADDR + TARGET_VPRINTF))
 #endif
@@ -58,14 +37,9 @@
 #	define SELF_FREE ((void*)(TARGET_BASEADDR + TARGET_FREE))
 #endif
 
-#ifndef SELF_PRINTF
-#	define SELF_PRINTF 0
-#	error "SELF_PRINTF not defined"
-#endif
-
 #ifndef SELF_VPRINTF
 #	define SELF_VPRINTF 0
-#	error "SELF_VPRINTF not defined"
+#	warning "SELF_VPRINTF not defined"
 #endif
 
 #ifndef SELF_MALLOC
@@ -122,6 +96,7 @@ static inline void flip_endian(unsigned char* x, int length) {
 	}
 }
 
+int common_init();
 int gpprintf(const char *format, ...);
 void printf_begin();
 void panic(const char* why);

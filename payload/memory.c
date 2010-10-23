@@ -27,7 +27,7 @@
 #include "commands.h"
 
 int memory_init() {
-	printf("Initializing memory\n");
+	//printf("Initializing memory\n");
 	cmd_add("memory", &memory_cmd, "display, search, and manipulate memory");
 	return 0;
 }

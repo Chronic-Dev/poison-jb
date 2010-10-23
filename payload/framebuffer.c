@@ -10,6 +10,7 @@
 #include "font.h"
 #include "device.h"
 #include "common.h"
+#include "commands.h"
 #include "framebuffer.h"
 
 static Font* gFbFont;
@@ -90,7 +91,26 @@ int fb_init() {
 #endif
 	fb_print("=====================================================");
 
+	cmd_add("fbecho", &cmd_fbecho, "write characters back to framebuffer");
 	gFbHasInit = TRUE;
+	return 0;
+}
+
+int cmd_fbecho(int argc, CmdArg* argv) {
+	cmd_start();
+	int i = 0;
+	if (argc < 2) {
+		puts("usage: fbecho <message>\n");
+		return 0;
+	}
+
+	//enter_critical_section();
+	for (i = 1; i < argc; i++) {
+		fb_print(argv[i].string);
+		fb_print(" ");
+	}
+	//exit_critical_section();
+	fb_print("\n");
 	return 0;
 }
 

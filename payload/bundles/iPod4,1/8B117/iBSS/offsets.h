@@ -28,20 +28,20 @@
 #define TARGET_FREE                       (0x10400+1)
 #define TARGET_MALLOC                     (0x10684+1)
 #define TARGET_JUMP_TO                    (0x1496C+1)
-#define TARGET_PRINTF                     (0x1A0B0+1)
-#define TARGET_VPRINTF                    (0x19980+1)
+//#define TARGET_PRINTF                     (0x1A0B0+1)
+//#define TARGET_VPRINTF                    (0x19980+1)
 
 // Command offsets
 #define TARGET_CMD_LIST_BEGIN             (0x22000)
 #define TARGET_CMD_LIST_END               (0x2202C)
 
 // Task functions
-#define TARGET_TASK_YIELD                 (0x15268+1)
+//#define TARGET_TASK_YIELD                 (0x15268+1)
 #define TARGET_TASK_RUNNING               (0x22738)
 #define TARGET_TASK_LIST                  (0x227D0)
 
 // AES offsets
-#define TARGET_AES_CRYPTO_CMD             (0x1657C+1)
+//#define TARGET_AES_CRYPTO_CMD             (0x1657C+1)
 
 // BDev offsets
 #define TARGET_BDEV_LIST                  (0x26280)
@@ -57,7 +57,7 @@
 // Kernel offsets
 #define TARGET_KERNEL_LOAD                (0x1199C+1)
 #define TARGET_KERNEL_PHYMEM              (0x267C0)
-#define TARGET_KERNEL_BOOTARGS            (0x1F2F0)
+//#define TARGET_KERNEL_BOOTARGS            (0x1F2F0)
 
 // NVRAM offsets
 #define TARGET_NVRAM_LIST                 (0x22810)

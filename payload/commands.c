@@ -68,7 +68,7 @@ int cmd_init() {
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
 	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
-	cmd_add("rdboot", &cmd_rdboot, "patch and boot kernel with ramdisk\n");
+	cmd_add("rdboot", &cmd_rdboot, "patch and boot kernel with ramdisk");
 	cmd_add("test", &cmd_test, "test finding functions offsets");
 
 #ifndef TARGET_CMD_RAMDISK

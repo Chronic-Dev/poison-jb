@@ -10,6 +10,7 @@
 
 #include "lock.h"
 #include "common.h"
+#include "commands.h"
 #include "breakpoint.h"
 #include "coprocessor.h"
 
@@ -20,6 +21,121 @@
 BreakpointEntry* breakpoint_root = NULL;
 
 BreakpointLog* breakpoint_logs = NULL;
+
+int break_init() {
+	cmd_add("break", &cmd_break, "create and delete debugging breakpoints");
+	return 0;
+}
+
+int cmd_break(int argc, CmdArg* argv) {
+	char* action = NULL;
+	unsigned int value = 0;
+	if(argc < 2) {
+		enter_critical_section();
+		puts("usage: break <list/add/remove> [options]\n");
+		puts("  list          \t\tdisplay list of active breakpoints\n");
+		puts("  add <address> [<hexdump addr> <hexdump len>]\t\tadd new active breakpoint\n");
+		puts("  remove <id>   \t\tremove active breakpoint\n");
+		puts("  log <show/clear>\n");
+		puts("    show        \t\tdisplay log of hit breakpoints\n");
+		puts("    show <id>   \t\tdisplay a full breakpoint trace\n");
+		puts("    clear       \t\tclears the log\n");
+		puts("\n");
+		exit_critical_section();
+		return 0;
+	}
+
+	action = argv[1].string;
+	if(!strcmp(action, "list")) {
+		if (argc != 2) {
+			printf("[!] 'list' don't need any argument. Read usage.\n", action);
+			return -1;
+		}
+		breakpoint_list();
+		return 0;
+	} else if(!strcmp(action, "add")) {
+		if (argc != 3 && argc != 5) {
+			printf("[!] 'log add' needs either 1 or 3 arguments. Read usage.\n");
+			return -1;
+		}
+
+		if (argv[2].type!=CMDARG_TYPE_INTEGER) {
+			puts("[!] <address> must be an integer !\n");
+			return -1;
+		}
+		value = argv[2].uinteger;
+		BreakpointEntry* bp = breakpoint_add((void *) value, FALSE);
+		if (bp != NULL) {
+                       	enter_critical_section();
+                       	printf("New breakpoint at 0x%08x with id %d\n", bp->address, bp->id);
+			if (argc == 5) {
+				bp->hexdump_address = (void *) argv[3].uinteger;
+				bp->hexdump_len = argv[4].uinteger;
+				printf("The breakpoint will trigger a hexdump of address:0x%08x len:0x%08x.\n", bp->hexdump_address, bp->hexdump_len);
+			}
+                       	exit_critical_section();
+			return 0;
+		} else {
+                       	enter_critical_section();
+                       	printf("[!] Failed to add breakpoint at %0x%08x.\n", value);
+                       	exit_critical_section();
+			return -1;
+		}
+	} else if(!strcmp(action, "remove")) {
+		if (argc != 3) {
+			printf("[!] 'remove' needs 1 argument: the id of the breakpoint.\n", action);
+			return -1;
+		}
+
+		value = argv[2].uinteger;
+		if (breakpoint_remove(value)) {
+			enter_critical_section();
+			printf("Removed breakpoint %d.\n", value);
+			exit_critical_section();
+			return 0;
+		} else {
+			enter_critical_section();
+			printf("[!] Breakpoint %d not found.\n", value);
+			exit_critical_section();
+			return -1;
+		}
+	} else if (!strcmp(action, "log")) {
+		if (argc < 3 || argv[2].type!=CMDARG_TYPE_STRING) {
+			printf("[!] 'log' sub-action missing. Read command usage.\n");
+			return -1;
+		}
+		char* subaction = argv[2].string;
+		if (!strcmp(subaction, "show")) {
+			if (argc == 4) {
+				breakpoint_log_show(argv[3].uinteger);
+			} else if (argc == 3) {
+				breakpoint_log_list();
+			} else {
+				printf("[!] 'log clear' takes either 0 or 1 argument. Read usage.\n", action);
+				return -1;
+			}
+			return 0;
+		} else if (!strcmp(subaction, "clear")) {
+			if (argc != 3) {
+				printf("[!] 'log clear' don't need any argument. Read usage.\n", action);
+				return -1;
+			}
+			breakpoint_log_clear();
+			printf("Log cleared.\n");
+			return 0;
+		} else {
+			printf("[!] Unknwon 'log' sub-action %s. Read command usage.\n", subaction);
+			return -1;
+		}
+	} else {
+		enter_critical_section();
+		printf("[!] Unknown command <%s>.\n", action);
+		exit_critical_section();
+		return -1;
+	}
+
+	return 0;
+}
 
 void breakpoint_log_list() {
 	BreakpointLog *bl = breakpoint_logs;

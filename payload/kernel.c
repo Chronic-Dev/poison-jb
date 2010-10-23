@@ -17,17 +17,42 @@
 #include "kernel.h"
 #include "common.h"
 #include "commands.h"
+#include "functions.h"
 #include "filesystem.h"
 
 static char* gKernelAddr = NULL;
-char* gBootArgs = SELF_KERNEL_BOOTARGS;
+char* gBootArgs = NULL;
 char** gKernelPhyMem = SELF_KERNEL_PHYMEM;
 
-int(*kernel_atv_load)(char* boot_path, char** output) = SELF_KERNEL_LOAD;
-int(*kernel_load)(void* input, int max_size, char** output) = SELF_KERNEL_LOAD;
+int(*kernel_atv_load)(char* boot_path, char** output) = NULL;
+int(*kernel_load)(void* input, int max_size, char** output) = NULL;
+
+void* find_kernel_bootargs() {
+	return find_string("rd=md0");
+}
+
+void* find_kernel_load() {
+	return find_function("kernel_load", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_kernel_phymem() {
+	return 0;
+}
 
 int kernel_init() {
-	printf("Initializing kernel\n");
+	//printf("Initializing kernel\n");
+	gBootArgs = find_kernel_bootargs();
+	if(gBootArgs == NULL) {
+		puts("Unable to find gBootArgs\n");
+	} else {
+		printf("Found gBootArgs at 0x%x\n", gBootArgs);
+	}
+	kernel_load = find_kernel_load();
+	if(kernel_load == NULL) {
+		puts("Unable to find kernel_load function\n");
+	} else {
+		printf("Found kernel_load at 0x%x\n", kernel_load);
+	}
 	cmd_add("kernel", &kernel_cmd, "operations for filesystem kernel");
 	return 0;
 }
@@ -78,20 +103,23 @@ int kernel_cmd(int argc, CmdArg* argv) {
 }
 
 int kernel_bootargs(int argc, CmdArg* argv) {
-	int i = 0;
-	gBootArgs = find_string("rd=md0");
-	if(gBootArgs != 0) {
-		int size = strlen(gBootArgs);
-		for(i = 2; i < argc; i++) {
-			if(i == 2) {
-				strncpy(gBootArgs, "", size);
-			}
-			if(i > 2) {
-				strncat(gBootArgs, " ", size);
-			}
-			strncat(gBootArgs, argv[i].string, size);
-		}
+	if(gBootArgs == NULL) {
+		puts("Unable to set kernel bootargs");
+		return -1;
 	}
+
+	int i = 0;
+	int size = strlen(gBootArgs);
+	for(i = 2; i < argc; i++) {
+		if(i == 2) {
+			strncpy(gBootArgs, "", size);
+		}
+		if(i > 2) {
+			strncat(gBootArgs, " ", size);
+		}
+		strncat(gBootArgs, argv[i].string, size);
+	}
+
 	return 0;
 }
 

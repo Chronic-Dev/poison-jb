@@ -9,6 +9,7 @@
 #define BREAKPOINT_H
 
 #include "common.h"
+#include "commands.h"
 
 #define BKPT_THUMB ((unsigned short) 0xbe00)
 #define BKPT_ARM ((unsigned int) 0xe1200071)
@@ -53,6 +54,9 @@ typedef struct BreakpointLog {
 /*
  * Public Functions
  */
+
+int break_init();
+int cmd_break(int argc, CmdArg* argv);
 void breakpoint_list();
 BreakpointEntry* breakpoint_add(void* address, Bool reset);
 Bool breakpoint_remove(unsigned int id);

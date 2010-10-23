@@ -8,6 +8,8 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
+#include "commands.h"
+
 #define COLOR_WHITE 0xffffff
 #define COLOR_BLACK 0x0
 
@@ -20,6 +22,7 @@ typedef struct Font {
 extern Bool gFbHasInit;
 
 int fb_init();
+int cmd_fbecho(int argc, CmdArg* argv);
 void fb_clear();
 void fb_display_text(Bool option);
 void fb_set_loc(unsigned int x, unsigned int y);

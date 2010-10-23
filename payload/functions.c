@@ -40,6 +40,9 @@ static unsigned char* functions[][3] = {
 	{ "cmd_go", "jumping into image", push_r7_lr },
 	{ "image_load", "image validation failed but untrusted images are permitted", push_r4_to_r7_lr },
 	{ "fsboot", "root filesystem mount failed", push_r4_to_r7_lr },
+	{ "kernel_load", "rd=md0", push_r4_to_r7_lr },
+	{ "task_yield", "task_yield", push_r4_r5_r7_lr },
+	{ "default_block_write", "no reasonable default block write routine", push_r7_lr },
 	{ NULL, NULL, NULL }
 };
 
@@ -55,7 +58,7 @@ unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int si
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], signature, strlen(signature))) {
 			address = base | i;
-			printf("Found %s string at 0x%x\n", name, address);
+			//printf("Found %s string at 0x%x\n", name, address);
 			break;
 		}
 	}
@@ -66,7 +69,7 @@ unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int si
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], &address, 4)) {
 			reference = base | i;
-			printf("Found %s reference at 0x%x\n", name, reference);
+			//printf("Found %s reference at 0x%x\n", name, reference);
 			break;
 		}
 	}
@@ -78,7 +81,7 @@ unsigned int find_offset(unsigned char* data, unsigned int base, unsigned int si
 		i--;
 		if(data[i] == push) {
 			function = dbase | i;
-			printf("Found %s function at 0x%x\n", name, function);
+			//printf("Found %s function at 0x%x\n", name, function);
 			break;
 		}
 	}
@@ -96,7 +99,7 @@ void* find_string(const char* name) {
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], name, strlen(name))) {
 			address = TARGET_BASEADDR | i;
-			printf("Found %s string at 0x%x\n", name, address);
+			//printf("Found %s string at 0x%x\n", name, address);
 			break;
 		}
 	}
@@ -109,10 +112,10 @@ void* find_function(const char* name, unsigned char* target, unsigned char* base
 	unsigned int found = 0;
 	for(i = 0; i < sizeof(functions); i++) {
 		if(!strcmp(functions[i][0], name)) {
-			printf("Searching for %s\n", functions[i][0]);
+			//printf("Searching for %s\n", functions[i][0]);
 			found = find_offset(target, base, 0x35000, functions[i]);
 			if(found < 0) {
-				printf("Unable to find %s, error %d\n", functions[i][0], found);
+				//printf("Unable to find %s, error %d\n", functions[i][0], found);
 				return NULL;
 			}
 			break;

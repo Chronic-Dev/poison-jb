@@ -36,13 +36,15 @@
 Bool gGpHasInit = FALSE;
 
 int gp_init() {
+	if(common_init()) return -1;
 	if(cmd_init()) return -1;
+	if(fb_init()) return -1;
 	if(patch_init()) return -1;
 	if(memory_init()) return -1;
-	if(fb_init()) return -1;
-#if TARGET_AES_CRYPTO_CMD
+	if(task_init()) return -1;
+//#if TARGET_AES_CRYPTO_CMD
 	if(aes_init()) return -1;
-#endif
+//#endif
 
 #if TARGET_BDEV_LIST
 	if(bdev_init()) return -1;
@@ -71,7 +73,7 @@ int gp_init() {
 
 int main(int argc, CmdArg* argv) {
 	if(!gGpHasInit || gCmdCount==0) {
-		puts("Attempting to initialize greenpois0n\n");
+		//puts("Attempting to initialize greenpois0n\n");
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;

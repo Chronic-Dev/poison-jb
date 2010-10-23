@@ -24,16 +24,58 @@
 #include "task.h"
 #include "lock.h"
 #include "common.h"
+#include "framebuffer.h"
 
 void(*_free)(void* ptr) = SELF_FREE;
 void*(*_malloc)(unsigned int size) = SELF_MALLOC;
-int(*_printf)(const char *fmt, ...) = SELF_PRINTF;
+int(*_printf)(const char *fmt, ...) = NULL;
 int(*_vprintf)(const char *fmt, ...) = SELF_VPRINTF;
 
 int cout_count = 0;
 
+void* find_printf() {
+	int i = 0;
+	int j = 0;
+	unsigned int sp;
+	unsigned int* stack = &sp;
+	void(*default_block_write)(void) = find_function("default_block_write", TARGET_BASEADDR, TARGET_BASEADDR);
+	default_block_write();
+	for(i = 0; i < 0x100; i += 4) {
+		unsigned int value = *(stack - i);
+		if((value & TARGET_BASEADDR) == TARGET_BASEADDR) {
+			for(j = 0; j < 0x100; j++) {
+				unsigned short* instruction = (unsigned short*)(value + j);
+				if(*instruction == 0xB40F) {
+					return (void*) value + (j+1);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+void* find_free() {
+	return find_function("free");
+}
+
+void* find_malloc() {
+	return 0;
+}
+
+int common_init() {
+	void* print = find_printf();
+	if(print == NULL) {
+		printf("Unable to find printf\n");
+	} else {
+		_printf = print;
+		printf("Found printf at 0x%x\n", _printf);
+	}
+	return 0;
+}
+
 void _puts(const char* message) {
 	printf("%s", message);
+	fb_print(message);
 }
 
 void hexdump(unsigned char* buf, unsigned int len) {
