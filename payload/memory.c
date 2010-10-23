@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - lock.c
+  * GreenPois0n Cynanide - memory.c
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *

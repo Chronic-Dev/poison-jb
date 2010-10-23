@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - payload/patch.h
+  * GreenPois0n Cynanide - patch.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *

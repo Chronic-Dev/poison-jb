@@ -1,9 +1,21 @@
-/*
- *
- *  greenpois0n - payload/src/filesystem.c
- *  (c) 2010 Chronic-Dev Team
- *
- */
+/**
+  * GreenPois0n Cynanide - filesystem.c
+  * Copyright (C) 2010 Chronic-Dev Team
+  * Copyright (C) 2010 Joshua Hill
+  *
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ **/
 
 #include <stdio.h>
 
@@ -13,9 +25,26 @@ int(*fs_load_file)(const char *path, void* address, unsigned int* size) = SELF_F
 void(*fs_mount)(const char *partition, const char *type, const char *path) = SELF_FS_MOUNT;
 void(*fs_unmount)(const char *path) = SELF_FS_UNMOUNT;
 
+void* find_fs_mount() {
+	return find_function("fs_mount", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_fs_unmount() {
+	return 0;
+}
+
+void* find_fs_load_file() {
+	return 0;
+}
+
 int fs_init() {
-	//printf("Initializing filesystem\n");
-	cmd_add("fs", &fs_cmd, "perform operations on the filesystem");
+	fs_mount = find_fs_mount();
+	if(fs_mount == NULL) {
+		puts("Unable to find fs_mount\n")
+	} else {
+		printf("Found fs_mount at 0x%x\n", fs_mount);
+		cmd_add("fs", &fs_cmd, "perform operations on the filesystem");
+	}
 	return 0;
 }
 

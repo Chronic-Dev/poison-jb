@@ -1,5 +1,5 @@
 /**
-  * GreenPois0n Cynanide - payload/aes.c
+  * GreenPois0n Cynanide - aes.c
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
   *
