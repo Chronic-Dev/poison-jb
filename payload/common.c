@@ -59,6 +59,7 @@ void* find_free() {
 }
 
 void* find_malloc() {
+	// 80 B5 00 AF 01 21 00 22
 	return 0;
 }
 
@@ -70,6 +71,23 @@ int common_init() {
 		_printf = print;
 		printf("Found printf at 0x%x\n", _printf);
 	}
+
+	void* alloc = find_malloc();
+	if(alloc == NULL) {
+		printf("Unable to find malloc\n");
+	} else {
+		_malloc = alloc;
+		printf("Found malloc at 0x%x\n", _malloc);
+	}
+
+	void* fre = find_free();
+	if(fre == NULL) {
+		printf("Unable to find free\n");
+	} else {
+		_free = fre;
+		printf("Found free at 0x%x\n", _free);
+	}
+
 	return 0;
 }
 

@@ -40,7 +40,7 @@ void* find_fs_load_file() {
 int fs_init() {
 	fs_mount = find_fs_mount();
 	if(fs_mount == NULL) {
-		puts("Unable to find fs_mount\n")
+		puts("Unable to find fs_mount\n");
 	} else {
 		printf("Found fs_mount at 0x%x\n", fs_mount);
 		cmd_add("fs", &fs_cmd, "perform operations on the filesystem");

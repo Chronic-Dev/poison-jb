@@ -29,9 +29,18 @@
 
 LinkedList* gImageList = SELF_IMAGE_LIST;
 
+void* find_image_list() {
+	return 0;
+}
+
 int image_init() {
-	//printf("Initializing image\n");
-	cmd_add("image", &image_cmd, "display and operate on for firmware images");
+	//gImageList = find_image_list();
+	if(gImageList == NULL) {
+		puts("Unable to find gImageList\n");
+	} else {
+		printf("Found gImageList at 0x%x\n", gImageList);
+		cmd_add("image", &image_cmd, "display and operate on for firmware images");
+	}
 	return 0;
 }
 

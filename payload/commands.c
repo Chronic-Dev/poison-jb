@@ -45,38 +45,92 @@ void hooked(int flags, void* addr, int phymem);
 /*
  * Private Functions
  */
+
+void* find_cmd_list_begin() {
+	return 0;
+}
+
+void* find_cmd_list_end() {
+	return 0;
+}
+
+void* find_jump_to() {
+	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
+		return patch_find(TARGET_BASEADDR, 0x40000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+	} else {
+		return patch_find(TARGET_BASEADDR, 0x40000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+	}
+	return 0;
+}
+
+void* find_load_ramdisk() {
+	return find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_fsboot() {
+	return 0;
+}
+
 int cmd_init() {
 	if(gCmdHasInit) return 0;
-	printf("Initializing commands\n");
 
 	int i = 0;
 	gCmdCount = 0;
 	gCmdHasInit = TRUE;
 	gCmdCommands = (CmdInfo**) (LOADADDR + 0x01800000);
 
-	// add all built in commands to our private commands
-	CmdInfo** current = (CmdInfo**) gCmdListBegin;
-	for (i = 0; &current[i] < (CmdInfo**) gCmdListEnd; i++) {
-		cmd_add(current[i]->name, current[i]->handler, current[i]->description);
+	//gCmdListBegin = find_cmd_list_begin();
+	if(gCmdListBegin == NULL) {
+		puts("Unable to find gCmdListBegin\n");
+	} else {
+		printf("Found gCmdListBegin at 0x%x\n", gCmdListBegin);
 	}
 
+	//gCmdListEnd = find_cmd_list_end();
+	if(gCmdListEnd == NULL) {
+		puts("Unable to find gCmdListEnd\n");
+	} else {
+		printf("Found gCmdListEnd at 0x%x\n", gCmdListEnd);
+	}
+
+	// add all built in commands to our private commands
+	if(gCmdListBegin && gCmdListEnd) {
+		CmdInfo** current = (CmdInfo**) gCmdListBegin;
+		for (i = 0; &current[i] < (CmdInfo**) gCmdListEnd; i++) {
+			cmd_add(current[i]->name, current[i]->handler, current[i]->description);
+		}
+	}
 	// add our essential commands
 	cmd_add("help", &cmd_help, "display all available commands");
 	cmd_add("echo", &cmd_echo, "write characters back to screen");
 	cmd_add("hexdump", &cmd_hexdump, "dump section of memory to screen");
-	cmd_add("jump", &cmd_jump, "shutdown current image and jump into another");
 	cmd_add("mw", &cmd_mw, "write value to specified address");
 	cmd_add("md", &cmd_md, "display value at specified address");
 	cmd_add("call", &cmd_call, "calls a subroutine passing args to it");
-	cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
-	cmd_add("rdboot", &cmd_rdboot, "patch and boot kernel with ramdisk");
-	cmd_add("test", &cmd_test, "test finding functions offsets");
+	//cmd_add("rdboot", &cmd_rdboot, "patch and boot kernel with ramdisk");
+	//cmd_add("test", &cmd_test, "test finding functions offsets");
 
-#ifndef TARGET_CMD_RAMDISK
-	load_ramdisk = find_function("cmd_ramdisk", TARGET_BASEADDR, TARGET_BASEADDR);
-#endif
+	jump_to = find_jump_to();
+	if(jump_to == NULL) {
+		puts("Unable to find jump_to\n");
+	} else {
+		printf("Found jump_to at 0x%x\n", jump_to);
+		cmd_add("jump", &cmd_jump, "shutdown current image and jump into another");
+	}
 
-	if(load_ramdisk) {
+	//fsboot = find_fsboot();
+	if(fsboot == NULL) {
+		puts("Unable to find fsboot\n");
+	} else {
+		printf("Found fsboot at 0x%x\n", fsboot);
+		cmd_add("fsboot", &cmd_fsboot, "patch and boot kernel from filesystem");
+	}
+
+	load_ramdisk = find_load_ramdisk();
+	if(load_ramdisk == NULL) {
+		puts("Unable to find load_ramdisk\n");
+	} else {
+		printf("Found load_ramdisk at 0x%x\n", load_ramdisk);
 		cmd_add("ramdisk", &cmd_ramdisk, "create a ramdisk from the specified address");
 	}
 
