@@ -38,17 +38,17 @@
 
 #ifndef SELF_CMD_LIST_BEGIN
 #	define SELF_CMD_LIST_BEGIN 0
-#	error "SELF_CMD_LIST_BEGIN not defined"
+#	warning "SELF_CMD_LIST_BEGIN not defined"
 #endif
 
 #ifndef SELF_CMD_LIST_END
 #	define SELF_CMD_LIST_END 0
-#	error "SELF_CMD_LIST_END not defined"
+#	warning "SELF_CMD_LIST_END not defined"
 #endif
 
 #ifndef SELF_JUMP_TO
 #	define SELF_JUMP_TO 0
-#	error "SELF_JUMP_TO not defined"
+#	warning "SELF_JUMP_TO not defined"
 #endif
 
 #ifndef SELF_CMD_RAMDISK
@@ -77,8 +77,8 @@ typedef struct CmdInfo {
 	char* description;
 } CmdInfo;
 
-extern void* gCmdListBegin;
-extern void* gCmdListEnd;
+extern unsigned char* gCmdListBegin;
+extern unsigned char* gCmdListEnd;
 
 extern int gCmdCount;
 extern Bool gCmdHasInit;

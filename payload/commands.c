@@ -34,11 +34,11 @@ Bool gCmdHasInit = FALSE;
 
 CmdInfo** gCmdCommands = NULL;
 
-void* gCmdListEnd = SELF_CMD_LIST_END;
-void* gCmdListBegin = SELF_CMD_LIST_BEGIN;
+unsigned char* gCmdListEnd = NULL;
+unsigned char* gCmdListBegin = NULL;
 int(*fsboot)(void) = NULL;
-int(*jump_to)(int flags, void* addr, int phymem) = SELF_JUMP_TO;
-int(*load_ramdisk)(int argc) = SELF_CMD_RAMDISK;
+int(*jump_to)(int flags, void* addr, int phymem) = NULL;
+int(*load_ramdisk)(int argc) = NULL;
 
 void hooked(int flags, void* addr, int phymem);
 
@@ -47,20 +47,45 @@ void hooked(int flags, void* addr, int phymem);
  */
 
 void* find_cmd_list_begin() {
+	unsigned int reference = find_reference(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "save current environment to flash");
+	if(reference == 0) {
+		printf("Unable to find saveenv description reference\n");
+		return 0;
+	}
+
+	int i = 0;
+	for(i = 0; i < 0x80; i += 4) {
+		unsigned int* command = reference-i;
+		if(*command == NULL) {
+			return command+1;
+		}
+	}
 	return 0;
 }
 
 void* find_cmd_list_end() {
+	int i = 0;
+	if(gCmdListBegin != NULL) {
+		for(i = 0; i < 0x20; i++) {
+			unsigned int* value = (unsigned int*) gCmdListBegin+i;
+			if(!strncmp((const char*) *value, "auto-boot", 0x10) || *value == NULL) {
+				return value;
+			}
+		}
+	}
 	return 0;
 }
 
 void* find_jump_to() {
+	void* bytes = NULL;
 	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
-		return patch_find(TARGET_BASEADDR, 0x40000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+		bytes = patch_find(TARGET_BASEADDR, 0x40000, "\xf0\xb5\x03\xaf\x04\x1c\x15\x1c", 8);
+		bytes++;
 	} else {
-		return patch_find(TARGET_BASEADDR, 0x40000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+		bytes = patch_find(TARGET_BASEADDR, 0x40000, "\x80\xb5\x00\xaf\x04\x46\x15\x46", 8);
+		bytes++;
 	}
-	return 0;
+	return bytes;
 }
 
 void* find_load_ramdisk() {
@@ -68,7 +93,20 @@ void* find_load_ramdisk() {
 }
 
 void* find_fsboot() {
-	return 0;
+	void* bytes = NULL;
+	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
+		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x11\x48", 6);
+		bytes++;
+
+	} else if(strstr((char*) (TARGET_BASEADDR + 0x200), "k66ap")) {
+		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
+		bytes++;
+
+	} else {
+		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
+		bytes++;
+	}
+	return bytes > 1 ? bytes : NULL;
 }
 
 int cmd_init() {
@@ -79,14 +117,14 @@ int cmd_init() {
 	gCmdHasInit = TRUE;
 	gCmdCommands = (CmdInfo**) (LOADADDR + 0x01800000);
 
-	//gCmdListBegin = find_cmd_list_begin();
+	gCmdListBegin = find_cmd_list_begin();
 	if(gCmdListBegin == NULL) {
 		puts("Unable to find gCmdListBegin\n");
 	} else {
 		printf("Found gCmdListBegin at 0x%x\n", gCmdListBegin);
 	}
 
-	//gCmdListEnd = find_cmd_list_end();
+	gCmdListEnd = find_cmd_list_end();
 	if(gCmdListEnd == NULL) {
 		puts("Unable to find gCmdListEnd\n");
 	} else {
@@ -118,7 +156,7 @@ int cmd_init() {
 		cmd_add("jump", &cmd_jump, "shutdown current image and jump into another");
 	}
 
-	//fsboot = find_fsboot();
+	fsboot = find_fsboot();
 	if(fsboot == NULL) {
 		puts("Unable to find fsboot\n");
 	} else {

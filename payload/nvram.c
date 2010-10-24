@@ -26,9 +26,18 @@
 
 LinkedList* gNvramList = SELF_NVRAM_LIST;
 
+void* find_nvram_list() {
+	return 0;
+}
+
 int nvram_init() {
-	//printf("Initializing nvram\n");
-	cmd_add("nvram", &nvram_cmd, "view and modify nvram variables");
+	//gNvramList = find_nvram_list();
+	if(gNvramList == NULL) {
+		puts("Unable to find gNvramList\n");
+	} else {
+		printf("Found gNvramList at 0x%x\n", gNvramList);
+		cmd_add("nvram", &nvram_cmd, "view and modify nvram variables");
+	}
 	return 0;
 }
 

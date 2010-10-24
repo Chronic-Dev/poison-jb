@@ -26,8 +26,8 @@
 #include "common.h"
 #include "framebuffer.h"
 
-void(*_free)(void* ptr) = SELF_FREE;
-void*(*_malloc)(unsigned int size) = SELF_MALLOC;
+void(*_free)(void* ptr) = NULL;
+void*(*_malloc)(unsigned int size) = NULL;
 int(*_printf)(const char *fmt, ...) = NULL;
 int(*_vprintf)(const char *fmt, ...) = SELF_VPRINTF;
 
@@ -55,36 +55,34 @@ void* find_printf() {
 }
 
 void* find_free() {
-	return find_function("free");
+	return find_function("free", TARGET_BASEADDR, TARGET_BASEADDR);
 }
 
 void* find_malloc() {
-	// 80 B5 00 AF 01 21 00 22
-	return 0;
+	void* bytes = patch_find(TARGET_BASEADDR, 0x40000, "\x80\xB5\x00\xAF\x01\x21\x00\x22", 8);
+	return bytes+1;
 }
 
 int common_init() {
-	void* print = find_printf();
-	if(print == NULL) {
-		printf("Unable to find printf\n");
+	_printf = find_printf();
+	if(_printf == NULL) {
+		fb_print("Unable to find printf\n");
+		return -1;
 	} else {
-		_printf = print;
 		printf("Found printf at 0x%x\n", _printf);
 	}
 
-	void* alloc = find_malloc();
-	if(alloc == NULL) {
-		printf("Unable to find malloc\n");
+	_malloc = find_malloc();
+	if(_malloc == NULL) {
+		puts("Unable to find malloc\n");
 	} else {
-		_malloc = alloc;
 		printf("Found malloc at 0x%x\n", _malloc);
 	}
 
-	void* fre = find_free();
-	if(fre == NULL) {
-		printf("Unable to find free\n");
+	_free = find_free();
+	if(_free == NULL) {
+		puts("Unable to find free\n");
 	} else {
-		_free = fre;
 		printf("Found free at 0x%x\n", _free);
 	}
 

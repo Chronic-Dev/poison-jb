@@ -25,15 +25,15 @@
 #define TARGET_BASEADDR                   (0x84000000)
 
 // Standard offsets
-#define TARGET_FREE                       (0x10400+1)
-#define TARGET_MALLOC                     (0x10684+1)
-#define TARGET_JUMP_TO                    (0x1496C+1)
+//#define TARGET_FREE                       (0x10400+1)
+//#define TARGET_MALLOC                     (0x10684+1)
+//#define TARGET_JUMP_TO                    (0x1496C+1)
 //#define TARGET_PRINTF                     (0x1A0B0+1)
 //#define TARGET_VPRINTF                    (0x19980+1)
 
 // Command offsets
-#define TARGET_CMD_LIST_BEGIN             (0x22000)
-#define TARGET_CMD_LIST_END               (0x2202C)
+//#define TARGET_CMD_LIST_BEGIN             (0x22000)
+//#define TARGET_CMD_LIST_END               (0x2202C)
 
 // Task functions
 //#define TARGET_TASK_YIELD                 (0x15268+1)
@@ -55,7 +55,7 @@
 //#define TARGET_FS_LOAD_FILE               (0x0)
 
 // Kernel offsets
-#define TARGET_KERNEL_LOAD                (0x1199C+1)
+//#define TARGET_KERNEL_LOAD                (0x1199C+1)
 #define TARGET_KERNEL_PHYMEM              (0x267C0)
 //#define TARGET_KERNEL_BOOTARGS            (0x1F2F0)
 

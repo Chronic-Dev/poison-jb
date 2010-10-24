@@ -47,9 +47,20 @@ static unsigned char* functions[][3] = {
 	{ NULL, NULL, NULL }
 };
 
-unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int size, unsigned int address) {
-	// Find where that string is referenced
-	int i = 0;
+unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int size, char* signature) {
+	unsigned int i = 0;
+
+	// First find the string
+	unsigned int address = 0;
+	for(i = 0; i < size; i++) {
+		if(!memcmp(&data[i], signature, strlen(signature))) {
+			address = base | i;
+			break;
+		}
+	}
+	if(address == 0) return NULL;
+
+	// Next find where that string is referenced
 	unsigned int reference = 0;
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], &address, 4)) {
@@ -58,6 +69,17 @@ unsigned int find_reference(unsigned char* data, unsigned int base, unsigned int
 		}
 	}
 	if(reference == 0) return NULL;
+	reference -= 8;
+
+	unsigned int reference2 = 0;
+	for(i = 0; i < size; i++) {
+		if(!memcmp(&data[i], &reference, 4)) {
+			reference2 = base | i;
+			break;
+		}
+	}
+	if(reference2 == 0) return NULL;
+	return reference2;
 }
 
 unsigned int find_top(unsigned char* data, unsigned int base, unsigned int size, unsigned int address) {

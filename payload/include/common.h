@@ -44,12 +44,12 @@
 
 #ifndef SELF_MALLOC
 #	define SELF_MALLOC 0
-#	error "SELF_MALLOC not defined"
+#	warning "SELF_MALLOC not defined"
 #endif
 
 #ifndef SELF_FREE
 #	define SELF_FREE 0
-#	error "SELF_FREE not defined"
+#	warning "SELF_FREE not defined"
 #endif
 
 #define FLIPENDIAN(x) flip_endian((unsigned char*)(&(x)), sizeof(x))

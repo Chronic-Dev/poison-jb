@@ -49,6 +49,23 @@ int task_init() {
 		puts("Unable to find task_yield\n");
 	} else {
 		printf("Found task_yield at 0x%x\n", task_yield);
+	}
+
+	//gTaskRunning = find_task_running();
+	if(gTaskRunning == NULL) {
+		puts("Unable to find gTaskRunning\n");
+	} else {
+		printf("Found gTaskRunning at 0x%x\n", gTaskRunning);
+	}
+
+	//gTaskList = find_task_list();
+	if(gTaskList == NULL) {
+		puts("Unable to find gTaskList\n");
+	} else {
+		printf("Found gTaskList at 0x%x\n", gTaskList);
+	}
+
+	if(task_yield && gTaskRunning && gTaskList) {
 		cmd_add("task", &cmd_task, "view and change running tasks");
 	}
 	return 0;
