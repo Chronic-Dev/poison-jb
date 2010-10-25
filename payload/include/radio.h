@@ -1,8 +1,7 @@
 /**
-  * GreenPois0n Cynanide - iPod4,1/8B117/iBSS/offsets.h
+  * GreenPois0n Cynanide - radio.h
   * Copyright (C) 2010 Chronic-Dev Team
   * Copyright (C) 2010 Joshua Hill
-  * Copyright (C) 2010 Dustin Howett
   *
   * This program is free software: you can redistribute it and/or modify
   * it under the terms of the GNU General Public License as published by
@@ -18,30 +17,10 @@
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef OFFSETS_H
-#define OFFSETS_H
+#ifndef RADIO_H
+#define RADIO_H
 
-// Base address
-#define TARGET_BASEADDR                   (0x84000000)
+int radio_init();
+int cmd_radio(int argc, CmdArg* argv);
 
-// Command offsets
-
-// Task functions
-#define TARGET_TASK_RUNNING               (0x22738)
-#define TARGET_TASK_LIST                  (0x227D0)
-
-// AES offsets
-
-// BDev offsets
-#define TARGET_BDEV_LIST                  (0x26280)
-
-// Image offsets
-#define TARGET_IMAGE_LIST                 (0x22708)
-
-// Kernel offsets
-#define TARGET_KERNEL_PHYMEM              (0x267C0)
-
-// NVRAM offsets
-#define TARGET_NVRAM_LIST                 (0x22810)
-
-#endif // OFFSETS_H
+#endif

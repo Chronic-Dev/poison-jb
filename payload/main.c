@@ -103,12 +103,19 @@ int main(int argc, CmdArg* argv) {
 	}
 #endif
 
+	int ret = 0;
+	char result[0x10];
 	if(argc > 1) {
 		int i = 0;
 		char* command = argv[1].string;
 		for(i = 0; i < gCmdCount; i++) {
 			if(!strcmp(gCmdCommands[i]->name, command)) {
-				return gCmdCommands[i]->handler(argc-1, &argv[1]);
+				ret = gCmdCommands[i]->handler(argc-1, &argv[1]);
+#if TARGET_NVRAM_LIST
+				snprintf(result, 0xF, "0x%x", ret);
+				nvram_set_var("cmd-results", result);
+#endif
+				return ret;
 			}
 		}
 
