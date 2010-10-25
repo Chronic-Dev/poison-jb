@@ -23,39 +23,6 @@
 #include "device.h"
 #include "offsets.h"
 
-#ifdef TARGET_CMD_LIST_BEGIN
-#	define SELF_CMD_LIST_BEGIN ((void*)(TARGET_BASEADDR + TARGET_CMD_LIST_BEGIN))
-#endif
-#ifdef TARGET_CMD_LIST_END
-#	define SELF_CMD_LIST_END ((void*)(TARGET_BASEADDR + TARGET_CMD_LIST_END))
-#endif
-#ifdef TARGET_JUMP_TO
-#	define SELF_JUMP_TO ((void*)(TARGET_BASEADDR + TARGET_JUMP_TO))
-#endif
-#ifdef TARGET_CMD_RAMDISK
-#	define SELF_CMD_RAMDISK ((void*)(TARGET_BASEADDR + TARGET_CMD_RAMDISK))
-#endif
-
-#ifndef SELF_CMD_LIST_BEGIN
-#	define SELF_CMD_LIST_BEGIN 0
-#	warning "SELF_CMD_LIST_BEGIN not defined"
-#endif
-
-#ifndef SELF_CMD_LIST_END
-#	define SELF_CMD_LIST_END 0
-#	warning "SELF_CMD_LIST_END not defined"
-#endif
-
-#ifndef SELF_JUMP_TO
-#	define SELF_JUMP_TO 0
-#	warning "SELF_JUMP_TO not defined"
-#endif
-
-#ifndef SELF_CMD_RAMDISK
-#	define SELF_CMD_RAMDISK 0
-#	warning "SELF_CMD_RAMDISK not defined"
-#endif
-
 #define MAX_COMMANDS 40
 
 #define CMDARG_TYPE_STRING 0

@@ -22,7 +22,7 @@
 #include "filesystem.h"
 
 int(*fs_load_file)(const char *path, void* address, unsigned int* size) = SELF_FS_LOAD_FILE;
-void(*fs_mount)(const char *partition, const char *type, const char *path) = SELF_FS_MOUNT;
+void(*fs_mount)(const char *partition, const char *type, const char *path) = NULL;
 void(*fs_unmount)(const char *path) = SELF_FS_UNMOUNT;
 
 void* find_fs_mount() {

@@ -21,6 +21,6 @@
 #define RADIO_H
 
 int radio_init();
-int cmd_radio(int argc, CmdArg* argv);
+int radio_cmd(int argc, CmdArg* argv);
 
 #endif

@@ -103,12 +103,12 @@ int fb_init() {
 #endif
 	fb_print("=====================================================");
 
-	cmd_add("fbecho", &cmd_fbecho, "write characters back to framebuffer");
+	cmd_add("fbecho", &fb_cmd, "write characters back to framebuffer");
 	gFbHasInit = TRUE;
 	return 0;
 }
 
-int cmd_fbecho(int argc, CmdArg* argv) {
+int fb_cmd(int argc, CmdArg* argv) {
 	cmd_start();
 	int i = 0;
 	if (argc < 2) {

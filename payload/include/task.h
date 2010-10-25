@@ -25,9 +25,6 @@
 #include "offsets.h"
 #include "commands.h"
 
-#ifdef TARGET_TASK_YIELD
-#	define SELF_TASK_YIELD ((void*)(TARGET_BASEADDR + TARGET_TASK_YIELD))
-#endif
 #ifdef TARGET_TASK_RUNNING
 #	define SELF_TASK_RUNNING ((TaskDescriptor**)(TARGET_BASEADDR + TARGET_TASK_RUNNING))
 #endif
@@ -43,11 +40,6 @@
 #ifndef SELF_TASK_LIST
 #	define SELF_TASK_LIST 0
 #	error "SELF_TASK_LIST not defined"
-#endif
-
-#ifndef SELF_TASK_YIELD
-#	define SELF_TASK_YIELD 0
-#	warning "SELF_TASK_YIELD not defined"
 #endif
 
 #define TaskDescriptorIdentifier1 0x7461736b // 'task'
@@ -111,7 +103,7 @@ extern TaskDescriptor** gTaskRunning;
 extern void(*task_yield)(void);
 
 int task_init();
-int cmd_task(int argc, CmdArg* argv);
+int task_cmd(int argc, CmdArg* argv);
 void task_display_list();
 TaskDescriptor* task_find(const char* name);
 int task_display_info(const char* name);

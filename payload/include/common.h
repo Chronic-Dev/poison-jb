@@ -27,31 +27,6 @@
 #define NULL 0
 #endif
 
-#ifdef TARGET_VPRINTF
-#	define SELF_VPRINTF ((void*)(TARGET_BASEADDR + TARGET_VPRINTF))
-#endif
-#ifdef TARGET_MALLOC
-#	define SELF_MALLOC ((void*)(TARGET_BASEADDR + TARGET_MALLOC))
-#endif
-#ifdef TARGET_FREE
-#	define SELF_FREE ((void*)(TARGET_BASEADDR + TARGET_FREE))
-#endif
-
-#ifndef SELF_VPRINTF
-#	define SELF_VPRINTF 0
-#	warning "SELF_VPRINTF not defined"
-#endif
-
-#ifndef SELF_MALLOC
-#	define SELF_MALLOC 0
-#	warning "SELF_MALLOC not defined"
-#endif
-
-#ifndef SELF_FREE
-#	define SELF_FREE 0
-#	warning "SELF_FREE not defined"
-#endif
-
 #define FLIPENDIAN(x) flip_endian((unsigned char*)(&(x)), sizeof(x))
 
 #define GETREG32(addr) (*((unsigned int*) addr))

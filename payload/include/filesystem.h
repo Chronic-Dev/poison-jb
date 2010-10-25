@@ -25,9 +25,6 @@
 #include "offsets.h"
 #include "commands.h"
 
-#ifdef TARGET_FS_MOUNT
-#	define SELF_FS_MOUNT ((void*)(TARGET_BASEADDR + TARGET_FS_MOUNT))
-#endif
 #ifdef TARGET_FS_UNMOUNT
 #	define SELF_FS_UNMOUNT ((void*)(TARGET_BASEADDR + TARGET_FS_UNMOUNT))
 #endif
@@ -35,17 +32,13 @@
 #	define SELF_FS_LOAD_FILE ((void*)(TARGET_BASEADDR + TARGET_FS_LOAD_FILE))
 #endif
 
-#ifndef SELF_FS_MOUNT
-#	define SELF_FS_MOUNT 0
-//#	error "SELF_FS_MOUNT not defined"
-#endif
 #ifndef SELF_FS_UNMOUNT
 #	define SELF_FS_UNMOUNT 0
-//#	error "SELF_FS_UNMOUNT not defined"
+#	warning "SELF_FS_UNMOUNT not defined"
 #endif
 #ifndef SELF_FS_LOAD_FILE
 #	define SELF_FS_LOAD_FILE 0
-//#	error "SELF_FS_LOAD_FILE not defined"
+#	warning "SELF_FS_LOAD_FILE not defined"
 #endif
 
 extern void(*fs_unmount)(const char *path);

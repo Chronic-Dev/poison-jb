@@ -56,7 +56,7 @@ typedef struct BreakpointLog {
  */
 
 int break_init();
-int cmd_break(int argc, CmdArg* argv);
+int break_cmd(int argc, CmdArg* argv);
 void breakpoint_list();
 BreakpointEntry* breakpoint_add(void* address, Bool reset);
 Bool breakpoint_remove(unsigned int id);

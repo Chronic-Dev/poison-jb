@@ -25,15 +25,6 @@
 #include "offsets.h"
 #include "commands.h"
 
-#ifdef TARGET_NVRAM_LIST
-#	define SELF_NVRAM_LIST ((void*)(TARGET_BASEADDR + TARGET_NVRAM_LIST))
-#endif
-
-#ifndef SELF_NVRAM_LIST
-#	define SELF_NVRAM_LIST 0
-#	warning "SELF_NVRAM_LIST not defined"
-#endif
-
 typedef struct NvramVar {
 	struct NvramVar* prev;
 	struct NvramVar* next;

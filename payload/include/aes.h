@@ -13,11 +13,6 @@
 #include "common.h"
 #include "commands.h"
 
-#ifndef SELF_AES_CRYPTO_CMD
-#	define SELF_AES_CRYPTO_CMD 0
-#	warning "SELF_AES_CRYPTO_CMD not defined"
-#endif
-
 #define kAesSizeMin 0x20
 #define kAesSizeMax 0x30
 

@@ -34,7 +34,7 @@ typedef struct Font {
 extern Bool gFbHasInit;
 
 int fb_init();
-int cmd_fbecho(int argc, CmdArg* argv);
+int fb_cmd(int argc, CmdArg* argv);
 void fb_clear();
 void fb_display_text(Bool option);
 void fb_set_loc(unsigned int x, unsigned int y);

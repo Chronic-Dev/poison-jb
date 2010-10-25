@@ -36,11 +36,11 @@ BreakpointEntry* breakpoint_root = NULL;
 BreakpointLog* breakpoint_logs = NULL;
 
 int break_init() {
-	cmd_add("break", &cmd_break, "create and delete debugging breakpoints");
+	cmd_add("break", &break_cmd, "create and delete debugging breakpoints");
 	return 0;
 }
 
-int cmd_break(int argc, CmdArg* argv) {
+int break_cmd(int argc, CmdArg* argv) {
 	char* action = NULL;
 	unsigned int value = 0;
 	if(argc < 2) {

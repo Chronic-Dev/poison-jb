@@ -24,6 +24,6 @@ int radio_init() {
 	return 0;
 }
 
-int cmd_radio(int argc, CmdArg* argv) {
+int radio_cmd(int argc, CmdArg* argv) {
 	return 0;
 }

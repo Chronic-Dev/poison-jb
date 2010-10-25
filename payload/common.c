@@ -29,7 +29,6 @@
 void(*_free)(void* ptr) = NULL;
 void*(*_malloc)(unsigned int size) = NULL;
 int(*_printf)(const char *fmt, ...) = NULL;
-int(*_vprintf)(const char *fmt, ...) = SELF_VPRINTF;
 
 int cout_count = 0;
 

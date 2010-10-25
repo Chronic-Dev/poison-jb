@@ -66,12 +66,12 @@ int task_init() {
 	}
 
 	if(task_yield && gTaskRunning && gTaskList) {
-		cmd_add("task", &cmd_task, "view and change running tasks");
+		cmd_add("task", &task_cmd, "view and change running tasks");
 	}
 	return 0;
 }
 
-int cmd_task(int argc, CmdArg* argv) {
+int task_cmd(int argc, CmdArg* argv) {
 	int i = 0;
 	char* name = NULL;
 	char* action = NULL;

@@ -25,15 +25,6 @@
 #include "offsets.h"
 #include "commands.h"
 
-#ifdef TARGET_IMAGE_LIST
-#	define SELF_IMAGE_LIST ((void*)(TARGET_BASEADDR + TARGET_IMAGE_LIST))
-#endif
-
-#ifndef SELF_IMAGE_LIST
-#	define SELF_IMAGE_LIST 0
-#	warning "SELF_IMAGE_LIST not defined"
-#endif
-
 #define IMAGE_IMG3       0x496D6733
 #define IMAGE_8900       0x30303938
 
