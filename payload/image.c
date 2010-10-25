@@ -27,14 +27,16 @@
 #include "common.h"
 #include "device.h"
 
-LinkedList* gImageList = SELF_IMAGE_LIST;
+LinkedList* gImageList = NULL;
 
 void* find_image_list() {
-	return 0;
+	unsigned int ref = find_string(TARGET_BASEADDR, TARGET_BASEADDR, 0x40000, "tobi");
+	ImageDescriptor* image = ref-0x1C;
+	return image->list.prev;
 }
 
 int image_init() {
-	//gImageList = find_image_list();
+	gImageList = find_image_list();
 	if(gImageList == NULL) {
 		puts("Unable to find gImageList\n");
 	} else {

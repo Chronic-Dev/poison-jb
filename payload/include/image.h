@@ -31,7 +31,7 @@
 
 #ifndef SELF_IMAGE_LIST
 #	define SELF_IMAGE_LIST 0
-#	error "SELF_IMAGE_LIST not defined"
+#	warning "SELF_IMAGE_LIST not defined"
 #endif
 
 #define IMAGE_IMG3       0x496D6733

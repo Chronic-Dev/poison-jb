@@ -31,9 +31,6 @@
 // BDev offsets
 #define TARGET_BDEV_LIST                  (0x3B940)
 
-// Image offsets
-#define TARGET_IMAGE_LIST                 (0x37704) 
-
 // Filesystem offsets
 #define TARGET_FS_UNMOUNT                 (0x19A50+1)
 #define TARGET_FS_LOAD_FILE               (0x199E8+1)
