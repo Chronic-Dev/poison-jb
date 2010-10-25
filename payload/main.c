@@ -72,22 +72,20 @@ int gp_init() {
 }
 
 int main(int argc, CmdArg* argv) {
-	if(!gGpHasInit || gCmdCount==0) {
-		//puts("Attempting to initialize greenpois0n\n");
+	int i = 0;
+	char result[0x10];
+	if(!gGpHasInit || gCmdCount == 0) {
 		if(gp_init()) {
 			puts("Unable to initialize greenpois0n!!\n");
 			return -1;
 		}
-		printf("Greenpois0n initialized\n");
+		puts("Greenpois0n initialized\n");
 		return 0;
 	}
 
-#if TARGET_NVRAM_LIST
-	int i = 0;
 	for(i = 1; i < argc; i++) {
 		if(!strcmp(argv[i].string, "$_")) {
 			NvramVar* retval = nvram_find_var("?");
-			printf("substituting $_ with %s\n", retval->string);
 			argv[i].string = retval->string;
 			continue;
 		}
@@ -96,25 +94,19 @@ int main(int argc, CmdArg* argv) {
 			if(var == NULL) {
 				printf("Unable to find nvram var for %s\n", &(argv[i].string[1]));
 			} else {
-				printf("substituting %s with %s\n", argv[i].string, var->string);
 				argv[i].string = var->string;
 			}
 		}
 	}
-#endif
 
-	int ret = 0;
-	char result[0x10];
 	if(argc > 1) {
 		int i = 0;
 		char* command = argv[1].string;
 		for(i = 0; i < gCmdCount; i++) {
 			if(!strcmp(gCmdCommands[i]->name, command)) {
-				ret = gCmdCommands[i]->handler(argc-1, &argv[1]);
-#if TARGET_NVRAM_LIST
+				int ret = gCmdCommands[i]->handler(argc-1, &argv[1]);
 				snprintf(result, 0xF, "0x%x", ret);
 				nvram_set_var("cmd-results", result);
-#endif
 				return ret;
 			}
 		}

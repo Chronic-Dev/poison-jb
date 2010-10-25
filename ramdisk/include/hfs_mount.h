@@ -48,7 +48,6 @@
 #define UNKNOWNGID ((gid_t)99)
 #define UNKNOWNPERMISSIONS (S_IRWXU | S_IROTH | S_IXOTH)		/* 705 */
 
-//#ifdef __APPLE_API_UNSTABLE
 struct hfs_mount_args {
 	char	*fspec;			/* block special device to mount */
 	uid_t	hfs_uid;		/* uid that owns hfs files (standard HFS only) */
@@ -77,7 +76,5 @@ struct hfs_mount_args {
 #define HFS_GET_JOURNAL_INFO    0x6a6e6c69
 #define HFS_SET_PKG_EXTENSIONS  0x121031
 #define HFS_REPLAY_JOURNAL	0x6a6e6c72
-
-//#endif /* __APPLE_API_UNSTABLE */
 
 #endif /* ! _HFS_MOUNT_H_ */

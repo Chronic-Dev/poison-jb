@@ -143,7 +143,7 @@ unsigned int find_string(unsigned char* data, unsigned int base, unsigned int si
 	unsigned int address = 0;
 	for(i = 0; i < size; i++) {
 		if(!memcmp(&data[i], name, strlen(name))) {
-			address = TARGET_BASEADDR | i;
+			address = &data[i];
 			break;
 		}
 	}

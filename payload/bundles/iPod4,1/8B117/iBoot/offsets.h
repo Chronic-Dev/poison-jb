@@ -41,7 +41,4 @@
 // Kernel offsets
 #define TARGET_KERNEL_PHYMEM              (0x3CA80)
 
-// NVRAM offset
-#define TARGET_NVRAM_LIST                 (0x37810) 
-
 #endif // OFFSETS_H

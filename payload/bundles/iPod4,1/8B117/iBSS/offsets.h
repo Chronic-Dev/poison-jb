@@ -30,8 +30,6 @@
 #define TARGET_TASK_RUNNING               (0x22738)
 #define TARGET_TASK_LIST                  (0x227D0)
 
-// AES offsets
-
 // BDev offsets
 #define TARGET_BDEV_LIST                  (0x26280)
 
@@ -40,8 +38,5 @@
 
 // Kernel offsets
 #define TARGET_KERNEL_PHYMEM              (0x267C0)
-
-// NVRAM offsets
-#define TARGET_NVRAM_LIST                 (0x22810)
 
 #endif // OFFSETS_H

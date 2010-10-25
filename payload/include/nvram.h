@@ -31,7 +31,7 @@
 
 #ifndef SELF_NVRAM_LIST
 #	define SELF_NVRAM_LIST 0
-#	error "SELF_NVRAM_LIST not defined"
+#	warning "SELF_NVRAM_LIST not defined"
 #endif
 
 typedef struct NvramVar {
