@@ -103,6 +103,9 @@
 			8733CA4D1276D0E5000AF8BE /* PBXTextBookmark */ = 8733CA4D1276D0E5000AF8BE /* PBXTextBookmark */;
 			8733CA4E1276D0E5000AF8BE /* PBXTextBookmark */ = 8733CA4E1276D0E5000AF8BE /* PBXTextBookmark */;
 			8733CA4F1276D0E5000AF8BE /* PBXTextBookmark */ = 8733CA4F1276D0E5000AF8BE /* PBXTextBookmark */;
+			8733CA551276D1B0000AF8BE /* PBXTextBookmark */ = 8733CA551276D1B0000AF8BE /* PBXTextBookmark */;
+			8733CA571276D1CE000AF8BE /* PBXTextBookmark */ = 8733CA571276D1CE000AF8BE /* PBXTextBookmark */;
+			8733CA581276D1CE000AF8BE /* PBXTextBookmark */ = 8733CA581276D1CE000AF8BE /* PBXTextBookmark */;
 			87A31AE01269A22B00F44939 = 87A31AE01269A22B00F44939 /* PBXTextBookmark */;
 			87A31AEC1269A27100F44939 = 87A31AEC1269A27100F44939 /* PBXTextBookmark */;
 			87A6BD9C126E66D9007579E3 = 87A6BD9C126E66D9007579E3 /* PBXTextBookmark */;
@@ -139,9 +142,9 @@
 	};
 	8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1284, 3045}}";
-			sepNavSelRange = "{2999, 0}";
-			sepNavVisRange = "{0, 910}";
+			sepNavIntBoundsRect = "{{0, 0}, {1284, 3087}}";
+			sepNavSelRange = "{3559, 0}";
+			sepNavVisRange = "{2968, 749}";
 			sepNavWindowFrame = "{{38, 23}, {1343, 829}}";
 		};
 	};
@@ -701,12 +704,42 @@
 		vrLen = 40;
 		vrLoc = 0;
 	};
+	8733CA551276D1B0000AF8BE /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 87A31ADE1269A1FF00F44939 /* build.sh */;
+		name = "build.sh: 4";
+		rLen = 0;
+		rLoc = 39;
+		rType = 0;
+		vrLen = 40;
+		vrLoc = 0;
+	};
+	8733CA571276D1CE000AF8BE /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 87A31ADE1269A1FF00F44939 /* build.sh */;
+		name = "build.sh: 4";
+		rLen = 0;
+		rLoc = 39;
+		rType = 0;
+		vrLen = 40;
+		vrLoc = 0;
+	};
+	8733CA581276D1CE000AF8BE /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 87A31ADE1269A1FF00F44939 /* build.sh */;
+		name = "build.sh: 4";
+		rLen = 0;
+		rLoc = 39;
+		rType = 0;
+		vrLen = 40;
+		vrLoc = 0;
+	};
 	87A31AC71269A1C100F44939 /* ashyLarry */ = {
 		activeExec = 0;
 	};
 	87A31ADE1269A1FF00F44939 /* build.sh */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {997, 178}}";
+			sepNavIntBoundsRect = "{{0, 0}, {992, 211}}";
 			sepNavSelRange = "{39, 0}";
 			sepNavVisRange = "{0, 40}";
 		};

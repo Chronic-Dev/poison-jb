@@ -133,7 +133,7 @@
 	//NSString *theTitle = [_menuItems objectAtIndex: row];
 	NSString *theTitle = [[updateArray objectAtIndex:row] valueForKey:@"name"];
 	[result setText:theTitle withAttributes:[[BRThemeInfo sharedTheme] menuItemTextAttributes]];
-	[result addAccessoryOfType:1];
+	[result addAccessoryOfType:7];
 	return result;
 }
 
