@@ -46,6 +46,8 @@ static unsigned char* functions[][3] = {
 	{ "populate_images", "image %p: bdev %p type %c%c%c%c offset 0x%x", push_r4_r5_r7_lr },
 	{ "uart_read", "uart_read", push_r4_to_r7_lr },
 	{ "uart_write", "uart_write", push_r4_to_r7_lr },
+	{ "task_create", "task_create", push_r4_to_r7_lr },
+	{ "task_exit", "task_exit", push_r4_to_r7_lr },
 	{ NULL, NULL, NULL }
 };
 

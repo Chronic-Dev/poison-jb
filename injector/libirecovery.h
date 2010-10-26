@@ -152,7 +152,7 @@ struct irecv_device {
 
 static struct irecv_device irecv_devices[] = {
 	{  0, "iPhone1,1",  "m68ap",  0,  8900,
-	NULL },
+	"http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPhone/061-7481.20100202.4orot/iPhone1,1_3.1.3_7E18_Restore.ipsw" },
 	{  1, "iPod1,1",    "n45ap",  2,  8900,
 	NULL },
 	{  2, "iPhone1,2",  "n82ap",  4,  8900,

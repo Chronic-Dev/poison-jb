@@ -97,17 +97,21 @@ typedef struct TaskDescriptor {
 	unsigned int identifier2;
 } TaskDescriptor;
 
+typedef void(*Task)(void* arg);
+
 extern LinkedList* gTaskList;
 extern TaskDescriptor** gTaskRunning;
 //extern unsigned int* gTaskCount;
 extern void(*task_yield)(void);
+extern TaskDescriptor*(*task_create)(char* name, Task task, void* arg, unsigned int stack);
+extern void(*task_start)(TaskDescriptor* task);
 
 int task_init();
 int task_cmd(int argc, CmdArg* argv);
 void task_display_list();
 TaskDescriptor* task_find(const char* name);
 int task_display_info(const char* name);
-void task_start(TaskDescriptor* task);
-void task_exit(TaskDescriptor* task);
+//void task_start(TaskDescriptor* task);
+//void task_exit(TaskDescriptor* task);
 
 #endif /* TASK_H */

@@ -30,6 +30,8 @@
 LinkedList* gTaskList = SELF_TASK_LIST;
 TaskDescriptor** gTaskRunning = SELF_TASK_RUNNING;
 void(*task_yield)(void) = NULL;
+void(*task_start)(TaskDescriptor* task) = NULL;
+TaskDescriptor*(*task_create)(char* name, Task task, void* arg, unsigned int stack) = NULL;
 
 void* find_task_yield() {
 	return find_function("task_yield", TARGET_BASEADDR, TARGET_BASEADDR);
@@ -41,6 +43,19 @@ void* find_task_running() {
 
 void* find_task_list() {
 	return 0;
+}
+
+void* find_task_create() {
+	return find_function("task_create", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_task_exit() {
+	return find_function("task_exit", TARGET_BASEADDR, TARGET_BASEADDR);
+}
+
+void* find_task_start() {
+	unsigned int x = patch_find(TARGET_BASEADDR, 0x40000, "\x90\xB5\x01\xAF\x43\x69\x04\x46", 8);
+	return x+1;
 }
 
 int task_init() {
@@ -65,9 +80,24 @@ int task_init() {
 		printf("Found gTaskList at 0x%x\n", gTaskList);
 	}
 
+	task_create = find_task_create();
+	if(task_create == NULL) {
+		puts("Unable to find task_create\n");
+	} else {
+		printf("Found task_create at 0x%x\n", task_create);
+	}
+
+	task_start = find_task_start();
+	if(task_start == NULL) {
+		puts("Unable to find task_start\n");
+	} else {
+		printf("Found task_start at 0x%x\n", task_start);
+	}
+
 	if(task_yield && gTaskRunning && gTaskList) {
 		cmd_add("task", &task_cmd, "view and change running tasks");
 	}
+
 	return 0;
 }
 
@@ -76,9 +106,10 @@ int task_cmd(int argc, CmdArg* argv) {
 	char* name = NULL;
 	char* action = NULL;
 	if(argc < 2) {
-		puts("usage: task <list> [options]\n");
+		puts("usage: task <action> [options]\n");
 		puts("  list          \t\tdisplay list of active tasks\n");
 		puts("  info <task>   \t\tdisplay info about task\n");
+		puts("  create <name> <function>  \t\tcreate a new task with name");
 		puts("  start <task>  \t\tstart a existing task\n");
 		return 0;
 	}
@@ -206,22 +237,22 @@ int task_display_info(const char* name) {
 	exit_critical_section();
 }
 
+/*
 void task_add_queue(TaskDescriptor* task) {
 	printf("task_add_queue: Not implemented\n");
 }
 
 void task_start(TaskDescriptor* task) {
 	printf("task_start: Not implemented\n");
-/*
 	if(task->state == 0) {
 		task->state = TASK_READY;
 		enter_critical_section();
 		task_add_queue(task);
 		exit_critical_section();
 	}
-*/
 }
-
+*/
 void task_exit(TaskDescriptor* task) {
 	printf("task_exit: Not implemented\n");
 }
+

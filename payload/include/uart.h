@@ -23,7 +23,11 @@
 #include "common.h"
 #include "commands.h"
 
+extern void(*uart_write)(int bus, char* buffer, int size);
+extern void(*uart_read)(int bus, char* buffer, int size1, int size2);
+
 int uart_init();
 int uart_cmd(int argc, CmdArg* argv);
+void uart_reader(void* arg);
 
 #endif
