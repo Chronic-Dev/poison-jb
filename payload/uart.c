@@ -18,11 +18,22 @@
  **/
 
 #include "uart.h"
+#include "common.h"
+#include "commands.h"
+#include "functions.h"
+
+void* find_uart_read() {
+	return find_function(TARGET_BASEADDR, TARGET_BASEADDR, "uart_read");
+}
+
+void* find_uart_write() {
+	return find_function(TARGET_BASEADDR, TARGET_BASEADDR, "uart_write");
+}
 
 int uart_init() {
 	return 0;
 }
 
-int uart_cmd() {
+int uart_cmd(int argc, CmdArg* argv) {
 	return 0;
 }

@@ -39,6 +39,7 @@ int gp_init() {
 	if(common_init()) return -1;
 	if(cmd_init()) return -1;
 	if(fb_init()) return -1;
+	if(uart_init()) return -1;
 	if(patch_init()) return -1;
 	if(memory_init()) return -1;
 	if(task_init()) return -1;

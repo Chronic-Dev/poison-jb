@@ -7,7 +7,7 @@ LOADADDR = 0x42000000
 TYPE = iBSS
 MODEL = n81ap
 OBJCOPY = $(CROSS)objcopy
-OBJECTS = entry.o main.o common.o commands.o task.o lock.o aes.o bdev.o image.o nvram.o filesystem.o kernel.o lzss.o patch.o memory.o functions.o framebuffer.o breakpoint.o
+OBJECTS = entry.o main.o common.o commands.o task.o lock.o aes.o bdev.o image.o nvram.o filesystem.o kernel.o lzss.o patch.o memory.o functions.o framebuffer.o breakpoint.o uart.o
 CFLAGS = -I. -I./.. -I./../.. -I./$(SRC)/include -nostdlib -mlittle-endian
 LDFLAGS = -Ttext=$(LOADADDR) -nostdlib -lc -lm -lgcc
 

@@ -7,7 +7,7 @@ OBJCOPY = arm-elf-objcopy
 BIN2C = ../tools/bin2c
 UNAME := $(shell uname -s)
 ADDOBJ = ""
-EXPLOITS = exploits/limera1n/limera1n.o exploits/shatter/shatter.o exploits/steaks4uce/steaks4uce.o
+EXPLOITS = exploits/limera1n/limera1n.o exploits/steaks4uce/steaks4uce.o #exploits/shatter/shatter.o 
 
 ifeq ($(UNAME),Darwin)
 	CFLAGS = -I./include -I./resources -I/usr/local/include -I/opt/local/include# -mmacosx-version-min=10.5 -arch i386 -isysroot /Developer/SDKs/MacOSX10.5.sdk

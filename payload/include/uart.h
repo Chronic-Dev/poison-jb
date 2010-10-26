@@ -20,6 +20,9 @@
 #ifndef UART_H
 #define UART_H
 
+#include "common.h"
+#include "commands.h"
+
 int uart_init();
 int uart_cmd(int argc, CmdArg* argv);
 

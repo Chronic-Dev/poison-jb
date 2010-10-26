@@ -26,6 +26,7 @@
 #include "common.h"
 
 void enter_critical_section() {
+	return;
 	TaskDescriptor* current_task = *gTaskRunning;
 	if(current_task->criticalSectionNestCount < 0
 			|| current_task->criticalSectionNestCount > 1000) {
@@ -39,6 +40,7 @@ void enter_critical_section() {
 }
 
 void exit_critical_section() {
+	return;
 	TaskDescriptor* current_task = *gTaskRunning;
 	if(current_task->criticalSectionNestCount < 0
 			|| current_task->criticalSectionNestCount > 1000) {
