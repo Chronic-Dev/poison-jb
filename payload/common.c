@@ -30,6 +30,12 @@ void(*_free)(void* ptr) = NULL;
 void*(*_malloc)(unsigned int size) = NULL;
 int(*_printf)(const char *fmt, ...) = NULL;
 
+void* gLoadaddr = NULL;
+void* gBaseaddr = NULL;
+void* gRomBaseaddr = NULL;
+void* gBssBaseaddr = NULL;
+void* gBootBaseaddr = NULL;
+
 int cout_count = 0;
 
 void* find_printf() {

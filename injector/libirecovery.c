@@ -821,6 +821,23 @@ irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** v
 	return IRECV_E_SUCCESS;
 }
 
+irecv_error_t irecv_getret(irecv_client_t client, unsigned int* value) {
+	int ret = 0;
+	if (check_context(client) != IRECV_E_SUCCESS) return IRECV_E_NO_DEVICE;
+	*value = NULL;
+
+	char* response = (char*) malloc(256);
+	if (response == NULL) {
+		return IRECV_E_OUT_OF_MEMORY;
+	}
+
+	memset(response, '\0', 256);
+	ret = irecv_control_transfer(client, 0xC0, 0, 0, 0, (unsigned char*) response, 255, 1000);
+
+	*value = response;
+	return IRECV_E_SUCCESS;
+}
+
 irecv_error_t irecv_get_cpid(irecv_client_t client, unsigned int* cpid) {
 	if (check_context(client) != IRECV_E_SUCCESS) return IRECV_E_NO_DEVICE;
 

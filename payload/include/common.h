@@ -43,7 +43,6 @@
 #define free _free
 #define puts _puts
 #define printf _printf
-#define vprintf _vprintf
 #define malloc _malloc
 
 typedef enum {
@@ -60,6 +59,12 @@ extern void(*_free)(void* ptr);
 extern void _puts(const char* message);
 extern void*(*_malloc)(unsigned int size);
 extern int(*_printf)(const char *format, ...);
+
+extern void* gLoadaddr;
+extern void* gBaseaddr;
+extern void* gRomBaseaddr;
+extern void* gBssBaseaddr;
+extern void* gBootBaseaddr;
 
 static inline void flip_endian(unsigned char* x, int length) {
 	unsigned int i = 0;

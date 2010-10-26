@@ -194,6 +194,7 @@ irecv_error_t irecv_send_command(irecv_client_t client, char* command);
 irecv_error_t irecv_send_buffer(irecv_client_t client, unsigned char* buffer, unsigned long length, int dfuNotifyFinished);
 
 irecv_error_t irecv_saveenv(irecv_client_t client);
+irecv_error_t irecv_getret(irecv_client_t client, unsigned int* value);
 irecv_error_t irecv_getenv(irecv_client_t client, const char* variable, char** value);
 irecv_error_t irecv_setenv(irecv_client_t client, const char* variable, const char* value);
 irecv_error_t irecv_set_interface(irecv_client_t client, int interface, int alt_interface);

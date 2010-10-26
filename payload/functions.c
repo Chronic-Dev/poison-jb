@@ -44,6 +44,8 @@ static unsigned char* functions[][3] = {
 	{ "task_yield", "task_yield", push_r4_r5_r7_lr },
 	{ "default_block_write", "no reasonable default block write routine", push_r7_lr },
 	{ "populate_images", "image %p: bdev %p type %c%c%c%c offset 0x%x", push_r4_r5_r7_lr },
+	{ "uart_read", "uart_read", push_r4_to_r7_lr },
+	{ "uart_write", "uart_write", push_r4_to_r7_lr },
 	{ NULL, NULL, NULL }
 };
 

@@ -48,28 +48,23 @@ void download_callback(ZipInfo* info, CDFile* file, size_t progress) {
 	progress_callback(progress, user_object);
 }
 
-#ifdef SHATTER
-int receive_data(int bytes) {
-	char* buffer = NULL;
+int send_command(char* command) {
+	unsigned int ret = 0;
 	irecv_error_t error = 0;
-
-	buffer = (char*) malloc(bytes);
-	if(buffer == NULL) {
-		error("Out of memory\n");
+	error = irecv_send_command(client, "go kernel bootargs rd=md0 -v keepsyms=1");
+	if(error != IRECV_E_SUCCESS) {
+		printf("Unable to send command\n");
 		return -1;
 	}
 
-	error = irecv_recv_buffer(client, buffer, bytes);
-	if (error != IRECV_E_SUCCESS) {
-		error("%s\n", irecv_strerror(error));
-		free(buffer);
+	error = irecv_getret(client, &ret);
+	if(error != IRECV_E_SUCCESS) {
+		printf("Unable to send command\n");
 		return -1;
 	}
 
-	free(buffer);
-	return 0;
+	return ret;
 }
-#endif
 
 int fetch_image(const char* path, const char* output) {
 	debug("Fetching %s...\n", path);
@@ -195,11 +190,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_k66ap);
 			debug("Loaded payload for iBSS on k66ap\n0");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_k66ap;
-			//size = sizeof(iBEC_k66ap);
+			payload = iBEC_k66ap;
+			size = sizeof(iBEC_k66ap);
 			debug("Loaded payload for iBEC on k66ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_k66ap;
 			size = sizeof(iBoot_k66ap);
@@ -213,11 +210,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_k48ap);
 			debug("Loaded payload for iBSS on k48ap\n0");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_k48ap;
-			//size = sizeof(iBEC_k48ap);
+			payload = iBEC_k48ap;
+			size = sizeof(iBEC_k48ap);
 			debug("Loaded payload for iBEC on k48ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_k48ap;
 			size = sizeof(iBoot_k48ap);
@@ -231,11 +230,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_n88ap);
 			debug("Loaded payload for iBSS on n88ap\n");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_n88ap;
-			//size = sizeof(iBEC_n88ap);
+			payload = iBEC_n88ap;
+			size = sizeof(iBEC_n88ap);
 			debug("Loaded payload for iBEC on n88ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n88ap;
 			size = sizeof(iBoot_n88ap);
@@ -249,11 +250,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_n90ap);
 			debug("Loaded payload for iBSS on n90ap\n");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_n90ap;
-			//size = sizeof(iBEC_n90ap);
+			payload = iBEC_n90ap;
+			size = sizeof(iBEC_n90ap);
 			debug("Loaded payload for iBEC on n90ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n90ap;
 			size = sizeof(iBoot_n90ap);
@@ -267,11 +270,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_n72ap);
 			debug("Loaded payload for iBSS on n72ap\n");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_n72ap;
-			//size = sizeof(iBEC_n72ap);
+			payload = iBEC_n72ap;
+			size = sizeof(iBEC_n72ap);
 			debug("Loaded payload for iBEC on n72ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n72ap;
 			size = sizeof(iBoot_n72ap);
@@ -285,11 +290,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_n18ap);
 			debug("Loaded payload for iBSS on n18ap\n");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_n18ap;
-			//size = sizeof(iBEC_n18ap);
+			payload = iBEC_n18ap;
+			size = sizeof(iBEC_n18ap);
 			debug("Loaded payload for iBEC on n18ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n18ap;
 			size = sizeof(iBoot_n18ap);
@@ -303,11 +310,13 @@ int upload_firmware_payload(char* type) {
 			size = sizeof(iBSS_n81ap);
 			debug("Loaded payload for iBSS on n81ap\n");
 		}
+		/*
 		if(!strcmp(type, "iBEC")) {
-			//payload = iBEC_n81ap;
-			//size = sizeof(iBEC_n81ap);
+			payload = iBEC_n81ap;
+			size = sizeof(iBEC_n81ap);
 			debug("Loaded payload for iBEC on n81ap\n");
 		}
+		*/
 		if(!strcmp(type, "iBoot")) {
 			payload = iBoot_n81ap;
 			size = sizeof(iBoot_n81ap);
