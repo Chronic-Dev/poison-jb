@@ -6,6 +6,20 @@
 	objectVersion = 45;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		87A31AC71269A1C100F44939 /* ashyLarry */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 87A31ADB1269A1F800F44939 /* Build configuration list for PBXAggregateTarget "ashyLarry" */;
+			buildPhases = (
+				87A31AC61269A1C100F44939 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = ashyLarry;
+			productName = ashyLarry;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXFileReference section */
 		8717D4EC12666E8B00960192 /* P0isonedMenuLauncherController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = P0isonedMenuLauncherController.h; sourceTree = "<group>"; };
 		8717D4ED12666E8B00960192 /* P0isonedMenuLauncherController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = P0isonedMenuLauncherController.m; sourceTree = "<group>"; };
@@ -484,8 +498,11 @@
 		8717E8DF1266F96600960192 /* GPDownloadController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPDownloadController.m; sourceTree = "<group>"; };
 		8717E8EA1266F9D400960192 /* GPProgressBarControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPProgressBarControl.h; sourceTree = "<group>"; };
 		8717E8EB1266F9D400960192 /* GPProgressBarControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPProgressBarControl.m; sourceTree = "<group>"; };
-		8717EF3712680E2F00960192 /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Prefix.pch; path = theos/Prefix.pch; sourceTree = "<group>"; };
 		8717EF3C12680E9A00960192 /* CPlusFunctions.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CPlusFunctions.mm; sourceTree = "<group>"; };
+		87A31ADE1269A1FF00F44939 /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
+		87B07CC9126C127E00C8C44D /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		87B07CCA126C127E00C8C44D /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		87B07CCB126C127E00C8C44D /* tar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tar.h; sourceTree = "<group>"; };
 		87FF3E4D12646F9B001906CD /* ashyLarryAppliance.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ashyLarryAppliance.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -493,11 +510,12 @@
 		08FB7794FE84155DC02AAC07 /* nitoTV_2 */ = {
 			isa = PBXGroup;
 			children = (
+				87B07CC8126C127E00C8C44D /* wuntar */,
+				87A31ADE1269A1FF00F44939 /* build.sh */,
 				8717EF2712680DF200960192 /* Classes */,
 				8717E6B91266E50C00960192 /* payloads.plist */,
 				8717E8D01266F18E00960192 /* About.txt */,
 				8717E3A31266C61D00960192 /* Makefile */,
-				8717EF3712680E2F00960192 /* Prefix.pch */,
 				8717E6E31266F09E00960192 /* BackRow */,
 				8717D7391266779600960192 /* Foundation.framework */,
 			);
@@ -1026,27 +1044,24 @@
 			name = Extensions;
 			sourceTree = "<group>";
 		};
-/* End PBXGroup section */
-
-/* Begin PBXLegacyTarget section */
-		D28A88AD04BDD90700651E21 /* ashyLarry */ = {
-			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
-			buildConfigurationList = 1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "ashyLarry" */;
-			buildPhases = (
+		87B07CC8126C127E00C8C44D /* wuntar */ = {
+			isa = PBXGroup;
+			children = (
+				87B07CC9126C127E00C8C44D /* main.mm */,
+				87B07CCA126C127E00C8C44D /* Makefile */,
+				87B07CCB126C127E00C8C44D /* tar.h */,
 			);
-			buildToolPath = /usr/bin/make;
-			dependencies = (
-			);
-			name = ashyLarry;
-			passBuildSettingsInEnvironment = 1;
-			productName = nitoTV_2;
+			path = wuntar;
+			sourceTree = "<group>";
 		};
-/* End PBXLegacyTarget section */
+/* End PBXGroup section */
 
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "chronic-dev";
+			};
 			buildConfigurationList = 1DEB919308733D9F0010E9CD /* Build configuration list for PBXProject "AshyLarry" */;
 			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 1;
@@ -1054,38 +1069,29 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D28A88AD04BDD90700651E21 /* ashyLarry */,
+				87A31AC71269A1C100F44939 /* ashyLarry */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		87A31AC61269A1C100F44939 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/build.sh",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\n./build.sh\nexit 0";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin XCBuildConfiguration section */
-		1DEB919008733D9F0010E9CD /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = ashyLarry;
-			};
-			name = Debug;
-		};
-		1DEB919108733D9F0010E9CD /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				PRODUCT_NAME = nitoTV_2;
-			};
-			name = Release;
-		};
 		1DEB919408733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1094,38 +1100,56 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = iphoneos4.0;
 			};
 			name = Debug;
 		};
 		1DEB919508733D9F0010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				COPY_PHASE_STRIP = YES;
+				SDKROOT = iphoneos4.0;
+			};
+			name = Release;
+		};
+		87A31AC81269A1C100F44939 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = ashyLarry;
+			};
+			name = Debug;
+		};
+		87A31AC91269A1C100F44939 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = ashyLarry;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB918F08733D9F0010E9CD /* Build configuration list for PBXLegacyTarget "ashyLarry" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				1DEB919008733D9F0010E9CD /* Debug */,
-				1DEB919108733D9F0010E9CD /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		1DEB919308733D9F0010E9CD /* Build configuration list for PBXProject "AshyLarry" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB919408733D9F0010E9CD /* Debug */,
 				1DEB919508733D9F0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		87A31ADB1269A1F800F44939 /* Build configuration list for PBXAggregateTarget "ashyLarry" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				87A31AC81269A1C100F44939 /* Debug */,
+				87A31AC91269A1C100F44939 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

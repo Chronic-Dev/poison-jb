@@ -112,8 +112,8 @@
 }
 
 - (void)doSSHGoodness {
-	NSLog(@"doSSHGoodness");
-	NSLog(@"im goin' from ashy to classy");
+	//NSLog(@"doSSHGoodness");
+	//NSLog(@"im goin' from ashy to classy");
 }
 
 - (float)heightForRow:(long)row {
@@ -132,8 +132,8 @@
 	BRMenuItem * result = [[BRMenuItem alloc] init];
 	//NSString *theTitle = [_menuItems objectAtIndex: row];
 	NSString *theTitle = [[updateArray objectAtIndex:row] valueForKey:@"name"];
-	[result setText:theTitle withAttributes:[[BRThemeInfo sharedTheme] menuTitleTextAttributes]];
-
+	[result setText:theTitle withAttributes:[[BRThemeInfo sharedTheme] menuItemTextAttributes]];
+	[result addAccessoryOfType:1];
 	return result;
 }
 

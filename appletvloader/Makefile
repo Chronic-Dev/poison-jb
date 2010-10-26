@@ -1,4 +1,5 @@
 GO_EASY_ON_ME=1
+FW_DEVICE_IP=KBTV2.local
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = ashyLarry

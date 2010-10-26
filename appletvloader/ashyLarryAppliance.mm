@@ -27,31 +27,10 @@
 @end
 
 @implementation TopShelfController
-- (void)initWithApplianceController:(id)applianceController {
-
-}
 
 - (void)selectCategoryWithIdentifier:(id)identifier {
 	
-	id menuController = nil;
 	
-	if ([identifier isEqualToString:@"software"])
-	{
-		
-		menuController = [[P0isonedMenuLauncherController alloc] init];
-		
-	} else if ([identifier isEqualToString: @"about"])
-	{
-		NSString * path = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"About" ofType:@"txt"];
-		BRScrollingTextControl *textControls = [[BRScrollingTextControl alloc] init];
-		[textControls setDocumentPath:path encoding:NSUTF8StringEncoding];
-		NSString *myTitle = @"About greenpois0n";
-		[textControls setTitle:myTitle];
-		[textControls autorelease];
-		menuController =  [BRController controllerWithContentControl:textControls];
-	}
-	
-	[[[BRApplicationStackManager singleton] stack] pushController:menuController];
 	
 }
 
@@ -102,6 +81,30 @@
 - (id)identifierForContentAlias:(id)contentAlias {
 	return @"ashyLarry";
 }
+
+- (id)controllerForIdentifier:(id)identifier args:(id)args	// 0x315bf445
+{
+	id menuController = nil;
+	
+	if ([identifier isEqualToString:@"software"])
+	{
+		
+		menuController = [[P0isonedMenuLauncherController alloc] init];
+		
+	} else if ([identifier isEqualToString: @"about"])
+	{
+		NSString * path = [[NSBundle bundleForClass:[P0isonedMenuLauncherController class]] pathForResource:@"About" ofType:@"txt"];
+		BRScrollingTextControl *textControls = [[BRScrollingTextControl alloc] init];
+		[textControls setDocumentPath:path encoding:NSUTF8StringEncoding];
+		NSString *myTitle = @"About greenpois0n";
+		[textControls setTitle:myTitle];
+		[textControls autorelease];
+		menuController =  [BRController controllerWithContentControl:textControls];
+	}
+	
+	return menuController;
+}
+
 
 - (id)selectCategoryWithIdentifier:(id)ident {
 	NSLog(@"selecteCategoryWithIdentifier: %@", ident);

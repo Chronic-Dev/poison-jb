@@ -7,7 +7,7 @@ ifneq ($(words $(_FW_TARGET_ARGS)),0)
 # A version specified as a target argument overrides all previous definitions.
 override SDKVERSION := $(firstword $(_FW_TARGET_ARGS))
 else
-SDKVERSION ?= 3.0
+SDKVERSION ?= 3.2
 endif
 SYSROOT ?= /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS$(SDKVERSION).sdk
 
