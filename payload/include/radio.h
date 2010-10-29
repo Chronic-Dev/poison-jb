@@ -20,6 +20,9 @@
 #ifndef RADIO_H
 #define RADIO_H
 
+#include "common.h"
+#include "commands.h"
+
 int radio_init();
 int radio_cmd(int argc, CmdArg* argv);
 

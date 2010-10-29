@@ -93,20 +93,7 @@ void* find_load_ramdisk() {
 }
 
 void* find_fsboot() {
-	void* bytes = NULL;
-	if(strstr((char*) (TARGET_BASEADDR + 0x200), "n72ap")) {
-		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x11\x48", 6);
-		bytes++;
-
-	} else if(strstr((char*) (TARGET_BASEADDR + 0x200), "k66ap")) {
-		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
-		bytes++;
-
-	} else {
-		bytes = patch_find(TARGET_BASEADDR, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
-		bytes++;
-	}
-	return bytes > 1 ? bytes : NULL;
+	return find_function("fsboot", TARGET_BASEADDR, TARGET_BASEADDR);
 }
 
 int cmd_init() {
@@ -362,18 +349,19 @@ int cmd_fsboot(int argc, CmdArg* argv) {
 	memcpy(jump_to+4, &hooker, 4);
 
 	printf("Hooked jump_to function to call 0x%08x\n", hooker);
-	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
-		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x11\x48", 6);
-	} else
-	if(strstr((char*) (IBOOT_BASEADDR + 0x200), "k66ap")) {
-		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
-	} else {
-		fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
+	if(fsboot == NULL) {
+		if(strstr((char*) (IBOOT_BASEADDR + 0x200), "n72ap")) {
+			fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x11\x48", 6);
+		} else
+		if(strstr((char*) (IBOOT_BASEADDR + 0x200), "k66ap")) {
+			fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xf0\xb5\x03\xaf\x81\xb0", 6);
+		} else {
+			fsboot = patch_find(IBOOT_BASEADDR, 0x30000, "\xb0\xb5\x02\xaf\x11\x48", 6);
+		}
+		printf("Found fsboot function at %p\n", fsboot);
 	}
-	printf("Found fsboot function at %p\n", fsboot);
-
 	//call address
-	fsboot++;
+	//fsboot++;
 	printf("Calling %p\n", fsboot);
 	fsboot();
 

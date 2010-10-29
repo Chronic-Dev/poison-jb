@@ -65,13 +65,8 @@ void fb_setup() {
 	gFbFont = (Font*) font_data;
 	gFbBackgroundColor = COLOR_BLACK;
 	gFbForegroundColor = COLOR_WHITE;
-#ifdef S5L8930X
-	gFbWidth = 640;
-	gFbHeight = 960;
-#else
-	gFbWidth = 320;
-	gFbHeight = 480;
-#endif
+	gFbWidth = FRAMEBUFFER_WIDTH;
+	gFbHeight = FRAMEBUFFER_HEIGHT;
 	gFbTWidth = gFbWidth / gFbFont->width;
 	gFbTHeight = gFbHeight / gFbFont->height;
 }

@@ -23,6 +23,7 @@
 
 #include "aes.h"
 #include "bdev.h"
+#include "radio.h"
 #include "nvram.h"
 #include "image.h"
 #include "patch.h"
@@ -40,6 +41,7 @@ int gp_init() {
 	if(cmd_init()) return -1;
 	if(fb_init()) return -1;
 	if(uart_init()) return -1;
+	if(radio_init()) return -1;
 	if(patch_init()) return -1;
 	if(memory_init()) return -1;
 	if(task_init()) return -1;
