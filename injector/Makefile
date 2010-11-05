@@ -19,7 +19,7 @@ else
 		LDFLAGS = -lcurl -lz
 		ADDOBJ = /mingw/lib/libcurl.a /mingw/lib/libwsock32.a /mingw/lib/libwldap32.a /mingw/lib/libpenwin32.a /mingw/lib/libz.a /mingw/lib/libsetupapi.a
 	else
-		CFLAGS = -O3 -I./resources
+		CFLAGS = -O3 -I./resources -I./include
 		LDFLAGS = -lusb-1.0 -lcurl -lz
 		ADDOBJ = 
 	endif

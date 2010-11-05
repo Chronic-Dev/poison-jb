@@ -44,10 +44,10 @@ launchd:
 
 ramdisk: launchd
 	cp template.dmg ramdisk.dmg
+	cp template.dmg ramdisk.dmg
 	hdiutil attach ramdisk.dmg
 	cp src/launchd $(RAMDISK_VOLUME)/sbin/
 	cp -R files/* $(RAMDISK_VOLUME)/files/
-	sync
 	hdiutil detach $(RAMDISK_VOLUME)
 
 encrypt:
